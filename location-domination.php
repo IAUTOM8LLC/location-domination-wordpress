@@ -4,7 +4,7 @@
 Plugin Name: Location Domination
 Plugin URI: #
 Description: Mass Page Builder plugin
-Version: 1.34
+Version: 1.36
 Author: iAutoM8
 Author URI: https://i-autom8.com
 License: GPL2
@@ -14,7 +14,7 @@ if ( ! defined('WPINC') ){
 	die;
 }
 
-define( 'LOCATION_DOMINATION_VER', 1.34 );
+define( 'LOCATION_DOMINATION_VER', 1.36 );
 
 /*
  * Include the core classes
@@ -26,10 +26,12 @@ define( 'LOCATION_DOMINATION_ROOT_DIR', __DIR__ );
 require __DIR__ . '/includes/puc/plugin-update-checker.php';
 
 $myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
-    'https://locationdomination.net/s/wp.json',
+    'https://github.com/IAUTOM8LLC/location-domination-wordpress/',
     __FILE__, //Full path to the main plugin file or functions.php.
     'location-domaination'
 );
+
+$myUpdateChecker->setBranch('stable' );
 
 require_once plugin_dir_path(__FILE__ ) . '/includes/mpbuilder-main.php';
 
@@ -46,11 +48,7 @@ run_main_class();
 require_once __DIR__ . '/admin/queries/mpb-queries.php';
 require_once __DIR__ . '/admin/queries/create-tables.php';
 
-
-//add_action( 'init', 'fill_cities' );
-
 function activate() {
-
     $create = new create_tables();
     $create->create_all_cities_table();
 
