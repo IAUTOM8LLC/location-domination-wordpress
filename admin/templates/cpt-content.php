@@ -4,7 +4,7 @@
 class cpt_content {
 
 	function cptInnerCustomBox($post) {
-		$api = new mpbuilder_api();
+		$api = new LocationDominationAPI();
         $options = get_option( 'mpb_location_type' );
 
 
@@ -227,7 +227,7 @@ class cpt_content {
 		else{
 
 			echo '<h2>Locations Settings Have Not Been Configured.</h2>'.
-                 'Please Set Location Settings Here: <a href="'. admin_url() .'?page=mpbuilder-page.php">Location Settings</a>';
+                 'Please Set Location Settings Here: <a href="'. admin_url() .'?page=location-domination-page.php">Location Settings</a>';
         }
 	}
 }

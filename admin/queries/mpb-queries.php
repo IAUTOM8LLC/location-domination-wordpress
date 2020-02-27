@@ -15,9 +15,9 @@ class mpb_queries {
 
 	public function insert_cities() {
 		global $wpdb;
-		$this->api = new mpbuilder_api();
+		$this->api = new LocationDominationAPI();
 		//query the data
-		$api = new mpbuilder_api();
+		$api = new LocationDominationAPI();
 
 		$results = $api->get_all_cities();
 

@@ -224,7 +224,7 @@ if ( !class_exists('Puc_v4p8_Plugin_UpdateChecker', false) ):
 
 		/**
 		 * For plugins, the update array is indexed by the plugin filename relative to the "plugins"
-		 * directory. Example: "plugin-name/plugin.php".
+		 * directory. PostCreation: "plugin-name/plugin.php".
 		 *
 		 * @return string
 		 */

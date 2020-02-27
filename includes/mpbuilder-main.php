@@ -56,7 +56,7 @@ class mpbuilder_main {
 		/**
 		 * Admin Dependencies
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/mpbuilder-admin.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/location-domination-admin.php';
 
 		/**
 		 * Admin Templates
@@ -67,7 +67,7 @@ class mpbuilder_main {
 		/**
 		 * Admin API
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/api/mpbuilder-api.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/api/location-domination-api.php';
 		/**
 		 * Admin Includes
 		 */
@@ -111,7 +111,7 @@ class mpbuilder_main {
 	private function define_admin_hooks() {
 
 		$admin = new mpbuilder_admin( $this->get_version() );
-		if ( isset( $_GET['page'] ) && ( $_GET['page'] == 'mpbuilder-page.php' ) || isset( $_GET['page'] ) && ( $_GET['page'] == 'mpbuilder-setup' ) ) {
+		if ( isset( $_GET['page'] ) && ( $_GET['page'] == 'location-domination-page.php' ) || isset( $_GET['page'] ) && ( $_GET['page'] == 'mpbuilder-setup' ) ) {
 			$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_admin_styles' );
 		}
 		$this->loader->add_action( 'admin_menu', $admin, 'mpbuilder_admin_page' );

@@ -7,14 +7,12 @@ use WP_REST_Controller;
 /**
  * REST_API Handler
  */
-class Example extends WP_REST_Controller {
+class PostCreation extends WP_REST_Controller {
 
     /**
-     * [__construct description]
+     * @var string
      */
-    public function __construct() {
-        $this->namespace = 'spintax-builder/v1';
-    }
+    protected $namespace = "location-domination/v1";
 
     /**
      * Register the routes
@@ -114,6 +112,9 @@ class Example extends WP_REST_Controller {
         return $response;
     }
 
+    /**
+     * @return bool
+     */
     public function is_performance_muplugin_installed() {
         $mu_dir    = ( defined( 'WPMU_PLUGIN_DIR' ) && defined( 'WPMU_PLUGIN_URL' ) ) ? WPMU_PLUGIN_DIR : trailingslashit( WP_CONTENT_DIR ) . 'mu-plugins';
         $mu_dir    = untrailingslashit( $mu_dir );
@@ -183,6 +184,11 @@ class Example extends WP_REST_Controller {
         return $response;
     }
 
+    /**
+     * @param $request
+     *
+     * @return mixed|\WP_Error|\WP_HTTP_Response|\WP_REST_Response
+     */
     public function insert_posts( $request ) {
         if ( trim( get_option( 'mpb_api_key' ) ) === trim( $request->get_param( 'api_key' ) ) ) {
             ini_set( "memory_limit", - 1 );

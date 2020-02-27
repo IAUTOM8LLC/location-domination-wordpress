@@ -1,15 +1,26 @@
 <?php
 
 
-class mpbuilder_api extends WP_REST_Controller {
-	public function get_all_cities(){
+/**
+ * Class LocationDominationAPI
+ */
+class LocationDominationAPI extends WP_REST_Controller {
+
+    /**
+     * @return mixed
+     */
+    public function get_all_cities(){
 		$body = file_get_contents( MPBUILDER_DATA_PATH . '/cities.json' );
 
 		$json = json_decode( $body );
 
 		return $json;
 	}
-	public function get_all_states(){
+
+    /**
+     * @return mixed
+     */
+    public function get_all_states(){
         $data = wp_remote_get( 'https://spintax.noonanwebgroup.com/api/states' );
 
         $body = wp_remote_retrieve_body( $data );
@@ -17,7 +28,12 @@ class mpbuilder_api extends WP_REST_Controller {
 
         return $json;
 	}
-	public function get_counties( $state_id ){
+
+    /**
+     * @param $state_id
+     *
+     * @return mixed
+     */public function get_counties( $state_id ){
         $data = wp_remote_get( 'https://spintax.noonanwebgroup.com/api/counties?state=' . $state_id );
 
         $body = wp_remote_retrieve_body( $data );
@@ -25,7 +41,12 @@ class mpbuilder_api extends WP_REST_Controller {
 
         return $json;
 	}
-	 public function get_cities_count( $post_ID ){
+
+    /**
+     * @param $post_ID
+     *
+     * @return mixed
+     */public function get_cities_count( $post_ID ){
 
 		 $counties    = get_post_meta( $post_ID, '_selected_counties', true );
 		 foreach ( $counties as $county ) {
@@ -39,8 +60,13 @@ class mpbuilder_api extends WP_REST_Controller {
 		 return $json;
 	 }
 
-
-	public function get_selected_cities( $county_ids, $increment, $offset ){
+    /**
+     * @param $county_ids
+     * @param $increment
+     * @param $offset
+     *
+     * @return mixed
+     */public function get_selected_cities( $county_ids, $increment, $offset ){
 
 		$data = wp_remote_get( 'https://spintax.noonanwebgroup.com/api/cities?offset='.$offset.'&limit='.$increment.'&filter='. implode( ",", $county_ids) );
 
@@ -66,7 +92,7 @@ class mpbuilder_api extends WP_REST_Controller {
      * @return void
      */
     private function includes() {
-        require_once __DIR__ . '/Api/Example.php';
+        require_once __DIR__ . '/Api/PostCreation.php';
     }
 
     /**
@@ -75,7 +101,7 @@ class mpbuilder_api extends WP_REST_Controller {
      * @return void
      */
     public function register_routes() {
-        ( new App\Api\Example() )->register_routes();
+        ( new App\Api\PostCreation() )->register_routes();
     }
 
 }

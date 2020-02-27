@@ -7,7 +7,7 @@ if ( get_option('mpb_location_type' ) == 1 ) {
 	$total_records = 18908;
 }
 else {
-	$api   = new mpbuilder_api();
+	$api   = new LocationDominationAPI();
 	$query = $api->get_cities_count( $my_postid );
 
 	$total_records = $query[0]->total;
