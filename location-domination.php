@@ -4,7 +4,7 @@
 Plugin Name: Location Domination
 Plugin URI: #
 Description: Mass Page Builder plugin
-Version: 1.36
+Version: 1.37
 Author: iAutoM8
 Author URI: https://i-autom8.com
 License: GPL2
