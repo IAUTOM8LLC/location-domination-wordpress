@@ -14,7 +14,7 @@ if ( ! defined('WPINC') ){
 	die;
 }
 
-define( 'LOCATION_DOMINATION_VER', 1.36 );
+define( 'LOCATION_DOMINATION_VER', 1.37 );
 
 /*
  * Include the core classes
