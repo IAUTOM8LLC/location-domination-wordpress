@@ -5,41 +5,6 @@ $options = get_option( 'mpb_location_type' )
     <div class="contacts-uploader">
         <h2 class="title">Location Domination Settings</h2>
         <div class="alert-box"></div>
-        <div class="top-box summary-box">
-            <div class="col-half">
-                <div style="width: 100%;">
-                    <h3>Settings</h3>
-
-                </div>
-            </div>
-            <div class="col-half left">
-                <ul class="dev-list bold">
-                    <li>
-                        <div>
-                            <span class="list-label">Plugin Version</span>
-                            <span class="list-detail">
-                                <span><?php echo $this->version; ?></span>
-                            </span>
-                        </div>
-                    </li>
-                    <li>
-                        <div>
-                            <span class="list-label">PHP Version</span>
-                            <span class="list-detail">
-                                <span class="def-tag tag-success"><?php echo phpversion(); ?></span>
-			                </span>
-                        </div>
-                    </li>
-                    <li>
-                        <div>
-                            <span class="list-label">Max Upload Size</span>
-                            <span class="list-detail lastLockout"><?php echo size_format( wp_max_upload_size() ); ?></span>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-
-        </div>
 
         <div class="row is_multiline">
             <div class="col-half">

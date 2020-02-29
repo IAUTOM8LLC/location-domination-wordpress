@@ -3,8 +3,8 @@
 /*
 Plugin Name: Location Domination
 Plugin URI: #
-Description: Mass Page Builder plugin
-Version: 1.37
+Description: An iAutoM8 plugin designed to make mass page generating easy!
+Version: 1.38
 Author: iAutoM8
 Author URI: https://i-autom8.com
 License: GPL2
@@ -14,7 +14,7 @@ if ( ! defined('WPINC') ){
 	die;
 }
 
-define( 'LOCATION_DOMINATION_VER', 1.37 );
+define( 'LOCATION_DOMINATION_VER', 1.38 );
 
 /*
  * Include the core classes
@@ -49,6 +49,8 @@ require_once __DIR__ . '/admin/queries/mpb-queries.php';
 require_once __DIR__ . '/admin/queries/create-tables.php';
 
 function activate() {
+    flush_rewrite_rules();
+
     $create = new create_tables();
     $create->create_all_cities_table();
 

@@ -280,7 +280,25 @@ class PostCreation extends WP_REST_Controller {
                     'name'        => isset( $slug ) && $slug ? $slug : sanitize_title( $title ),
                     'post_type'   => $request->get_param( 'template-uuid' ),
                     'post_status' => 'publish',
-                    'numberposts' => 1
+                    'numberposts' => 1,
+                    'meta_query' => array(
+                        'relation' => 'AND',
+                        array(
+                            'key'     => '_city',
+                            'value'   => $city,
+                            'compare' => '=',
+                        ),
+                        array(
+                            'key'     => '_state',
+                            'value'   => $state,
+                            'compare' => '=',
+                        ),
+                        array(
+                            'key'     => '_county',
+                            'value'   => $county,
+                            'compare' => '=',
+                        ),
+                    )
                 );
 
                 $matched_post = get_posts( $args );
