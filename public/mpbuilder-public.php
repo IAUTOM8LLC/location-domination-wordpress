@@ -27,34 +27,18 @@ class mpbuilder_public {
     }
 
 	public function mpbuilder_publish_schema( ) {
-		$templatepart = get_post_meta( get_the_ID(), '_schema_type', true );
+        $post_types = array_merge( [ 'page', 'post' ], array_keys(get_post_types( [ 'public' => true, '_builtin' => false ], 'names', 'and' ) ));
 
-		switch ( $templatepart ) {
-			case 1:
-				$part = 'event';
-				break;
-			case 2:
-				$part = 'job';
-				break;
-			case 3:
-				$part = 'product';
-				break;
-			case 4:
-				$part = 'review';
-				break;
-			case 5:
-				$part = 'recipe';
-				break;
-			case 6:
-				$part = 'creative';
-				break;
-			default:
-				$part = 'article';
-				break;
+        if ( is_singular( $post_types ) ) {
+            $jsonString = strip_tags( get_post_meta( get_the_ID(), '_ld_schema', true ) );
 
-		}
-		echo $this->get_template_html( 'article' );
-		return $this->get_template_html( 'article' );
+            if ( $jsonString ) {
+                if ( $schemaArray = json_decode( $jsonString ) ) {
+                    // Decode to make sure is a valid JSON object
+                    echo '<script id="ld" type="application/ld+json">' . json_encode( $schemaArray ) . '</script>';
+                }
+            }
+        }
 	}
 
 

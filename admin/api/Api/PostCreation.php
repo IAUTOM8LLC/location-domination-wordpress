@@ -217,10 +217,16 @@ class PostCreation extends WP_REST_Controller {
 
                     // flush permalinks
                     update_option( 'mpb_flush_permalinks', 1 );
+                    update_post_meta( $post_ID, '_service_type', '2' );
+                    update_post_meta( $post_ID, '_service_title', $request->get_param( 'job_title' ) );
+                    update_post_meta( $post_ID, '_service_description', $request->get_param( 'job_description' ) );
 
                     // set UUID
                     update_post_meta( $post_ID, '_uuid', $request->get_param( 'template-uuid' ) );
                 } else {
+                    update_post_meta( $my_posts[0]->ID, '_service_type', '2' );
+                    update_post_meta( $my_posts[0]->ID, '_service_title', $request->get_param( 'job_title' ) );
+                    update_post_meta( $my_posts[0]->ID, '_service_description', $request->get_param( 'job_description' ) );
 //                wp_update_post( [
 //                    'id' => $my_posts[0]->ID,
 //                    'post_type'    => 'mptemplates',
@@ -265,14 +271,30 @@ class PostCreation extends WP_REST_Controller {
                     $meta_title = str_replace( '[city]', $city, $meta_title );
                     $meta_title = str_replace( '[county]', $county, $meta_title );
                     $meta_title = str_replace( '[state]', $state, $meta_title );
-                    $meta_title = str_replace( ' ', '-', $meta_title );
                 }
 
                 if ( $meta_description = $request->get_param( 'meta_description' ) ) {
                     $meta_description = str_replace( '[city]', $city, $meta_description );
                     $meta_description = str_replace( '[county]', $county, $meta_description );
                     $meta_description = str_replace( '[state]', $state, $meta_description );
-                    $meta_description = str_replace( ' ', '-', $meta_description );
+                }
+
+                if ( $job_title = $request->get_param( 'job_title' ) ) {
+                    $job_title = str_replace( '[city]', $city, $job_title );
+                    $job_title = str_replace( '[county]', $county, $job_title );
+                    $job_title = str_replace( '[state]', $state, $job_title );
+                }
+
+                if ( $job_description = $request->get_param( 'job_description' ) ) {
+                    $job_description = str_replace( '[city]', $city, $job_description );
+                    $job_description = str_replace( '[county]', $county, $job_description );
+                    $job_description = str_replace( '[state]', $state, $job_description );
+                }
+
+                if ( $schema = $request->get_param( 'schema' ) ) {
+                    $schema = str_replace( '[city]', $city, $schema );
+                    $schema = str_replace( '[county]', $county, $schema );
+                    $schema = str_replace( '[state]', $state, $schema );
                 }
 
                 // Check if page already exists
@@ -317,12 +339,24 @@ class PostCreation extends WP_REST_Controller {
                     update_post_meta( $post_ID, '_state', $state );
                     update_post_meta( $post_ID, '_county', $county );
 
+                    if ( isset( $schema ) && $schema ) {
+                        update_post_meta( $post_ID, '_ld_schema', $schema );
+                    }
+
                     if ( isset( $meta_title ) && $meta_title ) {
                         update_post_meta( $post_ID, '_yoast_wpseo_title', $meta_title );
                     }
 
                     if ( isset( $meta_description ) && $meta_description ) {
                         update_post_meta( $post_ID, '_yoast_wpseo_metadesc', $meta_description );
+                    }
+
+                    if ( isset( $job_title ) && $job_title ) {
+                        update_post_meta( $post_ID, '_ld_job_title', $job_title );
+                    }
+
+                    if ( isset( $job_description ) && $job_description ) {
+                        update_post_meta( $post_ID, '_ld_job_description', $job_description );
                     }
 //                update_post_meta( $post_ID, 'spun_content',  );
                 }

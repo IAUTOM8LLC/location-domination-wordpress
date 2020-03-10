@@ -121,6 +121,7 @@ class mpbuilder_main {
 		$this->loader->add_action( 'wp_ajax_setcounty', $admin, 'mpbuilder_set_county' );
 		$this->loader->add_action( 'wp_ajax_nopriv_setcounty', $admin, 'mpbuilder_set_county' );
 		$this->loader->add_action( 'wp_ajax_setcity', $admin, 'mpbuilder_set_city' );
+		$this->loader->add_action( 'wp_ajax_locationdomination', $admin, 'mpbuilder_redirect_to_ld' );
 		$this->loader->add_action( 'wp_ajax_nopriv_setcity', $admin, 'mpbuilder_set_city' );
 		$this->loader->add_action( 'save_post', $admin, 'cpt_save_postdata' );
 		$this->loader->add_filter( 'redirect_post_location', $admin, 'add_mass_pages' );

@@ -157,7 +157,7 @@ class dynamic_cpt {
 	function display_meta_selection() {
 		$metaContent = new meta_content();
 
-		add_meta_box( 'cpt_meta_id', 'Meta Settings', array(
+		add_meta_box( 'cpt_meta_id', 'Job Meta Settings', array(
 			$metaContent,
 			'metaCustomBox'
 		), 'mptemplates', 'side' );

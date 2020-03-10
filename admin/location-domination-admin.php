@@ -60,6 +60,10 @@ class mpbuilder_admin {
     }
 
     function register_settings_options() {
+        if ( session_status() == PHP_SESSION_NONE ) {
+            session_start();
+        }
+
         //register our settings
         register_setting( 'mpb-settings-group', 'mpb_api_secret' );
         register_setting( 'mpb-settings-group', 'mpb_api_duration' );
@@ -93,6 +97,10 @@ class mpbuilder_admin {
         </fieldset>
         <?php
         die();
+    }
+
+    public function ld_update_apikey() {
+        check_ajax_referrer( 'ld_nonce_verifier', '_nonce' );
     }
 
     public function mpbuilder_set_county() {
@@ -234,7 +242,7 @@ class mpbuilder_admin {
         parse_str( $_POST[ 'params' ], $params );
         $params = (array) $params;
 
-        $postType = str_replace( ' ', '', $params[ 'title' ] );
+        $postType = str_replace( ' ', '-', $params[ 'title' ] );
         $offset   = absint( $_POST[ 'offset' ] );
         if ( get_option( 'mpb_location_type' ) == 2 ) {
             $increment = 100; // You can set your increment value here
@@ -290,7 +298,8 @@ class mpbuilder_admin {
                 foreach ( $counties as $county ) {
                     $county_ids[] = $county;
                 }
-                $data = wp_remote_get( 'https://locationdomination.net/s/api/cities?offset=' . $offset . '&limit=' . $increment . '&filter=' . implode( ",", $county_ids ) );
+
+                $data = wp_remote_get( 'https://locationdomination.net//api/cities?offset=' . $offset . '&limit=' . $increment . '&filter=' . implode( ",", $county_ids ) );
 //                $data = wp_remote_get( 'https://masspage.aen.technology/wp-json/mpbuilder/v1/get_selected_cities?offset='.$offset.'&limit='.$increment.'&filter='. implode( ",", $county_ids) );
                 //error_log('https://masspage.aen.technology/wp-json/mpbuilder/v1/get_selected_cities?offset='.$offset.'&limit='.$increment.'&filter='. implode( ",", $county_ids));
                 $body    = wp_remote_retrieve_body( $data );
@@ -327,10 +336,13 @@ class mpbuilder_admin {
                             '_schema_type'  => $schemaType,
                         )
                     );
+                    var_dump( $my_post );
                     wp_insert_post( $my_post );
                     $wpdb->flush();
                 }
             }
+
+            exit;
 
             $step = get_transient( '_step' );
             wp_defer_term_counting( false );
