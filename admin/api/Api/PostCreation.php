@@ -71,6 +71,19 @@ class PostCreation extends WP_REST_Controller {
                 )
             )
         );
+
+        register_rest_route(
+            $this->namespace,
+            '/destruction',
+            array(
+                array(
+                    'methods'             => \WP_REST_Server::CREATABLE,
+                    'callback'            => array( $this, 'destruction' ),
+                    'permission_callback' => array( $this, 'get_items_permissions_check' ),
+                    'args'                => $this->get_collection_params(),
+                )
+            )
+        );
     }
 
     /**
@@ -97,17 +110,17 @@ class PostCreation extends WP_REST_Controller {
      */
     public function get_items( $request ) {
         if ( trim( get_option( 'mpb_api_key' ) ) === trim( $request->get_param( 'api_key' ) ) ) {
-            $items = [
-                'success' => true
-            ];
+            $response = new \WP_REST_Response([
+                'success' => true,
+            ]);
         } else {
-            $items = [
+            $response = new \WP_REST_Response([
                 'success' => false,
-                'message' => 'API key was incorrect',
-            ];
+                'message' => 'API Key was incorrect.',
+            ]);
         }
 
-        $response = rest_ensure_response( $items );
+        $response = rest_ensure_response( $response );
 
         return $response;
     }

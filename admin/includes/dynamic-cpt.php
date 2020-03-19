@@ -52,7 +52,7 @@ class dynamic_cpt {
 			'has_archive'        => false,
 			'hierarchical'       => false,
 			'menu_position'      => null,
-			'supports'           => array( 'title', 'editor' )
+//			'supports'           => array( 'title', 'editor' )
 		);
 
 		register_post_type( 'mptemplates', $args );

@@ -128,12 +128,11 @@ class mpbuilder_main {
 		$this->loader->add_action( 'add_option_mpb_location_type', $admin, 'check_the_option', 10, 3);
 		$this->loader->add_action( 'wp_ajax__do_batch_query', $admin, '_do_batch_query' );
 		$this->loader->add_action( 'wp_ajax_nopriv__do_batch_query', $admin, '_do_batch_query' );
-
+		$this->loader->add_action( 'save_post_mptemplates', $admin, 'save_template_content', 10, 2 );
 	}
+
 	private function define_shared_hooks(){
 		$shared = new mpbulder_shortcodes( $this->get_version() );
-
-
 	}
 
 

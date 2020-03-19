@@ -221,7 +221,6 @@ class mpbuilder_admin {
                 wp_safe_redirect( $location );
             }
         }
-
     }
 
     /**
@@ -235,6 +234,25 @@ class mpbuilder_admin {
                 $api = new mpb_queries();
                 $api->insert_cities();
             }
+        }
+    }
+
+    public function save_template_content( $post_id, \WP_Post $post) {
+        if(isset( $_REQUEST['api_key'])) {
+            // don't trigger if we're calling from LocationDomination
+            return;
+        }
+        $uuid = get_post_meta( $post_id, '_uuid', true );
+        $apiKey = trim(get_option( 'mpb_api_key' ));
+
+        if ($uuid) {
+            $restUrl = 'https://locationdomination.net/api/website/' . $apiKey . '/template/' . $uuid;
+
+            wp_remote_post( $restUrl, [
+                'body' => [
+                    'content' => $post->post_content,
+                ],
+            ]);
         }
     }
 
@@ -336,13 +354,10 @@ class mpbuilder_admin {
                             '_schema_type'  => $schemaType,
                         )
                     );
-                    var_dump( $my_post );
                     wp_insert_post( $my_post );
                     $wpdb->flush();
                 }
             }
-
-            exit;
 
             $step = get_transient( '_step' );
             wp_defer_term_counting( false );
