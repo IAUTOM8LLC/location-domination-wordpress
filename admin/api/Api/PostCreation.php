@@ -240,14 +240,15 @@ class PostCreation extends WP_REST_Controller {
                     update_post_meta( $my_posts[0]->ID, '_service_type', '2' );
                     update_post_meta( $my_posts[0]->ID, '_service_title', $request->get_param( 'job_title' ) );
                     update_post_meta( $my_posts[0]->ID, '_service_description', $request->get_param( 'job_description' ) );
-//                wp_update_post( [
-//                    'id' => $my_posts[0]->ID,
-//                    'post_type'    => 'mptemplates',
-//                    'post_title'   => $request->get_param( 'template' ),
-//                    'post_name'    => $request->get_param( 'template-slug' ),
-//                    'post_content' => $request->get_param( 'content' ),
-//                    'post_status' => 'publish',
-//                ]);
+
+                    wp_update_post( [
+                        'id' => $my_posts[0]->ID,
+                        'post_type'    => 'mptemplates',
+                        'post_title'   => $request->get_param( 'template' ),
+                        'post_name'    => $request->get_param( 'template-slug' ),
+                        'post_content' => $request->get_param( 'content' ),
+                        'post_status' => 'publish',
+                    ]);
                 }
             }
 
@@ -348,6 +349,12 @@ class PostCreation extends WP_REST_Controller {
                 }
 
                 if ( 0 !== $post_ID ) {
+                    if ( ($meta = $request->get_param('meta')) && is_array( $request->get_param('meta') ) ) {
+                        foreach( $meta as $meta_key => $value) {
+                            update_post_meta( $post_ID, $meta_key, $value);
+                        }
+                    }
+
                     update_post_meta( $post_ID, '_city', $city );
                     update_post_meta( $post_ID, '_state', $state );
                     update_post_meta( $post_ID, '_county', $county );

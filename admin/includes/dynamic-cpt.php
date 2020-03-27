@@ -43,13 +43,13 @@ class dynamic_cpt {
 		$args = array(
 			'labels'             => $labels,
 			'public'             => true,
-			'publicly_queryable' => false,
+			'publicly_queryable' => true,
 			'show_ui'            => true,
 			'show_in_menu'       => true,
 			'query_var'          => true,
 			'rewrite'            => true,
 			'capability_type'    => 'page',
-			'has_archive'        => false,
+			'has_archive'        => true,
 			'hierarchical'       => false,
 			'menu_position'      => null,
 //			'supports'           => array( 'title', 'editor' )

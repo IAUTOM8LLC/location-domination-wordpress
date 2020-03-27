@@ -237,22 +237,55 @@ class mpbuilder_admin {
         }
     }
 
-    public function save_template_content( $post_id, \WP_Post $post) {
-        if(isset( $_REQUEST['api_key'])) {
+    public function elementor_save_template_content($post_id) {
+        $this->update_locationdomination_template($post_id);
+    }
+
+    public function save_template_content( $post_id, \WP_Post $post ) {
+        if ( isset( $_REQUEST[ 'api_key' ] ) ) {
             // don't trigger if we're calling from LocationDomination
             return;
         }
-        $uuid = get_post_meta( $post_id, '_uuid', true );
-        $apiKey = trim(get_option( 'mpb_api_key' ));
 
-        if ($uuid) {
+        // Do not update if it is an elementor page... need to use correct hook
+        if ( class_exists( 'Elementor\\Plugin' ) ) {
+            if ( \Elementor\Plugin::$instance->db->is_built_with_elementor( $post_id ) ) {
+                return;
+            }
+        }
+
+        $this->update_locationdomination_template($post_id);
+    }
+
+    private function update_locationdomination_template($post_id) {
+        $uuid   = get_post_meta( $post_id, '_uuid', true );
+        $apiKey = trim( get_option( 'mpb_api_key' ) );
+        $post = get_post($post_id);
+
+        if ( ! $uuid ) {
+            $uuid = substr( sha1( $post->post_title . time() ), 0, 19 );
+
+            update_post_meta( $post_id, '_uuid', $uuid );
+        }
+
+        if ( $uuid ) {
             $restUrl = 'https://locationdomination.net/api/website/' . $apiKey . '/template/' . $uuid;
+
+            $meta = [];
+
+            foreach ( get_post_meta( $post_id ) as $meta_key => $value ) {
+                $value             = get_post_meta( $post_id, $meta_key, true );
+                $meta[ $meta_key ] = $value;
+            }
 
             wp_remote_post( $restUrl, [
                 'body' => [
+                    'title'   => $post->post_title,
+                    'slug'    => $post->post_name,
                     'content' => $post->post_content,
+                    'meta'    => $meta,
                 ],
-            ]);
+            ] );
         }
     }
 
