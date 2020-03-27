@@ -213,10 +213,17 @@ class mpbuilder_admin {
         $title = get_the_title( $post->ID );
         if ( isset( $_POST[ 'save' ] ) || isset( $_POST[ 'publish' ] ) ) { //Redirect to Setup page for Mass Creation of
             // Pages
+            // add check for LD template
             if ( get_post_type() == 'mptemplates' ) {
-                flush_rewrite_rules();
-                $url = '?page=mpbuilder-setup&title=' . $title . '&id=' . $post->ID;
-                wp_safe_redirect( $url );
+                $uuid = get_post_meta($post->ID, '_uuid', true);
+
+                if( ! $uuid) {
+                    flush_rewrite_rules();
+                    $url = '?page=mpbuilder-setup&title=' . $title . '&id=' . $post->ID;
+                    wp_safe_redirect( $url );
+                } else {
+                    wp_safe_redirect( $location );
+                }
             } else {
                 wp_safe_redirect( $location );
             }
