@@ -4,7 +4,7 @@
 Plugin Name: Location Domination
 Plugin URI: #
 Description: An iAutoM8 plugin designed to make mass page generating easy!
-Version: 1.47
+Version: 1.49
 Author: iAutoM8
 Author URI: https://i-autom8.com
 License: GPL2
@@ -14,7 +14,7 @@ if ( ! defined('WPINC') ){
 	die;
 }
 
-define( 'LOCATION_DOMINATION_VER', 1.47 );
+define( 'LOCATION_DOMINATION_VER', 1.49 );
 
 /*
  * Include the core classes

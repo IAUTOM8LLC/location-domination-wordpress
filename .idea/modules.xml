@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$USER_HOME$/Downloads/divi-builder/.idea/divi-builder.iml" filepath="$USER_HOME$/Downloads/divi-builder/.idea/divi-builder.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/location-domination.iml" filepath="$PROJECT_DIR$/.idea/location-domination.iml" />
     </modules>
   </component>

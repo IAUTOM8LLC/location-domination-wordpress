@@ -9,8 +9,6 @@ define( 'DCPT_PATH', plugin_dir_url( __FILE__ ) );
 
 class dynamic_cpt {
 	function __construct() {
-		// save custom post type
-		add_action( 'save_post', array( $this, 'cptSavePostData' ) );
 		// init dynamic custom post type
 		add_action( 'init', array( $this, 'initCustomPostType' ) );
 
@@ -19,8 +17,6 @@ class dynamic_cpt {
 
 		// add custom meta boxes for cpt
 		add_action( 'add_meta_boxes', array( $this, 'cpt_add_meta_boxes' ) );
-
-
 	}
 
 	function initCustomPostType() {
@@ -57,9 +53,12 @@ class dynamic_cpt {
 
 		register_post_type( 'mptemplates', $args );
 
-		$the_query = new WP_Query( array( 'post_type' => array( 'mptemplates' ), 'post_status' => 'publish' ) );
-		while ( $the_query->have_posts() ) : $the_query->the_post();
-			global $post;
+		$args = array( 'post_type' => array( 'mptemplates' ), 'post_status' => 'publish' );
+		$post_types = get_posts( $args );
+
+		foreach( $post_types as $post ):
+            setup_postdata($post);
+
 			//*************************get the values
 			$cp_public             = true;
 			$cp_publicly_queryable = true;
@@ -88,9 +87,7 @@ class dynamic_cpt {
 			$cp_not_found          = 'No ' . get_the_title( $post->ID ) . 's found';
 			$cp_not_found_in_trash = 'No ' . get_the_title( $post->ID ) . ' in trash';
 
-
 			$menu_name = wp_strip_all_tags( $post->post_title );
-			$post_type = $post->post_name;
 
 			$labels = array(
 				'name'               => $cp_general_name,
@@ -133,9 +130,9 @@ class dynamic_cpt {
 			$uuid = get_post_meta( $post->ID, '_uuid', true );
 
 			register_post_type( $uuid ?: $post->post_name, $args );
-
-		endwhile;
-	} // end dynamic custom post type init
+			wp_reset_postdata();
+		endforeach;
+    } // end dynamic custom post type init
 
 	function cpt_add_meta_boxes() {
 
@@ -177,15 +174,6 @@ class dynamic_cpt {
 			'shortcodeCustomBox',
 		), 'mptemplates', 'side' );
 
-	}
-
-
-	function cptSavePostData( $post_id ) {
-		global $post;
-	}
-
-	public function save_cpt() {
-//        pre_print( $_POST );
 	}
 }
 
