@@ -2,6 +2,7 @@
 
 namespace App\Api;
 
+use bjoernffm\Spintax\Parser;
 use WP_REST_Controller;
 
 /**
@@ -197,18 +198,39 @@ class PostCreation extends WP_REST_Controller {
         return $response;
     }
 
+    function preg_errtxt($errcode)
+    {
+        static $errtext;
+
+        if (!isset($errtxt))
+        {
+            $errtext = array();
+            $constants = get_defined_constants(true);
+            foreach ($constants['pcre'] as $c => $n) if (preg_match('/_ERROR$/', $c)) $errtext[$n] = $c;
+        }
+
+        return array_key_exists($errcode, $errtext)? $errtext[$errcode] : NULL;
+    }
+
     /**
      * @param $request
      *
      * @return mixed|\WP_Error|\WP_HTTP_Response|\WP_REST_Response
      */
     public function insert_posts( $request ) {
+        ini_set("pcre.jit", "0");
+
         if ( trim( get_option( 'mpb_api_key' ) ) === trim( $request->get_param( 'api_key' ) ) ) {
+            remove_filter('content_save_pre', 'wp_filter_post_kses');
+            remove_filter('content_filtered_save_pre', 'wp_filter_post_kses');
+
             ini_set( "memory_limit", - 1 );
             set_time_limit( 0 );
             ignore_user_abort( true );
 
-            if ( $request->get_param( 'template-slug' ) ) {
+            $template_slug = $request->get_param( 'template-slug' ) ?: sanitize_title_with_dashes($request->get_param('template'));
+
+            if ( $template_slug ) {
                 $args = array(
                     'name'        => $request->get_param( 'template-slug' ),
                     'post_type'   => 'mptemplates',
@@ -251,6 +273,11 @@ class PostCreation extends WP_REST_Controller {
                     ]);
                 }
             }
+            $content = $request->get_param('content');
+            $content = str_ireplace('<p>{</p>', '{', $content);
+            $content = str_ireplace('<p>}</p>', '}', $content);
+
+            $spintax = new \Spintax();
 
             foreach ( $request->get_param( 'records' ) as $record ) {
                 $city   = $record[ 'city' ];
@@ -259,61 +286,59 @@ class PostCreation extends WP_REST_Controller {
 
                 $title = $request->get_param( 'title' );
 
-                $title = str_replace( '[city]', $city, $title );
-                $title = str_replace( '[county]', $county, $title );
-                $title = str_replace( '[state]', $state, $title );
+                $title = str_ireplace( '[city]', $city, $title );
+                $title = str_ireplace( '[county]', $county, $title );
+                $title = str_ireplace( '[state]', $state, $title );
 
-                $spintax = new \Spintax();
 
                 $post = [
                     'post_type'    => $request->get_param( 'template-uuid' ),
-                    'post_title'   => $title,
-                    'post_content' => $spintax->process( $request->get_param( 'content' ) ),
+                    'post_title'   => $spintax->process($title),
+                    'post_content' => $spintax->process($content),
                     'post_status'  => 'publish'
                 ];
 
                 if ( $slug = $request->get_param( 'slug' ) ) {
-                    $slug = str_replace( '[city]', $city, $slug );
-                    $slug = str_replace( '[county]', $county, $slug );
-                    $slug = str_replace( '[state]', $state, $slug );
-                    $slug = str_replace( ' ', '-', $slug );
+                    $slug = str_ireplace( '[city]', $city, $slug );
+                    $slug = str_ireplace( '[county]', $county, $slug );
+                    $slug = str_ireplace( '[state]', $state, $slug );
+                    $slug = str_ireplace( ' ', '-', $slug );
 
                     $post[ 'post_name' ] = strtolower($slug);
                 }
 
                 if ( $meta_title = $request->get_param( 'meta_title' ) ) {
-                    $meta_title = str_replace( '[city]', $city, $meta_title );
-                    $meta_title = str_replace( '[county]', $county, $meta_title );
-                    $meta_title = str_replace( '[state]', $state, $meta_title );
+                    $meta_title = str_ireplace( '[city]', $city, $meta_title );
+                    $meta_title = str_ireplace( '[county]', $county, $meta_title );
+                    $meta_title = str_ireplace( '[state]', $state, $meta_title );
                 }
 
                 if ( $meta_description = $request->get_param( 'meta_description' ) ) {
-                    $meta_description = str_replace( '[city]', $city, $meta_description );
-                    $meta_description = str_replace( '[county]', $county, $meta_description );
-                    $meta_description = str_replace( '[state]', $state, $meta_description );
+                    $meta_description = str_ireplace( '[city]', $city, $meta_description );
+                    $meta_description = str_ireplace( '[county]', $county, $meta_description );
+                    $meta_description = str_ireplace( '[state]', $state, $meta_description );
                 }
 
                 if ( $job_title = $request->get_param( 'job_title' ) ) {
-                    $job_title = str_replace( '[city]', $city, $job_title );
-                    $job_title = str_replace( '[county]', $county, $job_title );
-                    $job_title = str_replace( '[state]', $state, $job_title );
+                    $job_title = str_ireplace( '[city]', $city, $job_title );
+                    $job_title = str_ireplace( '[county]', $county, $job_title );
+                    $job_title = str_ireplace( '[state]', $state, $job_title );
                 }
 
                 if ( $job_description = $request->get_param( 'job_description' ) ) {
-                    $job_description = str_replace( '[city]', $city, $job_description );
-                    $job_description = str_replace( '[county]', $county, $job_description );
-                    $job_description = str_replace( '[state]', $state, $job_description );
+                    $job_description = str_ireplace( '[city]', $city, $job_description );
+                    $job_description = str_ireplace( '[county]', $county, $job_description );
+                    $job_description = str_ireplace( '[state]', $state, $job_description );
                 }
 
                 if ( $schema = $request->get_param( 'schema' ) ) {
-                    $schema = str_replace( '[city]', $city, $schema );
-                    $schema = str_replace( '[county]', $county, $schema );
-                    $schema = str_replace( '[state]', $state, $schema );
+                    $schema = str_ireplace( '[city]', $city, $schema );
+                    $schema = str_ireplace( '[county]', $county, $schema );
+                    $schema = str_ireplace( '[state]', $state, $schema );
                 }
 
                 // Check if page already exists
                 $args = array(
-                    'name'        => isset( $slug ) && $slug ? $slug : sanitize_title( $title ),
                     'post_type'   => $request->get_param( 'template-uuid' ),
                     'post_status' => 'publish',
                     'numberposts' => 1,
@@ -364,11 +389,11 @@ class PostCreation extends WP_REST_Controller {
                     }
 
                     if ( isset( $meta_title ) && $meta_title ) {
-                        update_post_meta( $post_ID, '_yoast_wpseo_title', $meta_title );
+                        update_post_meta( $post_ID, '_yoast_wpseo_title', $spintax->process($meta_title) );
                     }
 
                     if ( isset( $meta_description ) && $meta_description ) {
-                        update_post_meta( $post_ID, '_yoast_wpseo_metadesc', $meta_description );
+                        update_post_meta( $post_ID, '_yoast_wpseo_metadesc', $spintax->process($meta_description) );
                     }
 
                     if ( isset( $job_title ) && $job_title ) {
@@ -381,6 +406,9 @@ class PostCreation extends WP_REST_Controller {
 //                update_post_meta( $post_ID, 'spun_content',  );
                 }
             }
+
+            add_filter('content_save_pre', 'wp_filter_post_kses');
+            add_filter('content_filtered_save_pre', 'wp_filter_post_kses');
         }
 
         $response = rest_ensure_response( [ 'success' => true ] );

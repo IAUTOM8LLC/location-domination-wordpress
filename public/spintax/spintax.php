@@ -12,7 +12,7 @@
 class Spintax {
     public function process( $text ) {
         return preg_replace_callback(
-            '/\{(((?>[^\{\}]+)|(?R))*?)\}/x',
+            '/\{(((?>[^\{\}]+)|(?R))*?)\}/xu',
             array( $this, 'replace' ),
             $text
         );

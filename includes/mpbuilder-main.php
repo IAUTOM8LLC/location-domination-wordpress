@@ -155,12 +155,19 @@ class mpbuilder_main {
 		$this->loader->add_action('wp_head', $public, 'mpbuilder_publish_schema');
 		$this->loader->add_action( 'init', $public, 'mpbuilder_flush_permalinks' );
 
-		add_shortcode( 'city', array( $public, 'get_city' ) );
-		add_shortcode( 'state', array( $public, 'get_state' ) );
-		add_shortcode( 'county', array( $public, 'get_county' ) );
+		foreach(['city', 'City', 'CITY'] as $shortcode) {
+		    add_shortcode($shortcode, array($public, 'get_city'));
+        }
+
+		foreach(['state', 'State', 'STATE'] as $shortcode) {
+		    add_shortcode($shortcode, array($public, 'get_state'));
+        }
+
+		foreach(['county', 'County', 'COUNTY'] as $shortcode) {
+		    add_shortcode($shortcode, array($public, 'get_county'));
+        }
+
 		add_shortcode( 'breadcrumb', array( $public, 'mpb_breadcrumb' ) );
-
-
 
 		/*
 		 * actions

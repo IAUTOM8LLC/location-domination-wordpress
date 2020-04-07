@@ -17,6 +17,20 @@ class mpbuilder_public {
 	    return $spun_content;
 	}
 
+    public function allow_iframe( $tags, $context ) {
+        if ( 'post' === $context ) {
+            $tags['iframe'] = array(
+                'src'             => true,
+                'height'          => true,
+                'width'           => true,
+                'frameborder'     => true,
+                'allowfullscreen' => true,
+            );
+        }
+
+        return $tags;
+    }
+
 	public function mpbuilder_flush_permalinks() {
 	    if ( $flush = get_option( 'mpb_flush_permalinks' ) ) {
 	        if ( $flush && (int) $flush === 1 ) {
