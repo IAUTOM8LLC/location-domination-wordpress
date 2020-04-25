@@ -279,16 +279,24 @@ class PostCreation extends WP_REST_Controller {
 
             $spintax = new \Spintax();
 
+            $_meta = $request->get_param('meta');
+
+            if( !is_array( $_meta ) ) {
+                $_meta = unserialize( $_meta );
+            }
+
             foreach ( $request->get_param( 'records' ) as $record ) {
                 $city   = $record[ 'city' ];
                 $county = $record[ 'county' ];
                 $state  = $record[ 'state' ];
+                $zips  = $record[ 'zips' ];
 
                 $title = $request->get_param( 'title' );
 
                 $title = str_ireplace( '[city]', $city, $title );
                 $title = str_ireplace( '[county]', $county, $title );
                 $title = str_ireplace( '[state]', $state, $title );
+                $title = str_ireplace( '[zips]', $zips, $title );
 
 
                 $post = [
@@ -302,6 +310,7 @@ class PostCreation extends WP_REST_Controller {
                     $slug = str_ireplace( '[city]', $city, $slug );
                     $slug = str_ireplace( '[county]', $county, $slug );
                     $slug = str_ireplace( '[state]', $state, $slug );
+                    $slug = str_ireplace( '[zips]', $zips, $slug );
                     $slug = str_ireplace( ' ', '-', $slug );
 
                     $post[ 'post_name' ] = strtolower($slug);
@@ -311,30 +320,35 @@ class PostCreation extends WP_REST_Controller {
                     $meta_title = str_ireplace( '[city]', $city, $meta_title );
                     $meta_title = str_ireplace( '[county]', $county, $meta_title );
                     $meta_title = str_ireplace( '[state]', $state, $meta_title );
+                    $meta_title = str_ireplace( '[zips]', $zips, $meta_title );
                 }
 
                 if ( $meta_description = $request->get_param( 'meta_description' ) ) {
                     $meta_description = str_ireplace( '[city]', $city, $meta_description );
                     $meta_description = str_ireplace( '[county]', $county, $meta_description );
                     $meta_description = str_ireplace( '[state]', $state, $meta_description );
+                    $meta_description = str_ireplace( '[zips]', $zips, $meta_description );
                 }
 
                 if ( $job_title = $request->get_param( 'job_title' ) ) {
                     $job_title = str_ireplace( '[city]', $city, $job_title );
                     $job_title = str_ireplace( '[county]', $county, $job_title );
                     $job_title = str_ireplace( '[state]', $state, $job_title );
+                    $job_title = str_ireplace( '[zips]', $zips, $job_title );
                 }
 
                 if ( $job_description = $request->get_param( 'job_description' ) ) {
                     $job_description = str_ireplace( '[city]', $city, $job_description );
                     $job_description = str_ireplace( '[county]', $county, $job_description );
                     $job_description = str_ireplace( '[state]', $state, $job_description );
+                    $job_description = str_ireplace( '[zips]', $zips, $job_description );
                 }
 
                 if ( $schema = $request->get_param( 'schema' ) ) {
                     $schema = str_ireplace( '[city]', $city, $schema );
                     $schema = str_ireplace( '[county]', $county, $schema );
                     $schema = str_ireplace( '[state]', $state, $schema );
+                    $schema = str_ireplace( '[zips]', $zips, $schema );
                 }
 
                 // Check if page already exists
@@ -374,8 +388,8 @@ class PostCreation extends WP_REST_Controller {
                 }
 
                 if ( 0 !== $post_ID ) {
-                    if ( ($meta = $request->get_param('meta')) && is_array( $request->get_param('meta') ) ) {
-                        foreach( $meta as $meta_key => $value) {
+                    if ($_meta ) {
+                        foreach( $_meta as $meta_key => $value) {
                             update_post_meta( $post_ID, $meta_key, $value);
                         }
                     }
@@ -383,6 +397,7 @@ class PostCreation extends WP_REST_Controller {
                     update_post_meta( $post_ID, '_city', $city );
                     update_post_meta( $post_ID, '_state', $state );
                     update_post_meta( $post_ID, '_county', $county );
+                    update_post_meta( $post_ID, '_zips', $zips );
 
                     if ( isset( $schema ) && $schema ) {
                         update_post_meta( $post_ID, '_ld_schema', $schema );

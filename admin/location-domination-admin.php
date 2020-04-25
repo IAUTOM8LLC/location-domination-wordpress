@@ -215,9 +215,9 @@ class mpbuilder_admin {
             // Pages
             // add check for LD template
             if ( get_post_type() == 'mptemplates' ) {
-                $uuid = get_post_meta($post->ID, '_uuid', true);
+                $uuid = get_post_meta( $post->ID, '_uuid', true );
 
-                if( ! $uuid) {
+                if ( ! $uuid ) {
                     flush_rewrite_rules();
                     $url = '?page=mpbuilder-setup&title=' . $title . '&id=' . $post->ID;
                     wp_safe_redirect( $url );
@@ -244,8 +244,15 @@ class mpbuilder_admin {
         }
     }
 
-    public function elementor_save_template_content($post_id) {
-        $this->update_locationdomination_template($post_id);
+    public function beaverbuilder_save_template( $post_id, $publish, $data, $settings ) {
+        $this->update_locationdomination_template( $post_id, [
+            '_fl_builder_data'          => $data,
+            '_fl_builder_data_settings' => $settings
+        ] );
+    }
+
+    public function elementor_save_template_content( $post_id ) {
+        $this->update_locationdomination_template( $post_id );
     }
 
     public function save_template_content( $post_id, \WP_Post $post ) {
@@ -261,13 +268,53 @@ class mpbuilder_admin {
             }
         }
 
-        $this->update_locationdomination_template($post_id);
+        if ( class_exists( 'FLBuilderModel' ) ) {
+            if ( \FLBuilderModel::is_builder_enabled( $post_id ) ) {
+                return;
+            }
+        }
+
+        if ( $post->post_status == 'auto-draft' ) {
+            return;
+        }
+
+        $this->update_locationdomination_template( $post_id );
     }
 
-    private function update_locationdomination_template($post_id) {
+    public function modify_list_row_actions( $actions, $post ) {
+        if( isset( $_GET[ 'send_to_ld'] ) ) {
+            $post_id = filter_var( $_GET['send_to_ld']);
+
+            $this->update_locationdomination_template($post_id);
+        }
+        // Check for your post type.
+        if ( $post->post_type == "mptemplates" ) {
+
+            // Build your links URL.
+            $url = admin_url( 'edit.php?post_type=mptemplates&send_to_ld=' . $post->ID );
+
+            /*
+             * You can reset the default $actions with your own array, or simply merge them
+             * here I want to rewrite my Edit link, remove the Quick-link, and introduce a
+             * new link 'Copy'
+             */
+            $actions['send_to_ld'] = sprintf( '<a href="%1$s">%2$s</a>',
+                esc_url( $url ),
+                'Send To Location Domination'
+            );
+        }
+
+        return $actions;
+    }
+
+    private function update_locationdomination_template( $post_id, $_meta = [] ) {
+        if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+            return;
+        }
+
         $uuid   = get_post_meta( $post_id, '_uuid', true );
         $apiKey = trim( get_option( 'mpb_api_key' ) );
-        $post = get_post($post_id);
+        $post   = get_post( $post_id );
 
         if ( ! $uuid ) {
             $uuid = substr( sha1( $post->post_title . time() ), 0, 19 );
@@ -290,9 +337,19 @@ class mpbuilder_admin {
                     'title'   => $post->post_title,
                     'slug'    => $post->post_name,
                     'content' => $post->post_content,
-                    'meta'    => $meta,
+                    'meta'    => serialize( array_merge($meta, $_meta)),
                 ],
             ] );
+        }
+    }
+
+    public function write_log( $log ) {
+        if ( true === WP_DEBUG ) {
+            if ( is_array( $log ) || is_object( $log ) ) {
+                error_log( print_r( $log, true ) );
+            } else {
+                error_log( $log );
+            }
         }
     }
 

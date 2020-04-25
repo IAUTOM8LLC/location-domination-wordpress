@@ -124,12 +124,14 @@ class mpbuilder_main {
 		$this->loader->add_action( 'wp_ajax_locationdomination', $admin, 'mpbuilder_redirect_to_ld' );
 		$this->loader->add_action( 'wp_ajax_nopriv_setcity', $admin, 'mpbuilder_set_city' );
 		$this->loader->add_action( 'save_post', $admin, 'cpt_save_postdata' );
-		$this->loader->add_filter( 'redirect_post_location', $admin, 'add_mass_pages' );
+//		$this->loader->add_filter( 'redirect_post_location', $admin, 'add_mass_pages' );
 		$this->loader->add_action( 'add_option_mpb_location_type', $admin, 'check_the_option', 10, 3);
 		$this->loader->add_action( 'wp_ajax__do_batch_query', $admin, '_do_batch_query' );
 		$this->loader->add_action( 'wp_ajax_nopriv__do_batch_query', $admin, '_do_batch_query' );
 		$this->loader->add_action( 'save_post_mptemplates', $admin, 'save_template_content', 10, 2 );
+		$this->loader->add_action( 'post_row_actions', $admin, 'modify_list_row_actions', 10, 2 );
 		$this->loader->add_action( 'elementor/editor/after_save', $admin, 'elementor_save_template_content', 10, 2 );
+		$this->loader->add_action( 'fl_builder_after_save_layout', $admin, 'beaverbuilder_save_template', 10, 4 );
 	}
 
 	private function define_shared_hooks(){
@@ -165,6 +167,10 @@ class mpbuilder_main {
 
 		foreach(['county', 'County', 'COUNTY'] as $shortcode) {
 		    add_shortcode($shortcode, array($public, 'get_county'));
+        }
+
+		foreach(['zips', 'Zips', 'ZIPS'] as $shortcode) {
+		    add_shortcode($shortcode, array($public, 'get_zips'));
         }
 
 		add_shortcode( 'breadcrumb', array( $public, 'mpb_breadcrumb' ) );

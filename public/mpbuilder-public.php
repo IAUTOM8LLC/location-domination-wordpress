@@ -86,6 +86,11 @@ class mpbuilder_public {
 		return $county;
 	}
 
+	public function get_zips(  ) {
+		$zips = get_post_meta( get_the_ID(), '_zips', true );
+		return str_replace(',', ', ', $zips);
+	}
+
 	public function mpb_breadcrumb(){
 		$state = get_post_meta( get_the_ID(), '_state', true );
 		$county = get_post_meta( get_the_ID(), '_county', true );

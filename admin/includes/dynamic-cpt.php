@@ -12,9 +12,6 @@ class dynamic_cpt {
 		// init dynamic custom post type
 		add_action( 'init', array( $this, 'initCustomPostType' ) );
 
-		//save custom post types
-		add_action( 'save_post', array( $this, 'save_cpt' ) );
-
 		// add custom meta boxes for cpt
 		add_action( 'add_meta_boxes', array( $this, 'cpt_add_meta_boxes' ) );
 	}
