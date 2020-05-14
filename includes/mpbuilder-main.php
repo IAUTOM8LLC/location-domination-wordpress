@@ -184,6 +184,9 @@ class mpbuilder_main {
 		    add_shortcode($shortcode, array($public, 'get_country'));
         }
 
+
+        add_filter( 'comments_open', array($public, 'spintax_comments_open'), 10 , 2 );
+
 		add_shortcode( 'breadcrumb', array( $public, 'mpb_breadcrumb' ) );
 
 		/*

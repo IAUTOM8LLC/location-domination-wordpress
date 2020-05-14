@@ -17,6 +17,31 @@ class mpbuilder_public {
 	    return $spun_content;
 	}
 
+    public function spintax_comments_open( $open, $post_id ) {
+        $post_type_query = new \WP_Query(
+            array(
+                'post_type'      => 'mptemplates',
+                'posts_per_page' => - 1
+            )
+        );
+
+        $posts_array      = $post_type_query->posts;
+        $post_types = [];
+
+        foreach ( $posts_array as $post ) {
+            $post_types[] = get_post_meta( $post->ID, '_uuid', true );
+        }
+
+        $post_type = get_post_type( $post_id );
+
+        // allow comments for built-in "post" post type
+        if ( in_array( $post_type, $post_types ) ) {
+            return false;
+        }
+        // disable comments for any other post types
+        return true;
+    }
+
     public function allow_iframe( $tags, $context ) {
         if ( 'post' === $context ) {
             $tags['iframe'] = array(
