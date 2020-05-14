@@ -68,10 +68,70 @@ class mpbuilder_public {
 		return $html;
 	}
 
+	public function page_list($atts) {
+	    global $post;
+
+	    if ( is_admin() || ! $post ) {
+	        return;
+        }
+
+        $a = shortcode_atts( array(
+            'region' => null,
+            'country' => null,
+        ), $atts );
+
+	    $search = array(
+            'key'     => '_region',
+            'value'   => esc_attr($a['region']),
+            'compare' => '=',
+        );
+
+	    if ( $a['country'] ) {
+	        $search = array(
+                'key'     => '_region_index',
+                'value'   => esc_attr($a['country']),
+                'compare' => '=',
+            );
+        }
+
+        $args = array(
+            'post_type' => $post->post_type,
+            'post_status' => 'publish',
+            'numberposts' => -1,
+            'meta_query' => array(
+                'relation' => 'AND',
+                $search,
+            )
+        );
+
+        $posts_in_region = get_posts( $args );
+
+        echo '<ul>';
+        foreach ( $posts_in_region as $post ) {
+            $city = get_post_meta( $post->ID, '_city', true );
+            $title = sprintf('%s, %s', $city, esc_attr($a['region']));
+
+            echo '<li><a href="' . get_permalink($post) . '">' . $title . '</a></li>';
+        }
+        echo '</ul>';
+	}
+
 	public function get_city() {
 		$city = get_post_meta( get_the_ID(), '_city', true );
 
 		return $city;
+	}
+
+	public function get_region() {
+		$region = get_post_meta( get_the_ID(), '_region', true );
+
+		return $region;
+	}
+
+	public function get_country() {
+		$country = get_post_meta( get_the_ID(), '_country', true );
+
+		return $country;
 	}
 
 

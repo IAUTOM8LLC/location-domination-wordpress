@@ -204,8 +204,15 @@ class mpbuilder_admin {
                 $_POST[ '_service_description' ]
             );
         }
+    }
 
-
+    public function add_upgrade_message() {
+        if ( LOCATION_DOMINATION_VER === 1.56 ) {
+            echo '<div class="notice notice-warning is-dismissible">
+               <h3>Location Domination Upgrade Notice</h3>
+             <p>We have recently made several updates to our plugin (and continue to!) In order to make sure that your post requests will continue to work, please head to the "Mass Page Templates" and click "Send To Location Domination" before you create a new post request or re-build an existing one.</p>
+         </div>';
+        }
     }
 
     public function add_mass_pages( $location ) {
@@ -325,19 +332,33 @@ class mpbuilder_admin {
         if ( $uuid ) {
             $restUrl = 'https://locationdomination.net/api/website/' . $apiKey . '/template/' . $uuid;
 
-            $meta = [];
+            $duplicate = get_post( $post_id, 'ARRAY_A' );
 
-            foreach ( get_post_meta( $post_id ) as $meta_key => $value ) {
-                $value             = get_post_meta( $post_id, $meta_key, true );
-                $meta[ $meta_key ] = $value;
+            unset( $duplicate[ 'ID' ] );
+            unset( $duplicate[ 'guid' ] );
+            unset( $duplicate[ 'comment_count' ] );
+
+            $terms = [];
+            $meta  = [];
+
+            // taxonomies
+            $taxonomies = get_object_taxonomies( $duplicate[ 'post_type' ] );
+
+            foreach ( $taxonomies as $taxonomy ) {
+                $terms[$taxonomy] = wp_get_post_terms( $post_id, $taxonomy, [ 'fields' => 'names' ] );
             }
 
-            wp_remote_post( $restUrl, [
+            // Custom fields
+            $custom_fields = get_post_custom( $post_id );
+
+            $r = wp_remote_post( $restUrl, [
                 'body' => [
-                    'title'   => $post->post_title,
-                    'slug'    => $post->post_name,
-                    'content' => $post->post_content,
-                    'meta'    => serialize( array_merge($meta, $_meta)),
+                    'title'      => $post->post_title,
+                    'slug'       => $post->post_name,
+                    'content'    => $post->post_content,
+                    'meta'       => base64_encode( serialize( $custom_fields ) ),
+                    'taxonomies' => base64_encode( serialize( $terms ) ),
+                    'full_post'  => base64_encode( serialize( $duplicate ) ),
                 ],
             ] );
         }

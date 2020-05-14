@@ -3,6 +3,8 @@
 namespace App\Api;
 
 use bjoernffm\Spintax\Parser;
+use MadeITBelgium\Spintax\Spintax;
+use MadeITBelgium\Spintax\SpintaxFacade;
 use WP_REST_Controller;
 
 /**
@@ -14,6 +16,8 @@ class PostCreation extends WP_REST_Controller {
      * @var string
      */
     protected $namespace = "location-domination/v1";
+
+    protected $spintax;
 
     /**
      * Register the routes
@@ -54,6 +58,19 @@ class PostCreation extends WP_REST_Controller {
                 array(
                     'methods'             => \WP_REST_Server::CREATABLE,
                     'callback'            => array( $this, 'insert_posts' ),
+                    'permission_callback' => array( $this, 'get_items_permissions_check' ),
+                    'args'                => $this->get_collection_params(),
+                )
+            )
+        );
+
+        register_rest_route(
+            $this->namespace,
+            '/insert-indexes',
+            array(
+                array(
+                    'methods'             => \WP_REST_Server::CREATABLE,
+                    'callback'            => array( $this, 'insert_indexes' ),
                     'permission_callback' => array( $this, 'get_items_permissions_check' ),
                     'args'                => $this->get_collection_params(),
                 )
@@ -212,12 +229,79 @@ class PostCreation extends WP_REST_Controller {
         return array_key_exists($errcode, $errtext)? $errtext[$errcode] : NULL;
     }
 
+    public function meta_array_crawler($i) {
+        $spinner = $this->spintax;
+
+        if ( is_int( $i ) || is_float( $i ) || is_bool( $i ) || strlen($i) < 10 ) {
+            return $i;
+        }
+
+        // Check for serilizations
+        if ( is_serialized( $i ) ) {
+            $unserialized = unserialize($i);
+
+            if ( is_array( $unserialized ) || is_object( $unserialized ) ) {
+                return array_map_recursive( (array) $unserialized, function($item) {
+                    return $this->meta_array_crawler($item);
+                });
+            }
+
+            return $unserialized;
+        }
+
+        if ( is_json( $i ) ) {
+            $unserialized = json_decode($i, true);
+
+            if ( is_array( $unserialized ) || is_object( $unserialized ) ) {
+                return array_map_recursive( $unserialized, function ( $item ) {
+                    return $this->meta_array_crawler( $item );
+                } );
+            }
+
+            return $unserialized;
+        }
+
+        return $spinner->process($i);
+    }
+
+    public function meta_spinner($meta, $post_ID) {
+        global $wpdb;
+
+        foreach ( $meta as $key => $value ) {
+            if( is_array($value) && count($value) > 0 ) {
+                foreach( $value as $i=>$v ) {
+                    if ( is_string( $v ) ) {
+                        // Check for serilizations
+                        $value = $this->meta_array_crawler($v);
+                        $prepped_value = null;
+
+                        if ( is_serialized($v)) {
+                           $prepped_value = serialize($value);
+                        }
+
+                        if ( is_json($v)) {
+                           $prepped_value = json_encode($value);
+                        }
+
+                        $wpdb->insert( $wpdb->prefix.'postmeta', array(
+                            'post_id' => $post_ID,
+                            'meta_key' => $key,
+                            'meta_value' => $prepped_value ?: $value,
+                        ));
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * @param $request
      *
      * @return mixed|\WP_Error|\WP_HTTP_Response|\WP_REST_Response
      */
     public function insert_posts( $request ) {
+        global $wpdb;
+
         ini_set("pcre.jit", "0");
 
         if ( trim( get_option( 'mpb_api_key' ) ) === trim( $request->get_param( 'api_key' ) ) ) {
@@ -277,12 +361,18 @@ class PostCreation extends WP_REST_Controller {
             $content = str_ireplace('<p>{</p>', '{', $content);
             $content = str_ireplace('<p>}</p>', '}', $content);
 
-            $spintax = new \Spintax();
+            $this->spintax = new \Spintax();
 
             $_meta = $request->get_param('meta');
+            $taxonomies = $request->get_param('taxonomies');
+            $full_post = $request->get_param('full_post');
 
             if( !is_array( $_meta ) ) {
-                $_meta = unserialize( $_meta );
+                $_meta = unserialize( base64_decode( $_meta ) );
+            }
+
+            if( !is_array( $taxonomies ) ) {
+                $taxonomies = unserialize( base64_decode( $taxonomies ) );
             }
 
             foreach ( $request->get_param( 'records' ) as $record ) {
@@ -290,6 +380,9 @@ class PostCreation extends WP_REST_Controller {
                 $county = $record[ 'county' ];
                 $state  = $record[ 'state' ];
                 $zips  = $record[ 'zips' ];
+                $region = isset($record['region']) ? $record['region'] : '';
+                $country = $record['country'];
+                $meta = $_meta;
 
                 $title = $request->get_param( 'title' );
 
@@ -297,12 +390,14 @@ class PostCreation extends WP_REST_Controller {
                 $title = str_ireplace( '[county]', $county, $title );
                 $title = str_ireplace( '[state]', $state, $title );
                 $title = str_ireplace( '[zips]', $zips, $title );
+                $title = str_ireplace( '[region]', $region, $title );
+                $title = str_ireplace( '[country]', $country, $title );
 
 
                 $post = [
                     'post_type'    => $request->get_param( 'template-uuid' ),
-                    'post_title'   => $spintax->process($title),
-                    'post_content' => $spintax->process($content),
+                    'post_title'   => $this->spintax->process($title),
+                    'post_content' => $this->spintax->process( $request->get_param('content') ),
                     'post_status'  => 'publish'
                 ];
 
@@ -311,6 +406,8 @@ class PostCreation extends WP_REST_Controller {
                     $slug = str_ireplace( '[county]', $county, $slug );
                     $slug = str_ireplace( '[state]', $state, $slug );
                     $slug = str_ireplace( '[zips]', $zips, $slug );
+                    $slug = str_ireplace( '[region]', $region, $slug );
+                    $slug = str_ireplace( '[country]', $country, $slug );
                     $slug = str_ireplace( ' ', '-', $slug );
 
                     $post[ 'post_name' ] = strtolower($slug);
@@ -321,6 +418,8 @@ class PostCreation extends WP_REST_Controller {
                     $meta_title = str_ireplace( '[county]', $county, $meta_title );
                     $meta_title = str_ireplace( '[state]', $state, $meta_title );
                     $meta_title = str_ireplace( '[zips]', $zips, $meta_title );
+                    $meta_title = str_ireplace( '[region]', $region, $meta_title );
+                    $meta_title = str_ireplace( '[country]', $country, $meta_title );
                 }
 
                 if ( $meta_description = $request->get_param( 'meta_description' ) ) {
@@ -328,6 +427,8 @@ class PostCreation extends WP_REST_Controller {
                     $meta_description = str_ireplace( '[county]', $county, $meta_description );
                     $meta_description = str_ireplace( '[state]', $state, $meta_description );
                     $meta_description = str_ireplace( '[zips]', $zips, $meta_description );
+                    $meta_description = str_ireplace( '[country]', $country, $meta_description );
+                    $meta_description = str_ireplace( '[region]', $region, $meta_description );
                 }
 
                 if ( $job_title = $request->get_param( 'job_title' ) ) {
@@ -335,6 +436,8 @@ class PostCreation extends WP_REST_Controller {
                     $job_title = str_ireplace( '[county]', $county, $job_title );
                     $job_title = str_ireplace( '[state]', $state, $job_title );
                     $job_title = str_ireplace( '[zips]', $zips, $job_title );
+                    $job_title = str_ireplace( '[region]', $region, $job_title );
+                    $job_title = str_ireplace( '[country]', $country, $job_title );
                 }
 
                 if ( $job_description = $request->get_param( 'job_description' ) ) {
@@ -342,6 +445,8 @@ class PostCreation extends WP_REST_Controller {
                     $job_description = str_ireplace( '[county]', $county, $job_description );
                     $job_description = str_ireplace( '[state]', $state, $job_description );
                     $job_description = str_ireplace( '[zips]', $zips, $job_description );
+                    $job_description = str_ireplace( '[region]', $region, $job_description );
+                    $job_description = str_ireplace( '[country]', $country, $job_description );
                 }
 
                 if ( $schema = $request->get_param( 'schema' ) ) {
@@ -349,6 +454,8 @@ class PostCreation extends WP_REST_Controller {
                     $schema = str_ireplace( '[county]', $county, $schema );
                     $schema = str_ireplace( '[state]', $state, $schema );
                     $schema = str_ireplace( '[zips]', $zips, $schema );
+                    $schema = str_ireplace( '[country]', $country, $schema );
+                    $schema = str_ireplace( '[region]', $region, $schema );
                 }
 
                 // Check if page already exists
@@ -387,36 +494,90 @@ class PostCreation extends WP_REST_Controller {
                     $post_ID = wp_insert_post( $post );
                 }
 
+                $post = get_post($post_ID, 'ARRAY');
+
                 if ( 0 !== $post_ID ) {
-                    if ($_meta ) {
-                        foreach( $_meta as $meta_key => $value) {
-                            update_post_meta( $post_ID, $meta_key, $value);
+                    // Delete all existing meta for page
+                    $wpdb->delete( $wpdb->prefix.'postmeta', [
+                        'post_id' => $post_ID
+                    ]);
+
+                    $this->meta_spinner($meta, $post_ID);
+
+                    if ( $taxonomies ) {
+                        foreach ( $taxonomies as $taxonomy => $terms ) {
+                            wp_set_object_terms( $post_ID, $terms, $taxonomy );
                         }
                     }
 
-                    update_post_meta( $post_ID, '_city', $city );
-                    update_post_meta( $post_ID, '_state', $state );
-                    update_post_meta( $post_ID, '_county', $county );
-                    update_post_meta( $post_ID, '_zips', $zips );
+                    $wpdb->insert( $wpdb->prefix.'postmeta', [
+                        'post_id' => $post_ID,
+                        'meta_key' => '_city',
+                        'meta_value' => $city,
+                    ]);
+
+                    $wpdb->insert( $wpdb->prefix.'postmeta', [
+                        'post_id' => $post_ID,
+                        'meta_key' => '_state',
+                        'meta_value' => $state,
+                    ]);
+
+                    $wpdb->insert( $wpdb->prefix.'postmeta', [
+                        'post_id' => $post_ID,
+                        'meta_key' => '_county',
+                        'meta_value' => $county,
+                    ]);
+
+                    $wpdb->insert( $wpdb->prefix.'postmeta', [
+                        'post_id' => $post_ID,
+                        'meta_key' => '_zips',
+                        'meta_value' => $zips,
+                    ]);
+
+                    $wpdb->insert( $wpdb->prefix.'postmeta', [
+                        'post_id' => $post_ID,
+                        'meta_key' => '_region',
+                        'meta_value' => $region,
+                    ]);
 
                     if ( isset( $schema ) && $schema ) {
-                        update_post_meta( $post_ID, '_ld_schema', $schema );
+                        $wpdb->insert( $wpdb->prefix.'postmeta', [
+                            'post_id' => $post_ID,
+                            'meta_key' => '_ld_schema',
+                            'meta_value' => $schema,
+                        ]);
                     }
 
                     if ( isset( $meta_title ) && $meta_title ) {
-                        update_post_meta( $post_ID, '_yoast_wpseo_title', $spintax->process($meta_title) );
+                        $wpdb->insert( $wpdb->prefix.'postmeta', [
+                            'post_id' => $post_ID,
+                            'meta_key' => '_yoast_wpseo_title',
+                            'meta_value' => $this->spintax->process($meta_title),
+                        ]);
                     }
 
                     if ( isset( $meta_description ) && $meta_description ) {
-                        update_post_meta( $post_ID, '_yoast_wpseo_metadesc', $spintax->process($meta_description) );
+                        $wpdb->insert( $wpdb->prefix.'postmeta', [
+                            'post_id' => $post_ID,
+                            'meta_key' => '_yoast_wpseo_metadesc',
+                            'meta_value' =>  $this->spintax->process($meta_description),
+                        ]);
                     }
 
                     if ( isset( $job_title ) && $job_title ) {
-                        update_post_meta( $post_ID, '_ld_job_title', $job_title );
+                        $wpdb->insert( $wpdb->prefix.'postmeta', [
+                            'post_id' => $post_ID,
+                            'meta_key' => '_ld_job_title',
+                            'meta_value' => $job_title,
+                        ]);
                     }
 
                     if ( isset( $job_description ) && $job_description ) {
-                        update_post_meta( $post_ID, '_ld_job_description', $job_description );
+                        $wpdb->insert( $wpdb->prefix.'postmeta', [
+                            'post_id' => $post_ID,
+                            'meta_key' => '_ld_job_description',
+                            'meta_value' => $job_description,
+                        ]);
                     }
 //                update_post_meta( $post_ID, 'spun_content',  );
                 }
@@ -424,6 +585,66 @@ class PostCreation extends WP_REST_Controller {
 
             add_filter('content_save_pre', 'wp_filter_post_kses');
             add_filter('content_filtered_save_pre', 'wp_filter_post_kses');
+        }
+
+        $response = rest_ensure_response( [ 'success' => true ] );
+
+        return $response;
+    }
+
+    /**
+     * @param $request
+     *
+     * @return mixed|\WP_Error|\WP_HTTP_Response|\WP_REST_Response
+     */
+    public function insert_indexes( $request ) {
+        ini_set("pcre.jit", "0");
+
+        if ( trim( get_option( 'mpb_api_key' ) ) === trim( $request->get_param( 'api_key' ) ) ) {
+            ini_set( "memory_limit", - 1 );
+            set_time_limit( 0 );
+            ignore_user_abort( true );
+
+            foreach ( $request->get_param('records') as $record) {
+                $args = array(
+                    'post_type'   => $request->get_param( 'template-uuid' ),
+                    'post_title' => $record['region'],
+                    'post_status' => 'publish',
+                    'numberposts' => 1,
+                );
+
+                $matched_post = get_posts( $args );
+
+                if ( !$matched_post ) {
+                    $post_ID = wp_insert_post([
+                        'post_type' => $request->get_param( 'template-uuid' ),
+                        'post_title' => $record['region'],
+                        'post_status' => 'publish',
+                        'post_content' => sprintf('[internal_links region="%s"]', $record['region']),
+                    ]);
+
+                    update_post_meta( $post_ID, '_region_index', $record['country']);
+                }
+            }
+
+            // for country
+            $args = array(
+                'post_type'   => $request->get_param( 'template-uuid' ),
+                'post_title' => $record['country'],
+                'post_status' => 'publish',
+                'numberposts' => 1,
+            );
+
+            $matched_post = get_posts( $args );
+
+            if ( !$matched_post ) {
+                wp_insert_post( [
+                    'post_type'    => $request->get_param( 'template-uuid' ),
+                    'post_title'   => $record[ 'country' ],
+                    'post_status'  => 'publish',
+                    'post_content' => sprintf( '[internal_links country="%s"]', $record[ 'country' ] ),
+                ] );
+            }
         }
 
         $response = rest_ensure_response( [ 'success' => true ] );

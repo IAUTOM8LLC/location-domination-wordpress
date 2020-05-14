@@ -4,7 +4,7 @@
 Plugin Name: Location Domination
 Plugin URI: #
 Description: An iAutoM8 plugin designed to make mass page generating easy!
-Version: 1.53
+Version: 1.56
 Author: iAutoM8
 Author URI: https://i-autom8.com
 License: GPL2
@@ -14,7 +14,7 @@ if ( ! defined('WPINC') ){
 	die;
 }
 
-define( 'LOCATION_DOMINATION_VER', 1.53 );
+define( 'LOCATION_DOMINATION_VER', 1.56 );
 
 /*
  * Include the core classes
@@ -32,6 +32,22 @@ $myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
 );
 
 $myUpdateChecker->setBranch('stable' );
+
+// Helper
+if ( ! function_exists( 'array_map_recursive' ) ) {
+    function array_map_recursive($arr, $fn) {
+        return array_map(function($item) use($fn){
+            return is_array($item) ? array_map_recursive( $item, $fn ) : $fn($item);
+        }, $arr);
+    }
+}
+
+if ( ! function_exists( 'is_json' ) ) {
+    function is_json($string) {
+        json_decode($string);
+        return (json_last_error() == JSON_ERROR_NONE);
+    }
+}
 
 require_once plugin_dir_path(__FILE__ ) . '/includes/mpbuilder-main.php';
 

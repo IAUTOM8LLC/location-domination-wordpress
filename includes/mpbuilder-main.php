@@ -124,6 +124,7 @@ class mpbuilder_main {
 		$this->loader->add_action( 'wp_ajax_locationdomination', $admin, 'mpbuilder_redirect_to_ld' );
 		$this->loader->add_action( 'wp_ajax_nopriv_setcity', $admin, 'mpbuilder_set_city' );
 		$this->loader->add_action( 'save_post', $admin, 'cpt_save_postdata' );
+		$this->loader->add_action( 'admin_notices', $admin, 'add_upgrade_message' );
 //		$this->loader->add_filter( 'redirect_post_location', $admin, 'add_mass_pages' );
 		$this->loader->add_action( 'add_option_mpb_location_type', $admin, 'check_the_option', 10, 3);
 		$this->loader->add_action( 'wp_ajax__do_batch_query', $admin, '_do_batch_query' );
@@ -157,6 +158,8 @@ class mpbuilder_main {
 		$this->loader->add_action('wp_head', $public, 'mpbuilder_publish_schema');
 		$this->loader->add_action( 'init', $public, 'mpbuilder_flush_permalinks' );
 
+		add_shortcode('internal_links', array($public, 'page_list'));
+
 		foreach(['city', 'City', 'CITY'] as $shortcode) {
 		    add_shortcode($shortcode, array($public, 'get_city'));
         }
@@ -171,6 +174,14 @@ class mpbuilder_main {
 
 		foreach(['zips', 'Zips', 'ZIPS'] as $shortcode) {
 		    add_shortcode($shortcode, array($public, 'get_zips'));
+        }
+
+		foreach(['region', 'Region', 'REGION'] as $shortcode) {
+		    add_shortcode($shortcode, array($public, 'get_region'));
+        }
+
+		foreach(['country', 'Country', 'COUNTRY'] as $shortcode) {
+		    add_shortcode($shortcode, array($public, 'get_country'));
         }
 
 		add_shortcode( 'breadcrumb', array( $public, 'mpb_breadcrumb' ) );

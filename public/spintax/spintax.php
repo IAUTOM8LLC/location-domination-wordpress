@@ -22,7 +22,7 @@ class Spintax {
         $text  = $this->process( $text[ 1 ] );
         $parts = explode( '|', $text );
 
-        return $parts[ array_rand( $parts ) ];
+        return $parts[ mt_rand(0, count($parts) - 1) ];
     }
 }
 
