@@ -153,6 +153,23 @@ class mpbuilder_public {
 		return $region;
 	}
 
+	public function get_map() {
+        $country = get_post_meta( get_the_ID(), '_country', true );
+        $region = get_post_meta( get_the_ID(), '_region', true );
+        $city = get_post_meta( get_the_ID(), '_city', true );
+        $county = get_post_meta( get_the_ID(), '_county', true );
+
+        if ( $city && $county ) {
+            $query = sprintf('%s, %s, United States', $city, $county );
+        } else {
+            $query = sprintf( '%s, %s', $city, $region, $country );
+        }
+
+		if ( $query && trim( $query ) !== ',' ) {
+		    return sprintf('<iframe width="400" height="300" src="https://maps.google.com/maps?width=400&height=300&hl=en&q=%s&ie=UTF8&t=&z=14&iwloc=B&output=embed" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe>', urlencode($query));
+        }
+	}
+
 	public function get_country() {
 		$country = get_post_meta( get_the_ID(), '_country', true );
 

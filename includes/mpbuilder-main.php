@@ -159,6 +159,7 @@ class mpbuilder_main {
 		$this->loader->add_action( 'init', $public, 'mpbuilder_flush_permalinks' );
 
 		add_shortcode('internal_links', array($public, 'page_list'));
+		add_shortcode('ld_map', array($public, 'get_map'));
 
 		foreach(['city', 'City', 'CITY'] as $shortcode) {
 		    add_shortcode($shortcode, array($public, 'get_city'));
