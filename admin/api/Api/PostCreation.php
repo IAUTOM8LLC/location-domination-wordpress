@@ -2,9 +2,6 @@
 
 namespace App\Api;
 
-use bjoernffm\Spintax\Parser;
-use MadeITBelgium\Spintax\Spintax;
-use MadeITBelgium\Spintax\SpintaxFacade;
 use WP_REST_Controller;
 
 /**
@@ -232,12 +229,12 @@ class PostCreation extends WP_REST_Controller {
     public function meta_array_crawler($i) {
         $spinner = $this->spintax;
 
-        if ( is_int( $i ) || is_float( $i ) || is_bool( $i ) || strlen($i) < 10 ) {
+        if ( is_int( $i ) || is_float( $i ) || is_bool( $i ) || is_string($i) && strlen($i) < 10 ) {
             return $i;
         }
 
         // Check for serilizations
-        if ( is_serialized( $i ) ) {
+        if ( is_string($i) && is_serialized( $i ) ) {
             $unserialized = unserialize($i);
 
             if ( is_array( $unserialized ) || is_object( $unserialized ) ) {
@@ -249,8 +246,30 @@ class PostCreation extends WP_REST_Controller {
             return $unserialized;
         }
 
-        if ( is_json( $i ) ) {
+        if ( is_string($i) && is_json( $i ) ) {
             $unserialized = json_decode($i, true);
+
+            if ( is_array( $unserialized ) || is_object( $unserialized ) ) {
+                return array_map_recursive( $unserialized, function ( $item ) {
+                    return $this->meta_array_crawler( $item );
+                } );
+            }
+
+            return $unserialized;
+        }
+
+        if ( is_object($i) ) {
+            $object = (object) [];
+
+            foreach ( get_object_vars($i) as $key => $item ) {
+                $object->$key = $this->meta_array_crawler( $item );
+            }
+
+            return $object;
+        }
+
+        if ( is_array($i) ) {
+            $unserialized = (array) $i;
 
             if ( is_array( $unserialized ) || is_object( $unserialized ) ) {
                 return array_map_recursive( $unserialized, function ( $item ) {
@@ -374,6 +393,8 @@ class PostCreation extends WP_REST_Controller {
             if( !is_array( $taxonomies ) ) {
                 $taxonomies = unserialize( base64_decode( $taxonomies ) );
             }
+
+            $wpdb->delete($wpdb->prefix.'posts', [ 'post_type' => $request->get_param( 'template-slug' )]);
 
             foreach ( $request->get_param( 'records' ) as $record ) {
                 $city   = $record[ 'city' ];
