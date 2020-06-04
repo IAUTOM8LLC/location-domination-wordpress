@@ -133,7 +133,8 @@ class Location_Domination_Custom_Post_Types {
             setup_postdata( $post );
 
             $title = get_the_title( $post->ID );
-            $singular = \Doctrine\Common\Inflector\Inflector::singularize( $title );
+            $singular = $title;
+//            $singular = \Doctrine\Common\Inflector\Inflector::singularize( $title );
 
             $labels = [
                 'name' => $title,
