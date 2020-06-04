@@ -7,15 +7,15 @@ const TerserJSPlugin = require('terser-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const config = require( './config.json' );
+const BrowserSyncPlugin = require('browser-sync-webpack-plugin');
 
 const devMode = process.env.NODE_ENV !== 'production';
 
 // Naming and path settings
 var appName = 'app';
 var entryPoint = {
-  frontend: './src/frontend/main.js',
-  admin: './src/admin/main.js',
-  style: './assets/less/style.less',
+  admin: './admin/src/js/index.js',
+  style: './admin/src/scss/index.scss',
 };
 
 var exportPath = path.resolve(__dirname, './assets/js');
@@ -34,16 +34,17 @@ plugins.push(new MiniCssExtractPlugin({
   ignoreOrder: false, // Enable to remove warnings about conflicting order
 }));
 
-// plugins.push(new BrowserSyncPlugin( {
-//   proxy: {
-//     target: config.proxyURL
-//   },
-//   files: [
-//     '**/*.php'
-//   ],
-//   cors: true,
-//   reloadDelay: 0
-// } ));
+plugins.push(new BrowserSyncPlugin( {
+  port: 8080,
+  proxy: {
+    target: config.proxyURL
+  },
+  files: [
+    '**/*.php'
+  ],
+  cors: true,
+  reloadDelay: 0
+} ));
 
 plugins.push(new VueLoaderPlugin());
 
@@ -66,7 +67,6 @@ module.exports = {
     alias: {
       'vue$': 'vue/dist/vue.esm.js',
       '@': path.resolve('./src/'),
-      'frontend': path.resolve('./src/frontend/'),
       'admin': path.resolve('./src/admin/'),
     },
     modules: [
@@ -103,12 +103,21 @@ module.exports = {
         exclude: /node_modules/
       },
       {
-        test: /\.less$/,
+        test: /\.scss$/,
         use: [
           'vue-style-loader',
-          'css-loader',
-          'less-loader'
-        ]
+          {
+            loader: 'postcss-loader',
+            options: {
+              ident: 'postcss',
+              plugins: [
+                require('tailwindcss'),
+                require('autoprefixer'),
+              ],
+            },
+          },
+          'sass-loader'
+        ],
       },
       {
         test: /\.png$/,
