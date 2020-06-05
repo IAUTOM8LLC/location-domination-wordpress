@@ -51,7 +51,7 @@ class Action_Preview_Request implements Action_Interface {
             'body' => $_POST,
         ] );
 
-        if ( is_wp_error( $response ) || $response['response']['code'] !== 200 ) {
+        if ( is_wp_error( $response ) || $response[ 'response' ][ 'code' ] !== 200 ) {
             return wp_send_json( [
                 'success' => false,
                 'message' => _e( 'There was an issue communicating with the server.' )
@@ -62,9 +62,8 @@ class Action_Preview_Request implements Action_Interface {
         $job = json_decode( $response[ 'body' ] );
 
         return wp_send_json( [
-            'success'        => true,
-            'progress'       => $option->progress,
-            'batches_needed' => $option->batches->needed
+            'success' => true,
+            'posts'   => $job->count,
         ] );
     }
 

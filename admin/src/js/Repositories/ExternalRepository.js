@@ -55,6 +55,17 @@ export class ExternalRepository {
         return axios( options );
     }
 
+    static previewPostRequest( data, url, templateId, nonce ) {
+        const options = {
+            method: 'POST',
+            headers: { 'content-type': 'application/x-www-form-urlencoded' },
+            data: qs.stringify( data ),
+            url: `${url}?action=location_domination_preview_request&_nonce=${nonce}&templateId=${templateId}`
+        };
+
+        return axios( options );
+    }
+
     static finishLocalQueuePostRequest( url ) {
         const options = {
             method: 'POST',

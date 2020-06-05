@@ -1,30 +1,34 @@
 <template>
     <div v-if="!request.started">
-<!--        <advanced-select-input-->
-<!--                v-model="gridForm.country"-->
-<!--                @input="updateRegions"-->
-<!--                :close-on-select="true" track-by="id" :options="countries"-->
-<!--                label-key="name" label="Select a country" />-->
+        <!--        <advanced-select-input-->
+        <!--                v-model="gridForm.country"-->
+        <!--                @input="updateRegions"-->
+        <!--                :close-on-select="true" track-by="id" :options="countries"-->
+        <!--                label-key="name" label="Select a country" />-->
 
-<!--        <template v-if="gridForm.country && gridForm.country.id === 236">-->
-            <select-input name="requestType" v-model="gridForm.group" label="How would you like to build posts?">
-                <option v-for="option in groupOptions">
-                    {{ option }}
-                </option>
-            </select-input>
+        <!--        <template v-if="gridForm.country && gridForm.country.id === 236">-->
+        <select-input name="requestType" v-model="gridForm.group" label="How would you like to build posts?">
+            <option v-for="option in groupOptions">
+                {{ option }}
+            </option>
+        </select-input>
 
-            <advanced-select-input
-                    name="states[]" @input="updateCounties" v-model="gridForm.states"
-                    v-if="gridForm.group && gridForm.group !== 'For all cities/counties'"
-                    :close-on-select="false" :multiple="true" track-by="id" :options="states"
-                    label-key="state" label="Select states to target" />
-            <advanced-select-input
-                    name="counties[]" v-model="gridForm.counties"
-                    v-if="gridForm.group && gridForm.group === 'For specific counties'"
-                    :close-on-select="false" :multiple="true" group-label="state" group-values="counties"
-                    track-by="id" :options="groupedCounties" label-key="county"
-                    label="Select counties to target" />
-<!--        </template>-->
+        <advanced-select-input
+                name="states[]" @input="updateCounties" v-model="gridForm.states"
+                v-if="gridForm.group && gridForm.group !== 'For all cities/counties'"
+                :close-on-select="false" :multiple="true" track-by="id" :options="states"
+                label-key="state" label="Select states to target" />
+        <advanced-select-input
+                @input="updateCities"
+                name="counties[]" v-model="gridForm.counties"
+                v-if="gridForm.group && (gridForm.group === 'For specific counties' || gridForm.group === 'For specific cities' )"
+                :close-on-select="false" :multiple="true" group-label="state" group-values="counties"
+                track-by="id" :options="groupedCounties" label-key="county"
+                label="Select counties to target" />
+
+        <advanced-select-input v-model="gridForm.cities" v-if="gridForm.group && gridForm.group === 'For specific cities'" :close-on-select="false" :multiple="true" track-by="id" :options="cities" label-key="city" label="Select cities to target" />
+
+        <!--        </template>-->
 
         <!--<template v-else>
             <select-input v-model="gridForm.group" label="How would you like to build posts?">
@@ -58,18 +62,18 @@
         <div class="relative py-3">
             <div class="flex mb-2 items-center justify-between">
                 <div>
-      <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-red-600 bg-red-200">
-        Task in progress
+      <span :class="{ 'text-red-600 bg-red-200' : !request.completed, 'text-green-800 bg-green-400' : request.completed }" class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full">
+        {{ request.completed ? 'Completed' : 'Task in progress' }}
       </span>
                 </div>
                 <div class="text-right">
-      <span class="text-xs font-semibold inline-block text-red-600">
+      <span :class="{ 'text-red-600' : !request.completed, 'text-green-800' : request.completed }" class="text-xs font-semibold inline-block">
         {{ request.progress }}%
       </span>
                 </div>
             </div>
-            <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-red-200">
-                <div :style="{ width: request.progress + '%' }" class="shadow-none progress flex flex-col text-center whitespace-nowrap text-white justify-center bg-red-500"></div>
+            <div :class="{ 'bg-red-200' : !request.completed, 'bg-green-400' : request.completed }" class="overflow-hidden h-2 mb-4 text-xs flex rounded">
+                <div :class="{ 'bg-red-600' : !request.completed, 'bg-green-500' : request.completed }" :style="{ width: request.progress + '%' }" class="shadow-none progress flex flex-col text-center whitespace-nowrap text-white justify-center"></div>
             </div>
         </div>
     </div>
@@ -84,6 +88,7 @@
     import TextareaInput from './Inputs/TextareaInput.vue';
 
     const moment = require( 'moment' );
+    const Swal = require( 'sweetalert2' );
 
     export default {
         name: 'PostBuilder',
@@ -176,26 +181,28 @@
 
         data() {
             return {
-                groupOptions: ['For all cities/counties', 'For specific states', 'For specific counties'],
+                groupOptions: ['For all cities/counties', 'For specific states', 'For specific counties', 'For specific cities'],
                 otherCountryOptions: ['For all cities/regions', 'For specific regions', 'For specific cities'],
                 targeting: 'all',
                 gridForm: {
                     counties: [],
                     states: [],
+                    cities: [],
                     regions: [],
                     post_slug: '',
                     apiKey: '',
                     uuid: '',
                     country: {
                         name: 'United States',
-                        id: 236,
+                        id: 236
                     },
-                    otherGroup: '',
+                    otherGroup: ''
                 },
                 request: {
                     started: false,
+                    completed: false,
                     progress: 0,
-                    estimated_time_in_seconds: 90
+                    estimated_time_in_seconds: 140
                 },
                 countries: [],
                 counties: [],
@@ -275,52 +282,99 @@
                     return item.id;
                 } );
 
-                const url = this.ajaxUrl;
-                const _this = this;
+                let cities = this.gridForm.cities.map( item => {
+                    return item.id;
+                } );
 
-                ExternalRepository.startLocalQueuePostRequest( {
+                const form = {
                     states: states,
                     counties: counties,
+                    cities,
                     meta_title: this.gridForm.meta_title,
                     meta_description: this.gridForm.meta_description,
                     uuid: this.gridForm.uuid,
                     apiKey: this.gridForm.apiKey
-                }, url, this.templateId, this.nonce ).then( ( { data } ) => {
-                    if ( data.success ) {
-                        _this.request.started = true;
-                        _this.pollWorker().then( ( { data } ) => {
-                            console.log( { data } );
-                            _this.request.progress = parseFloat( data.progress );
+                };
 
-                            if ( _this.request.progress >= 100 ) {
-                                ExternalRepository.finishLocalQueuePostRequest( url );
-                            }
-                        } );
+                const url = this.ajaxUrl;
 
-                        if ( parseInt( data.batches_needed ) > 1 ) {
-                            let progress = 0;
+                ExternalRepository.previewPostRequest( form, url, this.templateId, this.nonce ).then( ( { data } ) => {
+                    const postCount = data.success ? data.posts : 0;
 
-                            const POLLING_TIME_IN_SECONDS = 20;
-                            const interval = setInterval( () => {
-                                _this.pollWorker().then( ( { data } ) => {
-                                    const _progress = parseFloat( data.progress );
-                                    if ( _progress > progress ) {
-                                        progress = _progress;
+                    Swal.fire( {
+                        title: 'Are you sure?',
+                        html: `This will overwrite any existing pages within this template so make sure you include all locations. <strong>${postCount} pages</strong> will be created if you continue.`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, resume!',
+                        cancelButtonText: 'No, I\'m not ready'
+                    } ).then( ( result ) => {
+                        if ( result.value ) {
+                            const _this = this;
+
+                            ExternalRepository.startLocalQueuePostRequest( form, url, this.templateId, this.nonce ).then( ( { data } ) => {
+                                if ( data.success ) {
+                                    _this.request.started = true;
+                                    _this.pollWorker().then( ( { data } ) => {
+                                        console.log( { data } );
+                                        _this.request.estimated_time_in_seconds = 60;
+                                        _this.request.progress = parseFloat( data.progress );
+
+                                        if ( _this.request.progress >= 100 ) {
+                                            _this.request.completed = true;
+                                            ExternalRepository.finishLocalQueuePostRequest( url );
+                                        }
+                                    } );
+
+                                    if ( parseInt( data.batches_needed ) > 1 ) {
+                                        let progress = 0;
+
+                                        const POLLING_TIME_IN_SECONDS = 20;
+                                        const interval = setInterval( () => {
+                                            _this.pollWorker().then( ( { data } ) => {
+                                                const _progress = parseFloat( data.progress );
+                                                const estimated_time_remaining = parseFloat( data.estimated_time_remaining );
+
+                                                if ( _progress > progress ) {
+                                                    progress = _progress;
+                                                }
+
+                                                if ( estimated_time_remaining ) {
+                                                    _this.request.estimated_time_in_seconds = estimated_time_remaining;
+                                                }
+
+                                                _this.request.progress = progress;
+
+                                                if ( _this.request.progress >= 100 ) {
+                                                    _this.request.completed = true;
+                                                    clearInterval( interval );
+                                                    ExternalRepository.finishLocalQueuePostRequest( url );
+                                                }
+                                            } );
+                                        }, (POLLING_TIME_IN_SECONDS * 1000) );
                                     }
+                                }
+                                else {
+                                    console.log( data.message );
+                                }
+                            } );
 
-                                    _this.request.progress = progress;
-
-                                    if ( _this.request.progress >= 100 ) {
-                                        clearInterval( interval );
-                                        ExternalRepository.finishLocalQueuePostRequest( url );
-                                    }
-                                } );
-                            }, (POLLING_TIME_IN_SECONDS * 1000) );
+                            Swal.fire(
+                                'Awesome!',
+                                'We\'ve started to process your post request.',
+                                'success'
+                            );
+                            // For more information about handling dismissals please visit
+                            // https://sweetalert2.github.io/#handling-dismissals
                         }
-                    }
-                    else {
-                        console.log( data.message );
-                    }
+                        else if ( result.dismiss === Swal.DismissReason.cancel ) {
+                            Swal.fire(
+                                'Cancelled',
+                                'We\'ve cancelled your post request.',
+                                'error'
+                            );
+                        }
+                    } );
                 } );
             },
 
@@ -336,15 +390,38 @@
                 }
                 else {
                     this.debounces.cities = setTimeout( () => {
-                        ExternalRepository.getWorldCities({
+                        ExternalRepository.getWorldCities( {
                             params: {
-                                regions: this.regionIds.join( ',' ),
+                                regions: this.regionIds.join( ',' )
                             }
                         } ).then( ( { data } ) => {
                             // _this.counties = response.data;
                             _this.cities = data;
 
-                            console.log( { cities: data, } );
+                            console.log( { cities: data } );
+                        } );
+                    }, 1000 );
+                }
+            },
+
+            updateCities() {
+                let _this = this;
+
+                if ( this.debounces.cities ) {
+                    clearTimeout( this.debounces.cities );
+                }
+
+                if ( _this.stateIds.length === 0 ) {
+                    _this.counties = [];
+                }
+                else {
+                    this.debounces.counties = setTimeout( () => {
+                        ExternalRepository.getCities( {
+                            params: {
+                                filter: this.countiesIds.join( ',' )
+                            }
+                        } ).then( ( { data } ) => {
+                            _this.cities = data;
                         } );
                     }, 1000 );
                 }
@@ -398,11 +475,22 @@
 
 <style scoped lang="scss">
     @import "../../scss/index.scss";
+    @import '~@sweetalert2/theme-borderless/borderless.scss';
 
     body.location-domination {
         .multiselect__tags {
             border: 0 !important;
             padding: 8px 22px 0 0 !important;
+        }
+
+        .swal2-container.swal2-backdrop-show, .swal2-container.swal2-noanimation {
+            z-index: 999999 !important;
+        }
+
+        .swal2-modal {
+            h2 {
+                color: #fff !important;
+            }
         }
 
         .multiselect__placeholder {

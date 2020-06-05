@@ -51,6 +51,7 @@ class Location_Domination_Admin {
     protected $actions = [
         Action_Settings::class,
         Action_Get_Settings::class,
+        Action_Preview_Request::class,
 
         Action_Start_Queue::class,
         Action_Process_Queue::class,
