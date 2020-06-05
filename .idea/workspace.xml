@@ -2,16 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="cbf7d765-8423-41d9-8adf-1e8b0fa3243c" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin/actions/class-action-preview-request.php" beforeDir="false" afterPath="$PROJECT_DIR$/admin/actions/class-action-preview-request.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin/class-location-domination-admin.php" beforeDir="false" afterPath="$PROJECT_DIR$/admin/class-location-domination-admin.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin/src/js/Components/PostBuilder.vue" beforeDir="false" afterPath="$PROJECT_DIR$/admin/src/js/Components/PostBuilder.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin/src/js/Repositories/ExternalRepository.js" beforeDir="false" afterPath="$PROJECT_DIR$/admin/src/js/Repositories/ExternalRepository.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/assets/js/admin.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/admin.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/js/vendors.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/vendors.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/location-domination.php" beforeDir="false" afterPath="$PROJECT_DIR$/location-domination.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -114,7 +106,7 @@
       <workItem from="1591128769943" duration="20591000" />
       <workItem from="1591196205158" duration="37289000" />
       <workItem from="1591274663182" duration="39612000" />
-      <workItem from="1591390149853" duration="6954000" />
+      <workItem from="1591390149853" duration="7315000" />
     </task>
     <servers />
   </component>
