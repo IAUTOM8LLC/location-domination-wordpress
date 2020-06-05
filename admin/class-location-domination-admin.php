@@ -280,8 +280,8 @@ class Location_Domination_Admin {
     /**
      * Redirect user back to the previous page.
      *
-     * @since 2.0.0
      * @return void
+     * @since 2.0.0
      */
     public function redirect_back_to_edit_page() {
         $this->start_session();
@@ -302,8 +302,8 @@ class Location_Domination_Admin {
      * @param $actions
      * @param $post
      *
-     * @since 2.0.0
      * @return mixed
+     * @since 2.0.0
      */
     public function add_send_to_location_domination_row_action( $actions, $post ) {
         if ( $post->post_type === 'mptemplates' ) {
@@ -322,8 +322,8 @@ class Location_Domination_Admin {
     /**
      * Display any errors as a notice.
      *
-     * @since 2.0.0
      * @return void
+     * @since 2.0.0
      */
     public function show_error_notices() {
         if ( isset( $_SESSION[ 'location-domination-errors' ] ) ) {
@@ -364,8 +364,8 @@ class Location_Domination_Admin {
      * Disable the ACF admin page so that we are not
      * showing it on users websites.
      *
-     * @since 2.0.0
      * @return bool
+     * @since 2.0.0
      */
     public function set_acf_admin_hidden() {
         return false;
@@ -375,8 +375,8 @@ class Location_Domination_Admin {
      * Check whether the permalink structure is acceptable
      * and if not throw an error to the user.
      *
-     * @since 2.0.0
      * @return void
+     * @since 2.0.0
      */
     public function check_permalink_structure() {
         $structure = trim( get_option( 'permalink_structure' ), '/' );
@@ -396,8 +396,8 @@ class Location_Domination_Admin {
      * @param          $post_id
      * @param \WP_Post $post
      *
-     * @since 2.0.0
      * @return void
+     * @since 2.0.0
      */
     public function process_template_after_save( $post_id, WP_Post $post ) {
         if ( $post->post_status == 'publish' ) {
@@ -407,20 +407,77 @@ class Location_Domination_Admin {
     }
 
     /**
+     * Hooks into ACF to get the latest data from the fields
+     * before we save it into the database.
+     *
+     * @since 2.0.0
+     * @param $post_id
+     *
+     * @return void
+     */
+    public function process_child_templates_after_save( $post_id ) {
+        global $post;
+
+        if ( $post->post_type !== LOCATION_DOMINATION_TEMPLATE_CPT ) {
+            return;
+        }
+
+        Location_Domination_Admin::generate_schema( $post_id );
+
+        $fields = get_fields( $post_id );
+
+        remove_action( 'save_post_' . LOCATION_DOMINATION_TEMPLATE_CPT, [ $this, 'process_template_after_save' ] );
+        remove_action( 'save_post_' . LOCATION_DOMINATION_TEMPLATE_CPT, [ $this, 'process_child_templates_after_save' ] );
+
+        $enabled_templates = array_filter( $fields[ 'spin_templates' ], function( $item ) {
+           return $item['enabled'];
+        });
+
+        /**
+         * Start to process sub-templates and manage their settings
+         * accordingly.
+         */
+        $elementor_edit_mode_nonce = isset( $_POST[ '_elementor_edit_mode_nonce' ] ) ? $_POST[ '_elementor_edit_mode_nonce' ] : null;
+
+        if ( count( $enabled_templates ) > 0 ) {
+            // Stop Elementor turning off edit mode for child templates
+            if ( $elementor_edit_mode_nonce ) {
+                unset( $_POST[ '_elementor_edit_mode_nonce' ] );
+            }
+        }
+
+        foreach ( $enabled_templates as $template ) {
+            wp_update_post( [
+                'ID'          => $template[ 'template' ],
+                'post_parent' => $post_id,
+                'post_status' => $template[ 'enabled' ] ? 'publish' : 'draft',
+            ] );
+        }
+
+        // Reinstate Elementor edit mode nonce
+        if ( $elementor_edit_mode_nonce ) {
+            $_POST[ '_elementor_edit_mode_nonce' ] = $elementor_edit_mode_nonce;
+        }
+
+        add_action( 'save_post_' . LOCATION_DOMINATION_TEMPLATE_CPT, [ $this, 'process_template_after_save' ] );
+        add_action( 'save_post_' . LOCATION_DOMINATION_TEMPLATE_CPT, [ $this, 'process_child_templates_after_save' ] );
+    }
+
+    /**
      * Add a button to send the template to Location Domination. Within this
      * period we also flush permalinks.
      *
-     * @since 2.0.0
      * @return void
+     * @since 2.0.0
      */
     public function add_send_to_location_domination_button_below_editor() {
         if ( get_post_type() === LOCATION_DOMINATION_TEMPLATE_CPT ) {
             $url = admin_url( 'edit.php?post_type=mptemplates&location-domination=' . get_the_ID() );
 
-            echo sprintf('<a href="%s" class="button button-primary button-large" id="send-to-location-domination">' .
-                    '<span style="display: inline-block; margin-right: 5px; position: relative; top: 3px;"><svg style=" height: 16px;" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="paper-plane" class="svg-inline--fa fa-paper-plane fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M476 3.2L12.5 270.6c-18.1 10.4-15.8 35.6 2.2 43.2L121 358.4l287.3-253.2c5.5-4.9 13.3 2.6 8.6 8.3L176 407v80.5c0 23.6 28.5 32.9 42.5 15.8L282 426l124.6 52.2c14.2 6 30.4-2.9 33-18.2l72-432C515 7.8 493.3-6.8 476 3.2z"></path></svg></span>' .
-                    'Send to Location Domination' .
-                 '</a>', $url );
+            echo sprintf( '<a href="%s" class="button button-primary button-large" id="send-to-location-domination">' .
+                          '<span style="display: inline-block; margin-right: 5px; position: relative; top: 3px;"><svg style=" height: 16px;" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="paper-plane" class="svg-inline--fa fa-paper-plane fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M476 3.2L12.5 270.6c-18.1 10.4-15.8 35.6 2.2 43.2L121 358.4l287.3-253.2c5.5-4.9 13.3 2.6 8.6 8.3L176 407v80.5c0 23.6 28.5 32.9 42.5 15.8L282 426l124.6 52.2c14.2 6 30.4-2.9 33-18.2l72-432C515 7.8 493.3-6.8 476 3.2z"></path></svg></span>' .
+                          'Send to Location Domination' .
+                          '</a>', $url );
         }
     }
 
@@ -428,8 +485,8 @@ class Location_Domination_Admin {
      * Check whether the site is using the permalink structure that
      * we required.
      *
-     * @since 2.0.0
      * @return bool
+     * @since 2.0.0
      */
     public static function is_using_post_name_permalink_structure() {
         return '%postname%' === trim( get_option( 'permalink_structure' ), '/' );
@@ -438,8 +495,8 @@ class Location_Domination_Admin {
     /**
      * Used for admin notices.
      *
-     * @since 2.0.0
      * @return void
+     * @since 2.0.0
      */
     protected function start_session() {
         if ( ! session_id() ) {
@@ -450,8 +507,9 @@ class Location_Domination_Admin {
     /**
      * Called to report errors in the admin notices
      *
-     * @since 2.0.0
      * @param $message
+     *
+     * @since 2.0.0
      */
     public static function send_error_on_next_load( $message ) {
         $_SESSION[ 'location-domination-errors' ] = $message;
@@ -460,8 +518,9 @@ class Location_Domination_Admin {
     /**
      * Called to report success messages in the admin notices
      *
-     * @since 2.0.0
      * @param $message
+     *
+     * @since 2.0.0
      */
     public static function send_status_on_next_load( $message ) {
         $_SESSION[ 'location-domination-status' ] = $message;
@@ -470,8 +529,8 @@ class Location_Domination_Admin {
     /**
      * Queue the permalinks to be cleared.
      *
-     * @since 2.0.0
      * @return void
+     * @since 2.0.0
      */
     public static function clear_permalinks_queued() {
         $_SESSION[ 'location-domination-clear-permalinks' ] = true;
@@ -517,7 +576,7 @@ class Location_Domination_Admin {
         $uuid    = get_post_meta( $post_id, '_uuid', true );
         $api_key = trim( get_option( 'mpb_api_key' ) );
 
-        if ( $post['post_type' ] !== LOCATION_DOMINATION_TEMPLATE_CPT ) {
+        if ( $post[ 'post_type' ] !== LOCATION_DOMINATION_TEMPLATE_CPT ) {
             return;
         }
 
@@ -555,6 +614,12 @@ class Location_Domination_Admin {
             ],
         ] );
 
+        if ( $response[ 'response' ][ 'code' ] === 404 ) {
+            Location_Domination_Admin::send_error_on_next_load( 'Please make sure that you have added your website in Location Domination and you have entered the correct API key.' );
+
+            return false;
+        }
+
         if ( is_wp_error( $response ) ) {
             Location_Domination_Admin::send_error_on_next_load( 'We were unable to send your template to Location Domination. Please try again later.' );
 
@@ -564,6 +629,64 @@ class Location_Domination_Admin {
         Location_Domination_Admin::send_status_on_next_load( 'We have successfully synced your template to Location Domination.' );
 
         return true;
+    }
+
+    /**
+     * Sends a request to Location Domination to generate
+     * the schema.
+     *
+     * @param $post_id int
+     * @param $return_json boolean
+     *
+     * @return array
+     * @since 2.0.4
+     */
+    public static function generate_schema( $post_id, $return_json = false ) {
+        if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+            return;
+        }
+
+        $post    = get_post( $post_id, 'ARRAY_A' );
+        $api_key = trim( get_option( 'mpb_api_key' ) );
+
+        if ( $post[ 'post_type' ] !== LOCATION_DOMINATION_TEMPLATE_CPT ) {
+            return;
+        }
+
+        $rest_url = sprintf( '%s/api/website/%s/schema', trim( MAIN_URL, '/' ), $api_key );
+
+        $salary = get_field( 'base_salary' );
+
+        $response = wp_remote_post( $rest_url, [
+            'body' => [
+                'date_posted' => get_field( 'job_date_posted', $post_id ),
+                'valid_through' => get_field( 'job_valid_through_date', $post_id ),
+                'employment_type' => get_field( 'job_employment_type', $post_id ),
+                'job_title' => get_field( '_ld_job_title', $post_id ),
+                'job_description' => get_field( '_ld_job_description', $post_id ),
+                'company_name' => get_field( 'company_name', $post_id ),
+                'base_salary' => $salary['base_salary'],
+                'currency' => $salary['currency'],
+            ]
+        ]);
+
+        if ( is_wp_error( $response ) ) {
+            $error = _e('There was an error communicating with Location Domination.');
+
+            if ( $return_json ) {
+                return wp_send_json([ 'success' => false, 'message' => $error ] );
+            }
+
+            return Location_Domination_Admin::send_error_on_next_load( $error );
+        }
+
+        $json_response = json_decode( $response['body']);
+
+        if ( $json_response->success ) {
+            update_post_meta( $post_id, 'location_domination_schema_template', $json_response->schema );
+        }
+
+        return [];
     }
 
 }

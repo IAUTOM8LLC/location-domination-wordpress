@@ -50,10 +50,26 @@ class Action_Process_Queue implements Action_Interface {
             return wp_send_json( [ 'success' => false, 'in_progress' => true, 'progress' => $option->progress ] );
         }
 
+        if ( isset( $option->progress ) && $option->progress >= 100 ) {
+            return wp_send_json([ 'success' => true, 'completed' => true, 'progress' => 100 ] );
+        }
+
         global $wpdb;
 
         $template_id = (int) $_POST[ 'template' ];
         $template    = get_post( $template_id, 'ARRAY_A' );
+
+        $fields = get_fields( $template_id );
+
+        $enabled_templates = array_filter( $fields[ 'spin_templates' ], function ( $item ) {
+            return $item[ 'enabled' ];
+        } );
+
+        $enabled_templates_ids = array_map( function ( $item ) {
+            return $item[ 'template' ];
+        }, $enabled_templates );
+
+        $sub_template_spinning = count( $enabled_templates_ids ) > 0;
 
         // Start batching responses
         $last_post_request_id = (int) $option->request_id;
@@ -69,14 +85,17 @@ class Action_Process_Queue implements Action_Interface {
 
             set_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY, $option, 0 );
 
-            $mutated_post = $template;
-            unset( $mutated_post[ 'ID' ] );
-            unset( $mutated_post[ 'guid' ] );
-            unset( $mutated_post[ 'comment_count' ] );
-
-            $meta = get_post_custom( $template_id );
+            $page_title = isset( $fields['page_title'] ) ? $fields['page_title'] : null;
+            $page_slug = isset( $fields['page_slug'] ) ? $fields['page_slug'] : null;
 
             foreach ( $json_response->cities as $record ) {
+                $random_template_key = array_rand( $enabled_templates_ids );
+                $base_template_id    = $sub_template_spinning ? $enabled_templates_ids[ $random_template_key ] : $template_id;
+                $base_template       = get_post( $base_template_id, 'ARRAY_A' );
+                $base_template_settings = $enabled_templates[ $random_template_key ];
+
+                $meta = get_post_custom( $base_template_id );
+
                 $shortcode_bindings = [
                     '[city]'    => isset( $record->city ) ? $record->city : '',
                     '[county]'  => isset( $record->county ) ? $record->county : '',
@@ -86,16 +105,23 @@ class Action_Process_Queue implements Action_Interface {
                     '[country]' => isset( $record->country ) ? $record->country : '',
                 ];
 
-                $title = apply_filters( 'location_domination_shortcodes', $template[ 'post_title' ], $shortcode_bindings );
-//                $slug  = trim( $this->get_post_slug( $request, $shortcode_bindings ) );
+                $title = apply_filters( 'location_domination_shortcodes', ( $sub_template_spinning ? $base_template_settings['post_name'] : $base_template[ 'post_title' ] ), $shortcode_bindings );
+                $uuid = get_post_meta( $template_id, '_uuid', true );
+
+                if ( ! $sub_template_spinning && $page_title ) {
+                    $title = apply_filters( 'location_domination_shortcodes', $page_title, $shortcode_bindings );
+                }
 
                 $arguments = [
-                    'post_type'    => get_post_meta( $template[ 'ID' ], '_uuid', true ),
-//                    'post_name'    => $slug,
+                    'post_type'    => get_post_meta( $template_id, '_uuid', true ),
                     'post_title'   => Location_Domination_Spinner::spin( $title ),
-                    'post_content' => Location_Domination_Spinner::spin( $template[ 'post_content' ] ),
+                    'post_content' => Location_Domination_Spinner::spin( $base_template[ 'post_content' ] ),
                     'post_status'  => 'publish',
                 ];
+
+                if ( ! $sub_template_spinning && $page_title ) {
+                    $arguments['post_name'] = apply_filters( 'location_domination_shortcodes', $page_slug   , $shortcode_bindings );
+                }
 
 //                $meta_title       = $this->get_parameter_with_shortcodes( $request, 'meta_title', $shortcode_bindings );
 //                $meta_description = $this->get_parameter_with_shortcodes( $request, 'meta_description', $shortcode_bindings );
@@ -103,25 +129,17 @@ class Action_Process_Queue implements Action_Interface {
 //                $job_description  = $this->get_parameter_with_shortcodes( $request, 'job_description', $shortcode_bindings );
 //                $schema           = $this->get_parameter_with_shortcodes( $request, 'schema', $shortcode_bindings );
 
-                $post_ID = wp_insert_post( $arguments );
+                $new_post_id = wp_insert_post( $arguments );
 
-                $arguments[ 'ID' ] = $post_ID;
+                Endpoint_Create_Posts::meta_spinner( $meta, $new_post_id, $shortcode_bindings );
 
-//                $wpdb->query( 'SET autocommit = 0;' );
-
-                $wpdb->delete( $wpdb->prefix . 'postmeta', [
-                    'post_id' => $arguments[ 'ID' ],
-                ] );
-
-                Endpoint_Create_Posts::meta_spinner( $meta, $arguments[ 'ID' ], $shortcode_bindings );
-
-                add_post_meta( $arguments[ 'ID' ], '_city', isset( $record->city ) ? $record->city : '' );
-                add_post_meta( $arguments[ 'ID' ], '_state', isset( $record->state ) ? $record->state : '' );
-                add_post_meta( $arguments[ 'ID' ], '_county', isset( $record->county ) ? $record->county : '' );
-                add_post_meta( $arguments[ 'ID' ], '_zips', isset( $record->zips ) ? $record->zips : '' );
-                add_post_meta( $arguments[ 'ID' ], '_region', isset( $record->region ) ? $record->region : '' );
-                add_post_meta( $arguments[ 'ID' ], '_country', isset( $record->country ) ? $record->country : '' );
-
+                add_post_meta( $new_post_id, '_city', isset( $record->city ) ? $record->city : '' );
+                add_post_meta( $new_post_id, '_state', isset( $record->state ) ? $record->state : '' );
+                add_post_meta( $new_post_id, '_county', isset( $record->county ) ? $record->county : '' );
+                add_post_meta( $new_post_id, '_zips', isset( $record->zips ) ? $record->zips : '' );
+                add_post_meta( $new_post_id, '_region', isset( $record->region ) ? $record->region : '' );
+                add_post_meta( $new_post_id, '_country', isset( $record->country ) ? $record->country : '' );
+                update_post_meta( $new_post_id, '_uuid', $uuid );
 //                if ( isset( $schema ) && $schema ) {
 //                    add_post_meta( $arguments[ 'ID' ], '_ld_schema', $schema );
 //                }

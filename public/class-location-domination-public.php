@@ -22,37 +22,81 @@
  */
 class Location_Domination_Public {
 
-	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
+    /**
+     * The ID of this plugin.
+     *
+     * @since    1.0.0
+     * @access   private
+     * @var      string $plugin_name The ID of this plugin.
+     */
+    private $plugin_name;
 
-	/**
-	 * The version of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
-	 */
-	private $version;
+    /**
+     * The version of this plugin.
+     *
+     * @since    1.0.0
+     * @access   private
+     * @var      string $version The current version of this plugin.
+     */
+    private $version;
 
-	/**
-	 * Initialize the class and set its properties.
-	 *
-	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of the plugin.
-	 * @param      string    $version    The version of this plugin.
-	 */
-	public function __construct( $plugin_name, $version ) {
+    /**
+     * Initialize the class and set its properties.
+     *
+     * @param string $plugin_name The name of the plugin.
+     * @param string $version     The version of this plugin.
+     *
+     * @since    1.0.0
+     */
+    public function __construct( $plugin_name, $version ) {
+        $this->plugin_name = $plugin_name;
+        $this->version     = $version;
+    }
 
-		$this->plugin_name = $plugin_name;
-		$this->version = $version;
+    /**
+     * Displays schema on the frontend.
+     *
+     * @return void
+     * @since 2.0.4
+     */
+    public function display_schema() {
+        global $post;
 
-	}
+        if ( ! $post ) {
+            return;
+        }
+
+        $template = Location_Domination_Custom_Post_Types::get_template_by_uuid( $post->post_type );
+
+        if ( ! $template || ! get_field( 'enable_job_schema', $template->ID ) ) {
+            return;
+        }
+
+        $schema = get_post_meta( $template->ID, 'location_domination_schema_template', true );
+
+        if ( ! $schema ) {
+            return;
+        }
+
+        $shortcode_bindings = [
+            '[city]'    => get_post_meta( $post->ID, '_city', true ),
+            '[county]'  => get_post_meta( $post->ID, '_county', true ),
+            '[state]'   => get_post_meta( $post->ID, '_state', true ),
+            '[zips]'    => get_post_meta( $post->ID, '_zips', true ),
+            '[region]'  => get_post_meta( $post->ID, '_region', true ),
+            '[country]' => get_post_meta( $post->ID, '_country', true ),
+        ];
+
+        $schema = str_replace( [ '<script type="application/ld+json">', '</script>' ], '', $schema );
+        $schema = apply_filters( 'location_domination_shortcodes', $schema, $shortcode_bindings );
+
+        $json_schema = json_decode( $schema );
+
+        $json_schema->title       = Location_Domination_Spinner::spin( $json_schema->title, $post->ID );
+        $json_schema->description = Location_Domination_Spinner::spin( $json_schema->description, $post->ID );
+
+        echo '<script type="application/ld+json">' . json_encode( $json_schema ) . '</script>';
+    }
 
     /**
      * Remove the template slug from any links if the user
@@ -61,11 +105,11 @@ class Location_Domination_Public {
      * @param $post_link
      * @param $post
      *
-     * @since 2.0.0
      * @return string|string[]
+     * @since 2.0.0
      */
     function remove_template_slug_from_links( $post_link, $post ) {
-        $template  = Location_Domination_Custom_Post_Types::get_template_by_uuid( $post->post_type );
+        $template = Location_Domination_Custom_Post_Types::get_template_by_uuid( $post->post_type );
 
         if ( ! $template || get_field( 'use_template_slug', $template->ID ) ) {
             return $post_link;
@@ -91,7 +135,8 @@ class Location_Domination_Public {
             $arguments = [
                 'post_type'   => LOCATION_DOMINATION_TEMPLATE_CPT,
                 'post_status' => 'publish',
-                'numberposts' => 1,
+                'numberposts' => - 1,
+                'post_parent' => 0,
                 'meta_query'  => array(
                     'relation' => 'AND',
                     array(
@@ -103,6 +148,7 @@ class Location_Domination_Public {
             ];
 
             $posts = get_posts( $arguments );
+
             $types = [ 'post', 'page' ];
 
             if ( count( $posts ) > 0 ) {

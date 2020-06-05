@@ -315,7 +315,6 @@ class Endpoint_Create_Posts {
                             $prepped_value = json_encode( $value );
                         }
 
-
                         $wpdb->insert( $wpdb->prefix . 'postmeta', array(
                             'post_id'    => $post_ID,
                             'meta_key'   => $key,

@@ -36,11 +36,9 @@ class Action_End_Queue implements Action_Interface {
 
         Location_Domination_Admin::clear_permalinks_queued();
 
-        // If using Elementor, re-generate CSS
         if ( class_exists( 'Elementor\\Plugin' ) ) {
-            if ( \Elementor\Plugin::$instance->files_manager->clear_cache() ) {
-                return;
-            }
+            // If using Elementor, re-generate CSS
+            \Elementor\Plugin::$instance->files_manager->clear_cache();
         }
 
         // Delete queue transient

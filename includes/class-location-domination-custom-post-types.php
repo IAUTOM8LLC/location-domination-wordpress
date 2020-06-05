@@ -81,7 +81,7 @@ class Location_Domination_Custom_Post_Types {
         'rewrite'            => true,
         'capability_type'    => 'page',
         'has_archive'        => true,
-        'hierarchical'       => false,
+        'hierarchical'       => true,
         'menu_position'      => null,
     ];
 
@@ -103,8 +103,8 @@ class Location_Domination_Custom_Post_Types {
      * we need to operate the plugin. This includes the main
      * templates CPT, and sub-type templates.
      *
-     * @since 2.0.0
      * @return void
+     * @since 2.0.0
      */
     public function register() {
         register_post_type( LOCATION_DOMINATION_TEMPLATE_CPT, array_merge( $this->arguments, [
@@ -115,15 +115,58 @@ class Location_Domination_Custom_Post_Types {
     }
 
     /**
+     * We don't want to get our templates indexed so we
+     * redirect non-authenticated users.
+     *
+     * @return void
+     * @since 2.0.4
+     */
+    public function redirect_frontend_for_guests() {
+        $queried_post_type = get_query_var( 'post_type' );
+
+        if ( $queried_post_type === LOCATION_DOMINATION_TEMPLATE_CPT ) {
+            if ( is_singular( LOCATION_DOMINATION_TEMPLATE_CPT ) || is_archive() ) {
+                if ( ! current_user_can( 'editor' ) && ! current_user_can( 'administrator' ) ) {
+                    wp_redirect( esc_url_raw( get_bloginfo( 'url' ) ), 301 );
+                    exit;
+                }
+            }
+        }
+    }
+
+
+    /**
+     * Disable comments for the template if they are
+     * turned off within the settings.
+     *
+     * @param $open
+     * @param $post_id
+     *
+     * @return bool
+     * @since 2.0.0
+     */
+    public function show_comments_for_template( $open, $post_id ) {
+        $post_type = get_post_type( $post_id );
+        $template  = Location_Domination_Custom_Post_Types::get_template_by_uuid( $post_type );
+
+        if ( $template ) {
+            return get_field( 'show_comments', $template->ID );
+        }
+
+        return $open;
+    }
+
+    /**
      * Register all of the sub-type templates that were
      * created from templates.
      *
-     * @since 2.0.0
      * @return void
+     * @since 2.0.0
      */
     protected function register_dynamic_post_types() {
         $arguments = [
-            'post_type' => [ LOCATION_DOMINATION_TEMPLATE_CPT ],
+            'post_parent' => 0,
+            'post_type'   => LOCATION_DOMINATION_TEMPLATE_CPT,
             'post_status' => 'publish',
         ];
 
@@ -132,12 +175,12 @@ class Location_Domination_Custom_Post_Types {
         foreach ( $custom_post_types as $post ) {
             setup_postdata( $post );
 
-            $title = get_the_title( $post->ID );
+            $title    = get_the_title( $post->ID );
             $singular = $title;
 //            $singular = \Doctrine\Common\Inflector\Inflector::singularize( $title );
 
             $labels = [
-                'name' => $title,
+                'name'               => $title,
                 'singular_name'      => $singular,
                 'add_new'            => sprintf( 'Add New %s', $singular ),
                 'add_new_item'       => sprintf( 'Add New %s', $singular ),
@@ -154,13 +197,16 @@ class Location_Domination_Custom_Post_Types {
             $use_template_slug = get_field( 'use_template_slug', $post->ID );
 
             $arguments = [
-                'labels' => $labels,
+                'labels'             => $labels,
                 'public'             => true,
                 'publicly_queryable' => true,
                 'show_ui'            => true,
                 'show_in_menu'       => true,
                 'query_var'          => true,
-                'rewrite'            => ! $use_template_slug ? ['slug' => '/', 'with_front' => false ] : [ 'slug' => $post->post_name ],
+                'rewrite'            => ! $use_template_slug ? [
+                    'slug'       => '/',
+                    'with_front' => false
+                ] : [ 'slug' => $post->post_name ],
                 'capability_type'    => 'page',
                 'has_archive'        => true,
                 'hierarchical'       => false,
@@ -169,7 +215,6 @@ class Location_Domination_Custom_Post_Types {
                     'editor',
                     'excerpt',
                     'thumbnail',
-                    'revisions',
                     'custom-fields',
                 ],
             ];
@@ -182,35 +227,13 @@ class Location_Domination_Custom_Post_Types {
         }
     }
 
-
-    /**
-     * Disable comments for the template if they are
-     * turned off within the settings.
-     *
-     * @param $open
-     * @param $post_id
-     *
-     * @since 2.0.0
-     * @return bool
-     */
-    function show_comments_for_template( $open, $post_id ) {
-        $post_type = get_post_type( $post_id );
-        $template = Location_Domination_Custom_Post_Types::get_template_by_uuid( $post_type );
-
-        if ( $template ) {
-            return get_field( 'show_comments', $template->ID );
-        }
-
-        return $open;
-    }
-
     /**
      * Locate a template by the given UUID.
      *
      * @param $uuid
      *
-     * @since 2.0.0
      * @return WP_Post|null
+     * @since 2.0.0
      */
     public static function get_template_by_uuid( $uuid ) {
         $arguments = [

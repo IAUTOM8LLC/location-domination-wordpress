@@ -293,20 +293,26 @@
                             _this.request.progress = parseFloat( data.progress );
 
                             if ( _this.request.progress >= 100 ) {
-                                clearInterval( interval );
+                                ExternalRepository.finishLocalQueuePostRequest( url );
                             }
                         } );
 
                         if ( parseInt( data.batches_needed ) > 1 ) {
-                            const POLLING_TIME_IN_SECONDS = 20;
+                            let progress = 0;
 
+                            const POLLING_TIME_IN_SECONDS = 20;
                             const interval = setInterval( () => {
                                 _this.pollWorker().then( ( { data } ) => {
-                                    console.log( { data } );
-                                    _this.request.progress = parseFloat( data.progress );
+                                    const _progress = parseFloat( data.progress );
+                                    if ( _progress > progress ) {
+                                        progress = _progress;
+                                    }
+
+                                    _this.request.progress = progress;
 
                                     if ( _this.request.progress >= 100 ) {
                                         clearInterval( interval );
+                                        ExternalRepository.finishLocalQueuePostRequest( url );
                                     }
                                 } );
                             }, (POLLING_TIME_IN_SECONDS * 1000) );

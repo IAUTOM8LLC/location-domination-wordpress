@@ -13,7 +13,7 @@
  * @subpackage Location_Domination/admin
  * @author     iAutoM8 LLC <support@i-autom8.com>
  */
-class Action_Start_Queue implements Action_Interface {
+class Action_Preview_Request implements Action_Interface {
 
     /**
      * The shortcode name.
@@ -22,7 +22,7 @@ class Action_Start_Queue implements Action_Interface {
      * @since 2.0.0
      */
     public function get_key() {
-        return 'location_domination_start_queue';
+        return 'location_domination_preview_request';
     }
 
     /**
@@ -47,7 +47,7 @@ class Action_Start_Queue implements Action_Interface {
         $templateId = (int) $_REQUEST[ 'templateId' ];
 
         // Start queue
-        $response = wp_remote_post( trim( MAIN_URL, '/' ) . '/api/post-requests-local', [
+        $response = wp_remote_post( trim( MAIN_URL, '/' ) . '/api/post-requests-local?preview=1', [
             'body' => $_POST,
         ] );
 
@@ -59,36 +59,7 @@ class Action_Start_Queue implements Action_Interface {
         }
 
         // Remove all existing posts
-        $templateUuid = get_post_meta( $templateId, '_uuid', true );
-
-        if ( $templateUuid ) {
-            $wpdb->delete( $wpdb->prefix . 'posts', [
-                'post_type' => $templateUuid,
-            ] );
-        }
-
         $job = json_decode( $response[ 'body' ] );
-
-        // Record progress
-        if ( ! $option ) {
-            $option = (object) [
-                'request_id'          => $job->post_request,
-                'template_id'         => $templateId,
-                'template_uuid'       => $templateUuid,
-                'progress'            => 0,
-                'job_in_progress'     => false,
-                'last_job_started_at' => false,
-                'requested_at'        => $job->data->requested_at,
-                'total_pages'         => $job->data->total_requested_pages,
-                'batches'             => (object) [
-                    'needed'       => $job->data->batches_needed,
-                    'completed'    => $job->data->batches_completed,
-                    'payload_size' => $job->data->pages_per_batch,
-                ]
-            ];
-        }
-
-        set_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY, $option, 0 );
 
         return wp_send_json( [
             'success'        => true,

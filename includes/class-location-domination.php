@@ -168,6 +168,7 @@ class Location_Domination {
         $this->loader->add_action( 'post_row_actions', $plugin_admin, 'add_send_to_location_domination_row_action', 10, 2 );
         $this->loader->add_action( 'edit_form_after_title', $plugin_admin, 'add_send_to_location_domination_button_below_editor', 10, 2 );
         $this->loader->add_action( 'save_post_' . LOCATION_DOMINATION_TEMPLATE_CPT, $plugin_admin, 'process_template_after_save', 10, 2 );
+        $this->loader->add_action( 'acf/save_post', $plugin_admin, 'process_child_templates_after_save', 10, 2 );
 
         $this->loader->add_filter( 'location_domination_content_pre_spin', $plugin_admin, 'location_domination_content_pre_spin' );
         $this->loader->add_filter( 'location_domination_shortcodes', $plugin_admin, 'shortcode_filters', 10, 2 );
@@ -189,6 +190,7 @@ class Location_Domination {
         $plugin_cpt = new Location_Domination_Custom_Post_Types( $this->get_plugin_name(), $this->get_version() );
 
         $this->loader->add_action( 'init', $plugin_cpt, 'register' );
+        $this->loader->add_action( 'template_redirect', $plugin_cpt, 'redirect_frontend_for_guests' );
         $this->loader->add_filter( 'comments_open', $plugin_cpt, 'show_comments_for_template', 10, 2 );
     }
 
@@ -241,6 +243,7 @@ class Location_Domination {
     private function define_public_hooks() {
         $plugin_public = new Location_Domination_Public( $this->get_plugin_name(), $this->get_version() );
 
+        $this->loader->add_action( 'wp_head', $plugin_public, 'display_schema', 99 );
         $this->loader->add_action( 'pre_get_posts', $plugin_public, 'remove_template_slug_from_request', 10 );
         $this->loader->add_filter( 'post_type_link', $plugin_public, 'remove_template_slug_from_links', 10, 2 );
     }

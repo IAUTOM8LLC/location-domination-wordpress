@@ -22,10 +22,16 @@ class Location_Domination_Spinner {
      * @return string|string[]|null
      * @since 2.0.0
      */
-    static function spin( $content ) {
+    static function spin( $content, $seed = null ) {
+        if ( $seed ) {
+            $integer_seed = crc32( $seed );
+
+            mt_srand($integer_seed);
+        }
+
         return preg_replace_callback( self::REGEX_PATTERN, [
             Location_Domination_Spinner::class,
-            'replace'
+            'replace',
         ], $content );
     }
 

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="cbf7d765-8423-41d9-8adf-1e8b0fa3243c" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/../.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../.idea/Location-Domination-WP-V2.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../.idea/deployment.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../.idea/php.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../docker-compose.yml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ComposerSettings" doNotAsk="true" synchronizationState="SYNCHRONIZE">
+    <pharConfigPath>$PROJECT_DIR$/composer.json</pharConfigPath>
+    <execution>
+      <executable />
+    </execution>
+  </component>
+  <component name="DrupalConfiguration">
+    <drupalPath />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="IgnoredFileRootStore">
+    <option name="generatedRoots">
+      <set>
+        <option value="C:\Users\Jarrod\Projects\VERSTEEG, Matthew\location-domination-wp-v2\src\.idea" />
+      </set>
+    </option>
+  </component>
+  <component name="JoomlaConfiguration">
+    <joomlaConfigPath />
+    <joomlaPath />
+  </component>
+  <component name="PhpWorkspaceProjectConfiguration" interpreter_name="PHP 7.3">
+    <include_path>
+      <path value="$PROJECT_DIR$/vendor/yahnis-elsts/plugin-update-checker" />
+      <path value="$PROJECT_DIR$/vendor/composer" />
+      <path value="$PROJECT_DIR$/../../../NOONAN, Jarrod/WP Playground" />
+    </include_path>
+  </component>
+  <component name="ProjectId" id="1car3Iv9BRBzGeSQm5LNPk1gkAM" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="true" />
+    <property name="WebServerToolWindowPanel.toolwindow.highlight.mappings" value="true" />
+    <property name="WebServerToolWindowPanel.toolwindow.highlight.symlinks" value="true" />
+    <property name="WebServerToolWindowPanel.toolwindow.show.date" value="false" />
+    <property name="WebServerToolWindowPanel.toolwindow.show.permissions" value="false" />
+    <property name="WebServerToolWindowPanel.toolwindow.show.size" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/admin/actions" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="settings.php.frameworks" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Jarrod\Projects\VERSTEEG, Matthew\location-domination-wp-v2\src\admin\actions" />
+      <recent name="C:\Users\Jarrod\Projects\VERSTEEG, Matthew\location-domination-wp-v2\src\public\shortcodes" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="test.php" type="PhpLocalRunConfigurationType" factoryName="PHP Console" temporary="true" path="$PROJECT_DIR$/test.php">
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="PHP Script.test.php" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="ServiceViewManager">
+    <option name="viewStates">
+      <list>
+        <serviceView>
+          <treeState>
+            <expand />
+            <select />
+          </treeState>
+        </serviceView>
+      </list>
+    </option>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="cbf7d765-8423-41d9-8adf-1e8b0fa3243c" name="Default Changelist" comment="" />
+      <created>1590777344619</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1590777344619</updated>
+      <workItem from="1590777346540" duration="19225000" />
+      <workItem from="1590850134669" duration="217000" />
+      <workItem from="1590851857621" duration="9432000" />
+      <workItem from="1590918099376" duration="35474000" />
+      <workItem from="1591102514165" duration="5750000" />
+      <workItem from="1591128769943" duration="20591000" />
+      <workItem from="1591196205158" duration="37289000" />
+      <workItem from="1591274663182" duration="39612000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="552" y="179" key="#Deployment" timestamp="1591277422560">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="552" y="179" key="#Deployment/0.0.1920.1040/-1920.-113.1920.1040@0.0.1920.1040" timestamp="1591144608677" />
+    <state x="552" y="179" key="#Deployment/0.0.1920.1040@0.0.1920.1040" timestamp="1591277422560" />
+    <state x="679" y="76" width="588" height="888" key="#PHP" timestamp="1591358018135">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="679" y="76" width="588" height="888" key="#PHP/0.0.1920.1040@0.0.1920.1040" timestamp="1591358018135" />
+    <state x="674" y="213" key="#test.php" timestamp="1591358019781">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="674" y="213" key="#test.php/0.0.1920.1040@0.0.1920.1040" timestamp="1591358019781" />
+    <state x="740" y="276" key="FileChooserDialogImpl" timestamp="1591382392455">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="740" y="276" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1591382392455" />
+    <state width="1877" height="273" key="GridCell.Tab.0.bottom" timestamp="1591364778333">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="273" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1591364778333" />
+    <state width="1877" height="273" key="GridCell.Tab.0.center" timestamp="1591364778332">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="273" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1591364778332" />
+    <state width="1877" height="273" key="GridCell.Tab.0.left" timestamp="1591364778332">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="273" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1591364778332" />
+    <state width="1877" height="273" key="GridCell.Tab.0.right" timestamp="1591364778333">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="273" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1591364778333" />
+    <state x="794" y="440" key="NewPhpFileDialog" timestamp="1591360718168">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="794" y="440" key="NewPhpFileDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1591360718168" />
+    <state x="426" y="197" key="SettingsEditor" timestamp="1590946951118">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="426" y="197" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1590946951118" />
+    <state x="100" y="100" width="1720" height="840" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1591360478781">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="100" y="100" width="1720" height="840" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.0.1920.1040/-1920.-113.1920.1040@0.0.1920.1040" timestamp="1591149881154" />
+    <state x="100" y="100" width="1720" height="840" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1591360478781" />
+    <state x="646" y="236" width="758" height="638" key="find.popup" timestamp="1591370104046">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="646" y="236" width="758" height="638" key="find.popup/0.0.1920.1040/-1920.-113.1920.1040@0.0.1920.1040" timestamp="1591147726198" />
+    <state x="646" y="236" width="758" height="638" key="find.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1591370104046" />
+    <state x="845" y="171" key="ftp.server.browser" timestamp="1591277420701">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="845" y="171" key="ftp.server.browser/0.0.1920.1040@0.0.1920.1040" timestamp="1591277420701" />
+    <state x="616" y="242" key="run.anything.popup" timestamp="1591297810871">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="616" y="242" key="run.anything.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1591297810871" />
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1591382098362">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup/0.0.1920.1040/-1920.-113.1920.1040@0.0.1920.1040" timestamp="1591145039989" />
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1591382098362" />
+  </component>
+  <component name="WordPressConfiguration" enabled="true">
+    <wordpressPath>C:\Users\Jarrod\Projects\NOONAN, Jarrod\WP Playground</wordpressPath>
+  </component>
+</project>
