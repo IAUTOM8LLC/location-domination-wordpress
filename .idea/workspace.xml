@@ -2,13 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="cbf7d765-8423-41d9-8adf-1e8b0fa3243c" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/../.idea/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../.idea/Location-Domination-WP-V2.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../.idea/deployment.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../.idea/php.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/includes/acf/fields.php" beforeDir="false" afterPath="$PROJECT_DIR$/includes/acf/fields.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/location-domination.php" beforeDir="false" afterPath="$PROJECT_DIR$/location-domination.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,7 +21,7 @@
     <drupalPath />
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="IgnoredFileRootStore">
     <option name="generatedRoots">
@@ -43,6 +39,7 @@
       <path value="$PROJECT_DIR$/vendor/yahnis-elsts/plugin-update-checker" />
       <path value="$PROJECT_DIR$/vendor/composer" />
       <path value="$PROJECT_DIR$/../../../NOONAN, Jarrod/WP Playground" />
+      <path value="$PROJECT_DIR$/vendor/doctrine/inflector" />
     </include_path>
   </component>
   <component name="ProjectId" id="1car3Iv9BRBzGeSQm5LNPk1gkAM" />
@@ -110,6 +107,7 @@
       <workItem from="1591128769943" duration="20591000" />
       <workItem from="1591196205158" duration="37289000" />
       <workItem from="1591274663182" duration="39612000" />
+      <workItem from="1591390149853" duration="739000" />
     </task>
     <servers />
   </component>
@@ -117,11 +115,11 @@
     <option name="version" value="1" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="552" y="179" key="#Deployment" timestamp="1591277422560">
+    <state x="552" y="179" key="#Deployment" timestamp="1591391256095">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="552" y="179" key="#Deployment/0.0.1920.1040/-1920.-113.1920.1040@0.0.1920.1040" timestamp="1591144608677" />
-    <state x="552" y="179" key="#Deployment/0.0.1920.1040@0.0.1920.1040" timestamp="1591277422560" />
+    <state x="552" y="179" key="#Deployment/0.0.1920.1040@0.0.1920.1040" timestamp="1591391256095" />
     <state x="679" y="76" width="588" height="888" key="#PHP" timestamp="1591358018135">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
@@ -168,10 +166,10 @@
     </state>
     <state x="646" y="236" width="758" height="638" key="find.popup/0.0.1920.1040/-1920.-113.1920.1040@0.0.1920.1040" timestamp="1591147726198" />
     <state x="646" y="236" width="758" height="638" key="find.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1591370104046" />
-    <state x="845" y="171" key="ftp.server.browser" timestamp="1591277420701">
+    <state x="845" y="171" key="ftp.server.browser" timestamp="1591391254101">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="845" y="171" key="ftp.server.browser/0.0.1920.1040@0.0.1920.1040" timestamp="1591277420701" />
+    <state x="845" y="171" key="ftp.server.browser/0.0.1920.1040@0.0.1920.1040" timestamp="1591391254101" />
     <state x="616" y="242" key="run.anything.popup" timestamp="1591297810871">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
