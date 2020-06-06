@@ -14,11 +14,13 @@
         </select-input>
 
         <advanced-select-input
+                :preselect="preselect.states"
                 name="states[]" @input="updateCounties" v-model="gridForm.states"
                 v-if="gridForm.group && gridForm.group !== 'For all cities/counties'"
                 :close-on-select="false" :multiple="true" track-by="id" :options="states"
                 label-key="state" label="Select states to target" />
         <advanced-select-input
+                :preselect="preselect.counties"
                 @input="updateCities"
                 name="counties[]" v-model="gridForm.counties"
                 v-if="gridForm.group && (gridForm.group === 'For specific counties' || gridForm.group === 'For specific cities' )"
@@ -26,7 +28,8 @@
                 track-by="id" :options="groupedCounties" label-key="county"
                 label="Select counties to target" />
 
-        <advanced-select-input v-model="gridForm.cities" v-if="gridForm.group && gridForm.group === 'For specific cities'" :close-on-select="false" :multiple="true" track-by="id" :options="cities" label-key="city" label="Select cities to target" />
+        <advanced-select-input
+                :preselect="preselect.cities" v-model="gridForm.cities" v-if="gridForm.group && gridForm.group === 'For specific cities'" :close-on-select="false" :multiple="true" track-by="id" :options="cities" label-key="city" label="Select cities to target" />
 
         <!--        </template>-->
 
@@ -209,9 +212,9 @@
                     estimated_time_in_seconds: 140
                 },
                 preselect: {
-                    cities: [],
-                    states: [],
-                    counties: [],
+                    cities: false,
+                    states: false,
+                    counties: false,
                 },
                 countries: [],
                 counties: [],
@@ -231,17 +234,17 @@
                     this.gridForm = Object.assign( {}, this.gridForm, { group: this.previousRequest.group } );
                 }
 
-                if ( this.previousRequest.hasOwnProperty( 'states' ) ) {
-                    this.preselect = Object.assign( {}, this.preselect, { states: this.previousRequest.states } );
-                }
-
-                if ( this.previousRequest.hasOwnProperty( 'counties' ) ) {
-                    this.preselect = Object.assign( {}, this.preselect, { states: this.previousRequest.counties } );
-                }
-
-                if ( this.previousRequest.hasOwnProperty( 'cities' ) ) {
-                    this.preselect = Object.assign( {}, this.preselect, { states: this.previousRequest.cities } );
-                }
+//                if ( this.previousRequest.hasOwnProperty( 'states' ) ) {
+//                    this.preselect = Object.assign( {}, this.preselect, { states: this.previousRequest.states } );
+//                }
+//
+//                if ( this.previousRequest.hasOwnProperty( 'counties' ) ) {
+//                    this.preselect = Object.assign( {}, this.preselect, { states: this.previousRequest.counties } );
+//                }
+//
+//                if ( this.previousRequest.hasOwnProperty( 'cities' ) ) {
+//                    this.preselect = Object.assign( {}, this.preselect, { states: this.previousRequest.cities } );
+//                }
             }
 
             if ( this.model ) {
@@ -284,15 +287,15 @@
             ExternalRepository.getStates().then( ( Response ) => {
                 this.states = Response.data;
 
-                if ( this.preselect.states ) {
-                    const _states = this.states;
+                const _states = this.states;
 
-                    const states = this.preselect.states.map( ( id ) => {
+                if ( this.previousRequest.hasOwnProperty( 'states' ) ) {
+                    this.preselect.states = this.previousRequest.states.map( ( id ) => {
                         const match = _states.filter( function ( state ) {
                             return parseInt( id ) === state.id;
                         } );
 
-                        return match[0];
+                        return match[ 0 ];
                     } ).filter( state => state );
                 }
             } );
@@ -463,6 +466,18 @@
                             }
                         } ).then( ( { data } ) => {
                             _this.cities = data;
+
+                            const _cities = _this.cities;
+
+                            if ( _this.previousRequest.hasOwnProperty( 'cities' ) && _this.preselect.cities === false ) {
+                                _this.preselect.cities = _this.previousRequest.cities.map( ( id ) => {
+                                    const match = _cities.filter( function ( city ) {
+                                        return parseInt( id ) === city.id;
+                                    } );
+
+                                    return match[ 0 ];
+                                } ).filter( city => city );
+                            }
                         } );
                     }, 1000 );
                 }
@@ -506,6 +521,18 @@
                             }
                         } ).then( response => {
                             _this.counties = response.data;
+
+                            const _counties = _this.counties;
+
+                            if ( _this.previousRequest.hasOwnProperty( 'counties' ) && _this.preselect.counties === false ) {
+                                _this.preselect.counties = _this.previousRequest.counties.map( ( id ) => {
+                                    const match = _counties.filter( function ( county ) {
+                                        return parseInt( id ) === county.id;
+                                    } );
+
+                                    return match[ 0 ];
+                                } ).filter( county => county );
+                            }
                         } );
                     }, 1000 );
                 }

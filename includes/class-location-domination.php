@@ -169,6 +169,7 @@ class Location_Domination {
         $this->loader->add_action( 'edit_form_after_title', $plugin_admin, 'add_send_to_location_domination_button_below_editor', 10, 2 );
         $this->loader->add_action( 'save_post_' . LOCATION_DOMINATION_TEMPLATE_CPT, $plugin_admin, 'process_template_after_save', 10, 2 );
         $this->loader->add_action( 'acf/save_post', $plugin_admin, 'process_child_templates_after_save', 10, 2 );
+        $this->loader->add_action( 'admin_head-post.php', $plugin_admin, 'retrieve_last_post_request', 40 );
 
         $this->loader->add_filter( 'location_domination_content_pre_spin', $plugin_admin, 'location_domination_content_pre_spin' );
         $this->loader->add_filter( 'location_domination_shortcodes', $plugin_admin, 'shortcode_filters', 10, 2 );

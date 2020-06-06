@@ -408,6 +408,91 @@ class Location_Domination_Admin {
     }
 
     /**
+     * Populate the last post request from Location Domination.
+     *
+     * @since 2.0.10
+     * @return void
+     */
+    public function retrieve_last_post_request() {
+        global $post;
+
+        if ( ! $post || ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) ) {
+            return;
+        }
+
+        $last_post_request = get_post_meta( $post->ID, 'location_domination_post_request', true );
+
+        if ( $last_post_request ) {
+            return;
+        }
+
+        $uuid    = get_post_meta( $post->ID, '_uuid', true );
+        $api_key = trim( get_option( 'mpb_api_key' ) );
+
+        if ( $post->post_type !== LOCATION_DOMINATION_TEMPLATE_CPT || ! $uuid || ! $api_key ) {
+            return;
+        }
+
+        $rest_url = sprintf( '%s/api/last-post-request?apiKey=%s&uuid=%s', trim( MAIN_URL, '/' ), $api_key, $uuid );
+
+        $response = wp_remote_get( $rest_url );
+
+        if ( is_wp_error( $response ) || $response['response']['code'] !== 200 ) {
+            return;
+        }
+
+        $request = json_decode( $response['body'] );
+
+
+        if ( $request ) {
+            $_request = [];
+
+            $page_title = get_field( 'page_title' );
+            $page_slug = get_field( 'page_slug' );
+
+            if ( ! $page_title ) {
+                update_field( 'page_title', $request->post_name, $post->ID );
+            }
+
+            if ( ! $page_slug ) {
+                update_field( 'page_slug', $request->post_slug, $post->ID );
+            }
+
+            if ( $request->cities ) {
+                $_request['cities'] = $request->cities;
+            } else {
+                $_request['cities'] = [];
+            }
+
+            if ( $request->states ) {
+                $_request['states'] = $request->states;
+            } else {
+                $_request['states'] = [];
+            }
+
+            if ( $request->counties ) {
+                $_request['counties'] = $request->counties;
+            } else {
+                $_request['counties'] = [];
+            }
+
+            $group = 'For all cities/counties';
+
+            if ( $request->states && $request->counties && $request->cities ) {
+                $group = 'For specific cities';
+            } else if ( $request->states && $request->counties ) {
+                $group = 'For specific counties';
+            } else if ( $request->states ) {
+                $group = 'For specific states';
+            }
+
+            $_request['group'] = $group;
+
+            update_post_meta( $post->ID, 'location_domination_post_request', $_request );
+        }
+    }
+
+    /**
      * Hooks into ACF to get the latest data from the fields
      * before we save it into the database.
      *

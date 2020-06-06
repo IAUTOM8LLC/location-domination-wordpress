@@ -54,6 +54,12 @@
                 type: String,
                 default: 'name',
             },
+            preselect: {
+              type: Array|null,
+              default() {
+                return [];
+              },
+            },
             id: {
                 type: String,
                 default() {
@@ -91,6 +97,14 @@
         watch: {
             selected( selected ) {
                 this.$emit( 'input', selected );
+            },
+
+            preselect: {
+                immediate: true,
+                handler( selected ) {
+                    console.log({ name: this.labelKey, selected });
+                    this.selected = selected;
+                },
             }
         },
 
