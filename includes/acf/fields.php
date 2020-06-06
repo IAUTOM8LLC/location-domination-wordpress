@@ -3,6 +3,59 @@
 if ( function_exists( 'acf_add_local_field_group' ) ):
 
     acf_add_local_field_group( array(
+        'key'                   => 'group_5edaf4f135c9f',
+        'title'                 => 'Location Domination Page Settings',
+        'fields'                => array(
+            array(
+                'key'               => 'field_5edaf5dd883e4',
+                'label'             => 'Lock Page',
+                'name'              => 'lock_page',
+                'type'              => 'true_false',
+                'instructions'      => 'Locking the page will mean that the page doesn\'t get deleted when a new post request is made.',
+                'required'          => 0,
+                'conditional_logic' => 0,
+                'wrapper'           => array(
+                    'width' => '',
+                    'class' => '',
+                    'id'    => '',
+                ),
+                'message'           => '',
+                'default_value'     => 0,
+                'ui'                => 1,
+                'ui_on_text'        => '',
+                'ui_off_text'       => '',
+            ),
+        ),
+        'location'              => array(
+            array(
+                array(
+                    'param'    => 'post_type',
+                    'operator' => '!=',
+                    'value'    => 'post',
+                ),
+                array(
+                    'param'    => 'post_type',
+                    'operator' => '!=',
+                    'value'    => 'page',
+                ),
+                array(
+                    'param'    => 'post_type',
+                    'operator' => '!=',
+                    'value'    => 'mptemplates',
+                ),
+            ),
+        ),
+        'menu_order'            => 0,
+        'position'              => 'normal',
+        'style'                 => 'default',
+        'label_placement'       => 'top',
+        'instruction_placement' => 'label',
+        'hide_on_screen'        => '',
+        'active'                => true,
+        'description'           => '',
+    ) );
+
+    acf_add_local_field_group( array(
         'key'                   => 'group_5ed78a304a77c',
         'title'                 => 'Post Settings',
         'fields'                => array(
@@ -418,8 +471,8 @@ if ( function_exists( 'acf_add_local_field_group' ) ):
                     'class' => '',
                     'id'    => '',
                 ),
-                'display_format'    => 'd/m/Y',
-                'return_format'     => 'd/m/Y',
+                'display_format'    => 'm/d/Y',
+                'return_format'     => 'm/d/Y',
                 'first_day'         => 1,
             ),
             array(

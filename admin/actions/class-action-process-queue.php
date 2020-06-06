@@ -51,7 +51,7 @@ class Action_Process_Queue implements Action_Interface {
         }
 
         if ( isset( $option->progress ) && $option->progress >= 100 ) {
-            return wp_send_json([ 'success' => true, 'completed' => true, 'progress' => 100 ] );
+            return wp_send_json( [ 'success' => true, 'completed' => true, 'progress' => 100 ] );
         }
 
         global $wpdb;
@@ -85,28 +85,29 @@ class Action_Process_Queue implements Action_Interface {
 
             set_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY, $option, 0 );
 
-            $page_title = isset( $fields['page_title'] ) ? $fields['page_title'] : null;
-            $page_slug = isset( $fields['page_slug'] ) ? $fields['page_slug'] : null;
+            $page_title = isset( $fields[ 'page_title' ] ) ? $fields[ 'page_title' ] : null;
+            $page_slug  = isset( $fields[ 'page_slug' ] ) ? $fields[ 'page_slug' ] : null;
 
             foreach ( $json_response->cities as $record ) {
-                $random_template_key = array_rand( $enabled_templates_ids );
-                $base_template_id    = $sub_template_spinning ? $enabled_templates_ids[ $random_template_key ] : $template_id;
-                $base_template       = get_post( $base_template_id, 'ARRAY_A' );
+                $random_template_key    = array_rand( $enabled_templates_ids );
+                $base_template_id       = $sub_template_spinning ? $enabled_templates_ids[ $random_template_key ] : $template_id;
+                $base_template          = get_post( $base_template_id, 'ARRAY_A' );
                 $base_template_settings = $enabled_templates[ $random_template_key ];
 
                 $meta = get_post_custom( $base_template_id );
 
                 $shortcode_bindings = [
-                    '[city]'    => isset( $record->city ) ? $record->city : '',
-                    '[county]'  => isset( $record->county ) ? $record->county : '',
-                    '[state]'   => isset( $record->state ) ? $record->state : '',
-                    '[zips]'    => isset( $record->zips ) ? $record->zips : '',
-                    '[region]'  => isset( $record->region ) ? $record->region : '',
-                    '[country]' => isset( $record->country ) ? $record->country : '',
+                    '[city]'       => isset( $record->city ) ? $record->city : '',
+                    '[county]'     => isset( $record->county ) ? $record->county : '',
+                    '[state]'      => isset( $record->state ) ? $record->state : '',
+                    '[zips]'       => isset( $record->zips ) ? $record->zips : '',
+                    '[region]'     => isset( $record->region ) ? $record->region : '',
+                    '[country]'    => isset( $record->country ) ? $record->country : '',
+                    '[state_abbr]' => isset( $record->state ) ? Shortcode_State_Abbreviation::lookup( $record->state ) : '',
                 ];
 
-                $title = apply_filters( 'location_domination_shortcodes', ( $sub_template_spinning ? $base_template_settings['post_name'] : $base_template[ 'post_title' ] ), $shortcode_bindings );
-                $uuid = get_post_meta( $template_id, '_uuid', true );
+                $title = apply_filters( 'location_domination_shortcodes', ( $sub_template_spinning ? $base_template_settings[ 'post_name' ] : $base_template[ 'post_title' ] ), $shortcode_bindings );
+                $uuid  = get_post_meta( $template_id, '_uuid', true );
 
                 if ( ! $sub_template_spinning && $page_title ) {
                     $title = apply_filters( 'location_domination_shortcodes', $page_title, $shortcode_bindings );
@@ -120,7 +121,7 @@ class Action_Process_Queue implements Action_Interface {
                 ];
 
                 if ( ! $sub_template_spinning && $page_title ) {
-                    $arguments['post_name'] = apply_filters( 'location_domination_shortcodes', $page_slug   , $shortcode_bindings );
+                    $arguments[ 'post_name' ] = apply_filters( 'location_domination_shortcodes', $page_slug, $shortcode_bindings );
                 }
 
 //                $meta_title       = $this->get_parameter_with_shortcodes( $request, 'meta_title', $shortcode_bindings );

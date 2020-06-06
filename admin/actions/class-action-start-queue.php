@@ -51,7 +51,10 @@ class Action_Start_Queue implements Action_Interface {
             'body' => $_POST,
         ] );
 
-        if ( is_wp_error( $response ) || $response['response']['code'] !== 200 ) {
+        // Save post request
+        update_post_meta( $templateId, 'location_domination_post_request', $_POST );
+
+        if ( is_wp_error( $response ) || $response[ 'response' ][ 'code' ] !== 200 ) {
             return wp_send_json( [
                 'success' => false,
                 'message' => _e( 'There was an issue communicating with the server.' )
@@ -63,7 +66,8 @@ class Action_Start_Queue implements Action_Interface {
 
         if ( $templateUuid ) {
             $wpdb->delete( $wpdb->prefix . 'posts', [
-                'post_type' => $templateUuid,
+                'post_type'  => $templateUuid,
+                'menu_order' => 0,
             ] );
         }
 

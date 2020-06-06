@@ -411,13 +411,21 @@ class Location_Domination_Admin {
      * Hooks into ACF to get the latest data from the fields
      * before we save it into the database.
      *
-     * @since 2.0.0
      * @param $post_id
      *
      * @return void
+     * @since 2.0.0
      */
     public function process_child_templates_after_save( $post_id ) {
         global $post;
+
+        // Prevents pages from getting deleted
+        if ( isset( $_POST[ 'acf' ], $_POST[ 'acf' ][ 'field_5edaf5dd883e4' ] ) ) {
+            wp_update_post( [
+                'ID'         => $post_id,
+                'menu_order' => $_POST['acf']['field_5edaf5dd883e4'] ? -1 : 0,
+            ] );
+        }
 
         if ( $post->post_type !== LOCATION_DOMINATION_TEMPLATE_CPT ) {
             return;
@@ -428,11 +436,14 @@ class Location_Domination_Admin {
         $fields = get_fields( $post_id );
 
         remove_action( 'save_post_' . LOCATION_DOMINATION_TEMPLATE_CPT, [ $this, 'process_template_after_save' ] );
-        remove_action( 'save_post_' . LOCATION_DOMINATION_TEMPLATE_CPT, [ $this, 'process_child_templates_after_save' ] );
+        remove_action( 'save_post_' . LOCATION_DOMINATION_TEMPLATE_CPT, [
+            $this,
+            'process_child_templates_after_save'
+        ] );
 
-        $enabled_templates = array_filter( $fields[ 'spin_templates' ], function( $item ) {
-           return $item['enabled'];
-        });
+        $enabled_templates = array_filter( $fields[ 'spin_templates' ], function ( $item ) {
+            return $item[ 'enabled' ];
+        } );
 
         /**
          * Start to process sub-templates and manage their settings
@@ -636,7 +647,7 @@ class Location_Domination_Admin {
      * Sends a request to Location Domination to generate
      * the schema.
      *
-     * @param $post_id int
+     * @param $post_id     int
      * @param $return_json boolean
      *
      * @return array
@@ -660,28 +671,28 @@ class Location_Domination_Admin {
 
         $response = wp_remote_post( $rest_url, [
             'body' => [
-                'date_posted' => get_field( 'job_date_posted', $post_id ),
-                'valid_through' => get_field( 'job_valid_through_date', $post_id ),
+                'date_posted'     => get_field( 'job_date_posted', $post_id ),
+                'valid_through'   => get_field( 'job_valid_through_date', $post_id ),
                 'employment_type' => get_field( 'job_employment_type', $post_id ),
-                'job_title' => get_field( '_ld_job_title', $post_id ),
+                'job_title'       => get_field( '_ld_job_title', $post_id ),
                 'job_description' => get_field( '_ld_job_description', $post_id ),
-                'company_name' => get_field( 'company_name', $post_id ),
-                'base_salary' => $salary['base_salary'],
-                'currency' => $salary['currency'],
+                'company_name'    => get_field( 'company_name', $post_id ),
+                'base_salary'     => $salary[ 'base_salary' ],
+                'currency'        => $salary[ 'currency' ],
             ]
-        ]);
+        ] );
 
         if ( is_wp_error( $response ) ) {
-            $error = _e('There was an error communicating with Location Domination.');
+            $error = _e( 'There was an error communicating with Location Domination.' );
 
             if ( $return_json ) {
-                return wp_send_json([ 'success' => false, 'message' => $error ] );
+                return wp_send_json( [ 'success' => false, 'message' => $error ] );
             }
 
             return Location_Domination_Admin::send_error_on_next_load( $error );
         }
 
-        $json_response = json_decode( $response['body']);
+        $json_response = json_decode( $response[ 'body' ] );
 
         if ( $json_response->success ) {
             update_post_meta( $post_id, 'location_domination_schema_template', $json_response->schema );

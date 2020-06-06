@@ -277,4 +277,37 @@ class Location_Domination_Custom_Post_Types {
 
         return $template_name;
     }
+
+    /**
+     * Get a list of dynamically generated post types by
+     * their UUID.
+     *
+     * @param bool $parent_only
+     *
+     * @return array
+     * @since 2.0.8
+     */
+    public static function get_dynamic_post_types( $parent_only = true ) {
+        $arguments = [
+            'post_type'   => LOCATION_DOMINATION_TEMPLATE_CPT,
+            'post_status' => 'publish',
+        ];
+
+        if ( $parent_only ) {
+            $arguments[ 'post_parent' ] = 0;
+        }
+
+        $uuids = [];
+        $custom_post_types = get_posts( $arguments );
+
+        foreach ( $custom_post_types as $post_type ) {
+            $uuid = get_post_meta( $post_type->ID, '_uuid', true );
+
+            if ( $uuid ) {
+                $uuids[] = $uuid;
+            }
+        }
+
+        return $uuids;
+    }
 }

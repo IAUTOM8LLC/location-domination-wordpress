@@ -165,6 +165,10 @@
                 type: String,
                 default: null
             },
+            previousRequest: {
+                type: Object|Array|null,
+                default: null,
+            },
             templateId: {
                 type: Number | 0,
                 default: 0
@@ -204,6 +208,11 @@
                     progress: 0,
                     estimated_time_in_seconds: 140
                 },
+                preselect: {
+                    cities: [],
+                    states: [],
+                    counties: [],
+                },
                 countries: [],
                 counties: [],
                 states: [],
@@ -216,6 +225,25 @@
 
 
         beforeMount() {
+
+            if ( this.previousRequest ) {
+                if ( this.previousRequest.hasOwnProperty( 'group' ) ) {
+                    this.gridForm = Object.assign( {}, this.gridForm, { group: this.previousRequest.group } );
+                }
+
+                if ( this.previousRequest.hasOwnProperty( 'states' ) ) {
+                    this.preselect = Object.assign( {}, this.preselect, { states: this.previousRequest.states } );
+                }
+
+                if ( this.previousRequest.hasOwnProperty( 'counties' ) ) {
+                    this.preselect = Object.assign( {}, this.preselect, { states: this.previousRequest.counties } );
+                }
+
+                if ( this.previousRequest.hasOwnProperty( 'cities' ) ) {
+                    this.preselect = Object.assign( {}, this.preselect, { states: this.previousRequest.cities } );
+                }
+            }
+
             if ( this.model ) {
 
                 this.gridForm = Object.assign( {}, this.gridForm, this.model.payload );
@@ -247,15 +275,27 @@
         },
 
         mounted() {
+            const _this = this;
+
             ExternalRepository.getCountries().then( ( Response ) => {
                 this.countries = Response.data;
             } );
 
             ExternalRepository.getStates().then( ( Response ) => {
                 this.states = Response.data;
-            } );
 
-            const _this = this;
+                if ( this.preselect.states ) {
+                    const _states = this.states;
+
+                    const states = this.preselect.states.map( ( id ) => {
+                        const match = _states.filter( function ( state ) {
+                            return parseInt( id ) === state.id;
+                        } );
+
+                        return match[0];
+                    } ).filter( state => state );
+                }
+            } );
 
             axios.get( `${this.ajaxUrl}?action=location_domination_get_settings&apiKey=1` ).then( ( { data } ) => {
                 this.gridForm.apiKey = data.apiKey;
@@ -293,7 +333,8 @@
                     meta_title: this.gridForm.meta_title,
                     meta_description: this.gridForm.meta_description,
                     uuid: this.gridForm.uuid,
-                    apiKey: this.gridForm.apiKey
+                    apiKey: this.gridForm.apiKey,
+                    group: this.gridForm.group,
                 };
 
                 const url = this.ajaxUrl;
