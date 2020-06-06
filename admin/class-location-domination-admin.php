@@ -441,9 +441,13 @@ class Location_Domination_Admin {
             'process_child_templates_after_save'
         ] );
 
-        $enabled_templates = array_filter( $fields[ 'spin_templates' ], function ( $item ) {
-            return $item[ 'enabled' ];
-        } );
+        if ( ! $fields['spin_templates'] ) {
+            $enabled_templates = [];
+        } else {
+            $enabled_templates = array_filter( $fields[ 'spin_templates' ], function ( $item ) {
+                return $item[ 'enabled' ];
+            } );
+        }
 
         /**
          * Start to process sub-templates and manage their settings
