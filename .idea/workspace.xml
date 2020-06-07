@@ -2,6 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="cbf7d765-8423-41d9-8adf-1e8b0fa3243c" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin/actions/class-action-preview-request.php" beforeDir="false" afterPath="$PROJECT_DIR$/admin/actions/class-action-preview-request.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin/actions/class-action-process-queue.php" beforeDir="false" afterPath="$PROJECT_DIR$/admin/actions/class-action-process-queue.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin/src/js/Components/PostBuilder.vue" beforeDir="false" afterPath="$PROJECT_DIR$/admin/src/js/Components/PostBuilder.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/assets/js/admin.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/admin.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/location-domination.php" beforeDir="false" afterPath="$PROJECT_DIR$/location-domination.php" afterDir="false" />
     </list>
@@ -107,7 +111,7 @@
       <workItem from="1591196205158" duration="37289000" />
       <workItem from="1591274663182" duration="39612000" />
       <workItem from="1591390149853" duration="14914000" />
-      <workItem from="1591441121337" duration="13777000" />
+      <workItem from="1591441121337" duration="22762000" />
     </task>
     <servers />
   </component>
@@ -156,16 +160,16 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="426" y="197" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1590946951118" />
-    <state x="100" y="100" width="1720" height="840" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1591360478781">
+    <state x="100" y="100" width="1720" height="840" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1591489301365">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="100" y="100" width="1720" height="840" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.0.1920.1040/-1920.-113.1920.1040@0.0.1920.1040" timestamp="1591149881154" />
-    <state x="100" y="100" width="1720" height="840" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1591360478781" />
-    <state x="646" y="236" width="758" height="638" key="find.popup" timestamp="1591474212721">
+    <state x="100" y="100" width="1720" height="840" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1591489301365" />
+    <state x="646" y="236" width="758" height="638" key="find.popup" timestamp="1591491465728">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="646" y="236" width="758" height="638" key="find.popup/0.0.1920.1040/-1920.-113.1920.1040@0.0.1920.1040" timestamp="1591147726198" />
-    <state x="646" y="236" width="758" height="638" key="find.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1591474212721" />
+    <state x="646" y="236" width="758" height="638" key="find.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1591491465728" />
     <state x="845" y="171" key="ftp.server.browser" timestamp="1591391254101">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
@@ -174,11 +178,11 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="616" y="242" key="run.anything.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1591297810871" />
-    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1591476201456">
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1591482874312">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="623" y="225" width="672" height="678" key="search.everywhere.popup/0.0.1920.1040/-1920.-113.1920.1040@0.0.1920.1040" timestamp="1591145039989" />
-    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1591476201456" />
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1591482874312" />
   </component>
   <component name="WordPressConfiguration" enabled="true">
     <wordpressPath>C:\Users\Jarrod\Projects\NOONAN, Jarrod\WP Playground</wordpressPath>

@@ -106,6 +106,8 @@ class Action_Process_Queue implements Action_Interface {
                     '[state_abbr]' => isset( $record->state ) ? Shortcode_State_Abbreviation::lookup( $record->state ) : '',
                 ];
 
+                $is_united_states = isset( $record->country ) ? $record->country === 'United States' : true;
+
                 $title = apply_filters( 'location_domination_shortcodes', ( $sub_template_spinning ? $base_template_settings[ 'post_name' ] : $base_template[ 'post_title' ] ), $shortcode_bindings );
                 $uuid  = get_post_meta( $template_id, '_uuid', true );
 

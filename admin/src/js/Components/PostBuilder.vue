@@ -1,12 +1,13 @@
 <template>
     <div v-if="!request.started">
-        <!--        <advanced-select-input-->
-        <!--                v-model="gridForm.country"-->
-        <!--                @input="updateRegions"-->
-        <!--                :close-on-select="true" track-by="id" :options="countries"-->
-        <!--                label-key="name" label="Select a country" />-->
+                <advanced-select-input
+                        :preselect="preselect.country"
+                        v-model="gridForm.country"
+                        @input="updateRegions"
+                        :close-on-select="true" track-by="id" :options="countries"
+                        label-key="name" label="Select a country" />
 
-        <!--        <template v-if="gridForm.country && gridForm.country.id === 236">-->
+                <template v-if="gridForm.country && gridForm.country.id === 236">
         <select-input name="requestType" v-model="gridForm.group" label="How would you like to build posts?">
             <option v-for="option in groupOptions">
                 {{ option }}
@@ -31,26 +32,28 @@
         <advanced-select-input
                 :preselect="preselect.cities" v-model="gridForm.cities" v-if="gridForm.group && gridForm.group === 'For specific cities'" :close-on-select="false" :multiple="true" track-by="id" :options="cities" label-key="city" label="Select cities to target" />
 
-        <!--        </template>-->
+                </template>
 
-        <!--<template v-else>
+        <template v-else>
             <select-input v-model="gridForm.group" label="How would you like to build posts?">
                 <option v-for="option in otherCountryOptions">
                     {{ option }}
                 </option>
             </select-input>
             <advanced-select-input
+                    :preselect="preselect.regions"
                     v-model="gridForm.regions"
                     @input="updateWorldCities"
                     v-if="gridForm.group && gridForm.group !== 'For all cities/regions'"
                     :close-on-select="false" :multiple="true" track-by="id" :options="regions"
                     label-key="name" label="Select regions to target" />
             <advanced-select-input
+                    :preselect="preselect.cities"
                     v-model="gridForm.cities"
                     v-if="gridForm.group && gridForm.group === 'For specific cities'"
                     :close-on-select="false" :multiple="true" track-by="id" :options="cities"
                     label-key="city" label="Select cities to target" />
-        </template>-->
+        </template>
 
         <button
                 type="button" @click.prevent="buildPosts" style="background:#3356ca;"
@@ -212,8 +215,10 @@
                     estimated_time_in_seconds: 140
                 },
                 preselect: {
+                    country: false,
                     cities: false,
                     states: false,
+                    regions: false,
                     counties: false,
                 },
                 countries: [],
@@ -234,46 +239,17 @@
                     this.gridForm = Object.assign( {}, this.gridForm, { group: this.previousRequest.group } );
                 }
 
-//                if ( this.previousRequest.hasOwnProperty( 'states' ) ) {
-//                    this.preselect = Object.assign( {}, this.preselect, { states: this.previousRequest.states } );
-//                }
-//
-//                if ( this.previousRequest.hasOwnProperty( 'counties' ) ) {
-//                    this.preselect = Object.assign( {}, this.preselect, { states: this.previousRequest.counties } );
-//                }
-//
-//                if ( this.previousRequest.hasOwnProperty( 'cities' ) ) {
-//                    this.preselect = Object.assign( {}, this.preselect, { states: this.previousRequest.cities } );
-//                }
-            }
-
-            if ( this.model ) {
-
-                this.gridForm = Object.assign( {}, this.gridForm, this.model.payload );
-                this.gridForm.template = this.model.template;
-                this.counties = this.initialCounties;
-
-                const { states, counties, domains } = this;
-
-                this.gridForm.domain = _.find( domains, { domain: this.gridForm.domain } );
-
-                this.gridForm.states = this.gridForm.states.map( ( id ) => {
-                    return _.find( states, { id } );
-                } );
-
-                this.gridForm.counties = this.gridForm.counties.map( ( id ) => {
-                    return _.find( counties, { id } );
-                } );
-
-                if ( !this.gridForm.states && !this.gridForm.counties ) {
-                    this.gridForm.group = 'For all cities/counties';
-                }
-                else if ( this.gridForm.states && !this.gridForm.counties ) {
-                    this.gridForm.group = 'For specific states';
-                }
-                else {
-                    this.gridForm.group = 'For specific counties';
-                }
+                //                if ( this.previousRequest.hasOwnProperty( 'states' ) ) {
+                //                    this.preselect = Object.assign( {}, this.preselect, { states: this.previousRequest.states } );
+                //                }
+                //
+                //                if ( this.previousRequest.hasOwnProperty( 'counties' ) ) {
+                //                    this.preselect = Object.assign( {}, this.preselect, { states: this.previousRequest.counties } );
+                //                }
+                //
+                //                if ( this.previousRequest.hasOwnProperty( 'cities' ) ) {
+                //                    this.preselect = Object.assign( {}, this.preselect, { states: this.previousRequest.cities } );
+                //                }
             }
         },
 
@@ -282,6 +258,18 @@
 
             ExternalRepository.getCountries().then( ( Response ) => {
                 this.countries = Response.data;
+
+                const _countries = this.countries;
+
+                if ( this.previousRequest.hasOwnProperty( 'country' ) ) {
+                    const match = _countries.filter( function ( state ) {
+                        return parseInt( _this.previousRequest.country ) === state.id;
+                    } );
+
+                    if ( match[ 0 ] ) {
+                        this.preselect.country = match[0];
+                    }
+                }
             } );
 
             ExternalRepository.getStates().then( ( Response ) => {
@@ -317,28 +305,36 @@
             },
 
             buildPosts() {
-                let states = this.gridForm.states.map( item => {
-                    return item.id;
-                } );
-
-                let counties = this.gridForm.counties.map( item => {
-                    return item.id;
-                } );
-
                 let cities = this.gridForm.cities.map( item => {
                     return item.id;
                 } );
 
                 const form = {
-                    states: states,
-                    counties: counties,
                     cities,
+                    country: this.gridForm.country.id,
                     meta_title: this.gridForm.meta_title,
                     meta_description: this.gridForm.meta_description,
                     uuid: this.gridForm.uuid,
                     apiKey: this.gridForm.apiKey,
                     group: this.gridForm.group,
                 };
+
+                if ( form.country === 236 ) {
+                    let states = this.gridForm.states.map( item => {
+                        return item.id;
+                    } );
+
+                    let counties = this.gridForm.counties.map( item => {
+                        return item.id;
+                    } );
+
+                    form.states = states;
+                    form.counties = counties;
+                } else {
+                    form.regions = this.gridForm.regions.map( item => {
+                        return item.id;
+                    } );
+                }
 
                 const url = this.ajaxUrl;
 
@@ -442,7 +438,17 @@
                             // _this.counties = response.data;
                             _this.cities = data;
 
-                            console.log( { cities: data } );
+                            const _cities = this.cities;
+
+                            if ( this.previousRequest.hasOwnProperty( 'cities' ) ) {
+                                this.preselect.cities = this.previousRequest.cities.map( ( id ) => {
+                                    const match = _cities.filter( function ( city ) {
+                                        return parseInt( id ) === city.id;
+                                    } );
+
+                                    return match[ 0 ];
+                                } ).filter( city => city );
+                            }
                         } );
                     }, 1000 );
                 }
@@ -486,6 +492,13 @@
             updateRegions() {
                 let _this = this;
 
+                this.gridForm = Object.assign( {}, this.gridForm, {
+                    cities: [],
+                    regions: [],
+                    states: [],
+                    counties: [],
+                });
+
                 if ( this.debounces.regions ) {
                     clearTimeout( this.debounces.regions );
                 }
@@ -498,7 +511,17 @@
                     } ).then( response => {
                         _this.regions = response.data;
 
-                        console.log( { regions: _this.regions } );
+                        const _regions = this.regions;
+
+                        if ( this.previousRequest.hasOwnProperty( 'regions' ) ) {
+                            this.preselect.regions = this.previousRequest.regions.map( ( id ) => {
+                                const match = _regions.filter( function ( region ) {
+                                    return parseInt( id ) === region.id;
+                                } );
+
+                                return match[ 0 ];
+                            } ).filter( region => region );
+                        }
                     } );
                 }, 1000 );
             },
