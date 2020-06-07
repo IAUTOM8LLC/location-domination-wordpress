@@ -4,7 +4,7 @@
             <select :id="id" ref="input" v-bind="$attrs"
                     :class="{ error: errors.length, 'px-5 pt-8 pb-2': size === 'lg', 'px-5 py-3 input-md': size === 'md' }"
                     v-model="selected"
-                    class="input filled border border-gray-400 appearance-none rounded w-full bg-white focus focus:border-indigo-600 focus:outline-none active:outline-none active:border-indigo-600">
+                    class="input h-auto filled border border-gray-400 appearance-none rounded w-full bg-white focus focus:border-indigo-600 focus:outline-none active:outline-none active:border-indigo-600">
                 <slot/>
             </select>
             <label style="left:7px;" v-if="label" :for="id"
