@@ -2,11 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="cbf7d765-8423-41d9-8adf-1e8b0fa3243c" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/sshConfigs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin/src/js/Components/Inputs/Select.vue" beforeDir="false" afterPath="$PROJECT_DIR$/admin/src/js/Components/Inputs/Select.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin/src/scss/index.scss" beforeDir="false" afterPath="$PROJECT_DIR$/admin/src/scss/index.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/js/admin.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/admin.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/js/style.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/style.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin/actions/class-action-start-queue.php" beforeDir="false" afterPath="$PROJECT_DIR$/admin/actions/class-action-start-queue.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin/src/js/Components/PostBuilder.vue" beforeDir="false" afterPath="$PROJECT_DIR$/admin/src/js/Components/PostBuilder.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/includes/class-location-domination-custom-post-types.php" beforeDir="false" afterPath="$PROJECT_DIR$/includes/class-location-domination-custom-post-types.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/location-domination.php" beforeDir="false" afterPath="$PROJECT_DIR$/location-domination.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -16,22 +16,13 @@
   </component>
   <component name="ComposerSettings" doNotAsk="true" synchronizationState="SYNCHRONIZE">
     <pharConfigPath>$PROJECT_DIR$/composer.json</pharConfigPath>
-    <execution>
-      <executable />
-    </execution>
+    <execution />
   </component>
   <component name="DrupalConfiguration">
     <drupalPath />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-  </component>
-  <component name="IgnoredFileRootStore">
-    <option name="generatedRoots">
-      <set>
-        <option value="C:\Users\Jarrod\Projects\VERSTEEG, Matthew\location-domination-wp-v2\src\.idea" />
-      </set>
-    </option>
   </component>
   <component name="JoomlaConfiguration">
     <joomlaConfigPath />
@@ -41,7 +32,7 @@
     <include_path>
       <path value="$PROJECT_DIR$/vendor/yahnis-elsts/plugin-update-checker" />
       <path value="$PROJECT_DIR$/vendor/composer" />
-      <path value="$PROJECT_DIR$/../../../NOONAN, Jarrod/WP Playground" />
+      <path value="$USER_HOME$/NOONAN, Jarrod/WP Playground" />
       <path value="$PROJECT_DIR$/vendor/doctrine/inflector" />
     </include_path>
   </component>
@@ -49,18 +40,19 @@
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
-    <option name="showExcludedFiles" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="true" />
     <property name="WebServerToolWindowPanel.toolwindow.highlight.mappings" value="true" />
     <property name="WebServerToolWindowPanel.toolwindow.highlight.symlinks" value="true" />
     <property name="WebServerToolWindowPanel.toolwindow.show.date" value="false" />
     <property name="WebServerToolWindowPanel.toolwindow.show.permissions" value="false" />
     <property name="WebServerToolWindowPanel.toolwindow.show.size" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/public/shortcodes" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="settings.editor.selected.configurable" value="settings.php.frameworks" />
   </component>
@@ -79,18 +71,6 @@
         <item itemvalue="PHP Script.test.php" />
       </list>
     </recent_temporary>
-  </component>
-  <component name="ServiceViewManager">
-    <option name="viewStates">
-      <list>
-        <serviceView>
-          <treeState>
-            <expand />
-            <select />
-          </treeState>
-        </serviceView>
-      </list>
-    </option>
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -112,22 +92,28 @@
       <workItem from="1591274663182" duration="39612000" />
       <workItem from="1591390149853" duration="14914000" />
       <workItem from="1591441121337" duration="23216000" />
+      <workItem from="1591802178661" duration="1094000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
-    <option name="version" value="1" />
+    <option name="version" value="2" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="552" y="179" key="#Deployment" timestamp="1591391256095">
-      <screen x="0" y="0" width="1920" height="1040" />
+    <state x="552" y="219" key="#Deployment" timestamp="1591802383525">
+      <screen x="0" y="40" width="1920" height="1040" />
     </state>
     <state x="552" y="179" key="#Deployment/0.0.1920.1040/-1920.-113.1920.1040@0.0.1920.1040" timestamp="1591144608677" />
     <state x="552" y="179" key="#Deployment/0.0.1920.1040@0.0.1920.1040" timestamp="1591391256095" />
+    <state x="552" y="219" key="#Deployment/0.40.1920.1040/-1920.0.1920.1040@0.40.1920.1040" timestamp="1591802383525" />
     <state x="679" y="76" width="588" height="888" key="#PHP" timestamp="1591358018135">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="679" y="76" width="588" height="888" key="#PHP/0.0.1920.1040@0.0.1920.1040" timestamp="1591358018135" />
+    <state x="536" y="206" key="#SSH_Configurations" timestamp="1591802341208">
+      <screen x="0" y="40" width="1920" height="1040" />
+    </state>
+    <state x="536" y="206" key="#SSH_Configurations/0.40.1920.1040/-1920.0.1920.1040@0.40.1920.1040" timestamp="1591802341208" />
     <state x="674" y="213" key="#test.php" timestamp="1591358019781">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
@@ -165,15 +151,17 @@
     </state>
     <state x="100" y="100" width="1720" height="840" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.0.1920.1040/-1920.-113.1920.1040@0.0.1920.1040" timestamp="1591149881154" />
     <state x="100" y="100" width="1720" height="840" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1591489301365" />
-    <state x="646" y="236" width="758" height="638" key="find.popup" timestamp="1591491465728">
-      <screen x="0" y="0" width="1920" height="1040" />
+    <state x="646" y="276" width="758" height="638" key="find.popup" timestamp="1591802952972">
+      <screen x="0" y="40" width="1920" height="1040" />
     </state>
     <state x="646" y="236" width="758" height="638" key="find.popup/0.0.1920.1040/-1920.-113.1920.1040@0.0.1920.1040" timestamp="1591147726198" />
     <state x="646" y="236" width="758" height="638" key="find.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1591491465728" />
-    <state x="845" y="171" key="ftp.server.browser" timestamp="1591391254101">
-      <screen x="0" y="0" width="1920" height="1040" />
+    <state x="646" y="276" width="758" height="638" key="find.popup/0.40.1920.1040/-1920.0.1920.1040@0.40.1920.1040" timestamp="1591802952972" />
+    <state x="394" y="230" width="522" height="700" key="ftp.server.browser" timestamp="1591802382345">
+      <screen x="0" y="40" width="1920" height="1040" />
     </state>
     <state x="845" y="171" key="ftp.server.browser/0.0.1920.1040@0.0.1920.1040" timestamp="1591391254101" />
+    <state x="394" y="230" width="522" height="700" key="ftp.server.browser/0.40.1920.1040/-1920.0.1920.1040@0.40.1920.1040" timestamp="1591802382345" />
     <state x="616" y="242" key="run.anything.popup" timestamp="1591297810871">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>

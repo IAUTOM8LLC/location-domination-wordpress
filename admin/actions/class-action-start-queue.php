@@ -57,7 +57,7 @@ class Action_Start_Queue implements Action_Interface {
         if ( is_wp_error( $response ) || $response[ 'response' ][ 'code' ] !== 200 ) {
             return wp_send_json( [
                 'success' => false,
-                'message' => _e( 'There was an issue communicating with the server.' )
+                'message' => 'There was an issue communicating with the server.',
             ] );
         }
 
