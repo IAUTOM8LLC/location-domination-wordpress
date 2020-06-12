@@ -43,9 +43,11 @@ class Location_Domination_Shortcodes {
      */
     protected $shortcodes = [
         Shortcode_Map::class,
+        Shortcode_Zips::class,
         Shortcode_City::class,
         Shortcode_State::class,
         Shortcode_County::class,
+        Shortcode_Breadcrumbs::class,
         Shortcode_Internal_Links::class,
         Shortcode_Job_Posting::class,
         Shortcode_State_Abbreviation::class,

@@ -149,7 +149,7 @@ class Location_Domination_Public {
 
             $posts = get_posts( $arguments );
 
-            $types = [ 'post', 'page' ];
+            $types = array( 'post', 'single-link', 'page' );
 
             if ( count( $posts ) > 0 ) {
                 foreach ( $posts as $post ) {
@@ -159,9 +159,14 @@ class Location_Domination_Public {
                         $types[] = $type;
                     }
                 }
-
-                $query->set( 'post_type', $types );
             }
+
+            $query->set( 'post_type', $types );
+        } else if ( ! empty( $query->query[ 'pagename' ] ) && false === strpos( $query->query[ 'pagename' ], '/' ) ) {
+            $query->set( 'post_type', array( 'post', 'single-link', 'page' ) );
+
+            // We also need to set the name query var since redirect_guess_404_permalink() relies on it.
+            $query->set( 'name', $query->query[ 'pagename' ] );
         }
     }
 

@@ -203,7 +203,10 @@ class Location_Domination_Custom_Post_Types {
                 'show_ui'            => true,
                 'show_in_menu'       => true,
                 'query_var'          => true,
-                'rewrite'            => [ 'slug' => $post->post_name ],
+                'rewrite'            => ! $use_template_slug ? [
+                    'slug'       => '/',
+                    'with_front' => false
+                ] : [ 'slug' => $post->post_name ],
                 'capability_type'    => 'page',
                 'has_archive'        => true,
                 'hierarchical'       => false,
