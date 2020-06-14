@@ -53,6 +53,8 @@ class Location_Domination_Admin {
         Action_Get_Settings::class,
         Action_Preview_Request::class,
 
+        Action_Cancel_Queue::class,
+        Action_Continue_Queue::class,
         Action_Start_Queue::class,
         Action_Process_Queue::class,
         Action_End_Queue::class,

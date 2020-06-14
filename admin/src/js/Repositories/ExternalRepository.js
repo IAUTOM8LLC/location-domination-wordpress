@@ -55,6 +55,28 @@ export class ExternalRepository {
         return axios( options );
     }
 
+    static cancelLocalQueuePostRequest( url, templateId, nonce ) {
+        const options = {
+            method: 'POST',
+            headers: { 'content-type': 'application/x-www-form-urlencoded' },
+            data: qs.stringify( {} ),
+            url: `${url}?action=location_domination_cancel_queue&_nonce=${nonce}&templateId=${templateId}`
+        };
+
+        return axios( options );
+    }
+
+    static continueLocalQueuePostRequest( url, templateId, nonce ) {
+        const options = {
+            method: 'POST',
+            headers: { 'content-type': 'application/x-www-form-urlencoded' },
+            data: qs.stringify( {} ),
+            url: `${url}?action=location_domination_continue_queue&_nonce=${nonce}&templateId=${templateId}`
+        };
+
+        return axios( options );
+    }
+
     static previewPostRequest( data, url, templateId, nonce ) {
         const options = {
             method: 'POST',
@@ -66,12 +88,12 @@ export class ExternalRepository {
         return axios( options );
     }
 
-    static finishLocalQueuePostRequest( url ) {
+    static finishLocalQueuePostRequest( url, templateId ) {
         const options = {
             method: 'POST',
             headers: { 'content-type': 'application/x-www-form-urlencoded' },
             data: qs.stringify([]),
-            url: `${url}?action=location_domination_end_queue`
+            url: `${url}?action=location_domination_end_queue&templateId=${templateId}`
         };
 
         return axios( options );

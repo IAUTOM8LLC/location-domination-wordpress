@@ -35,8 +35,9 @@ class Action_Process_Queue implements Action_Interface {
      */
     public function handle() {
         $start = microtime( true );
+        $template_id = (int) $_POST[ 'template' ];
 
-        $option = get_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY );
+        $option = get_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id );
 
         if ( ! $option ) {
             return wp_send_json( [ 'success' => false, 'message' => 'You have no active jobs running.' ] );
@@ -56,7 +57,6 @@ class Action_Process_Queue implements Action_Interface {
 
         global $wpdb;
 
-        $template_id = (int) $_POST[ 'template' ];
         $template    = get_post( $template_id, 'ARRAY_A' );
 
         $fields = get_fields( $template_id );
@@ -83,7 +83,7 @@ class Action_Process_Queue implements Action_Interface {
             $option->job_in_progress     = true;
             $option->last_job_started_at = time();
 
-            set_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY, $option, 0 );
+            set_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id, $option, 0 );
 
             $page_title = isset( $fields[ 'page_title' ] ) ? $fields[ 'page_title' ] : null;
             $page_slug  = isset( $fields[ 'page_slug' ] ) ? $fields[ 'page_slug' ] : null;
@@ -156,7 +156,7 @@ class Action_Process_Queue implements Action_Interface {
             $option->batches->completed ++;
             $option->progress = round( ( $option->batches->completed / $option->batches->needed ) * 100 );
 
-            set_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY, $option, 0 );
+            set_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id, $option, 0 );
 
             $execution_time           = microtime( true ) - $start;
             $batches_remaining        = $option->batches->needed - $option->batches->completed;

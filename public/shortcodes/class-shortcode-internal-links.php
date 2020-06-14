@@ -48,34 +48,39 @@ class Shortcode_Internal_Links implements Shortcode_Interface {
             'country' => null,
         ], $attributes );
 
-        /**h
+        /**
          * Get a collection of higher-grouped countries
          */
-        $table = $wpdb->prefix . 'postmeta';
-
-        $results = $wpdb->get_results( $wpdb->prepare(
-            "SELECT meta_key, meta_value FROM ${table} WHERE meta_key = '_county' AND meta_value = %s GROUP BY meta_key",
-                'Arkansas'
-//            'SELECT * FROM ' . $wpdb->prefix . 'postmeta WHERE meta_key = \'_city\' GROUP BY \'\''
-        ));
-
-        var_dump($results);
-        exit;
-
         $meta_query = [];
 
         if ( $attributes[ 'city' ] ) {
-            $meta_query = [
+            $meta_query[] = [
                 'key'     => '_city',
                 'value'   => esc_attr( $attributes[ 'city' ] ),
                 'compare' => '=',
             ];
         }
 
+        if ( $attributes[ 'country' ] ) {
+            $meta_query[] = [
+                'key'     => '_country',
+                'value'   => esc_attr( $attributes[ 'country' ] ),
+                'compare' => '=',
+            ];
+        }
+
         if ( $attributes[ 'state' ] ) {
-            $meta_query = [
+            $meta_query[] = [
                 'key'     => '_state',
                 'value'   => esc_attr( $attributes[ 'state' ] ),
+                'compare' => '=',
+            ];
+        }
+
+        if ( $attributes[ 'region' ] ) {
+            $meta_query[] = [
+                'key'     => '_region',
+                'value'   => esc_attr( $attributes[ 'region' ] ),
                 'compare' => '=',
             ];
         }

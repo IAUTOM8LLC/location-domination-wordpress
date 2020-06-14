@@ -32,7 +32,8 @@ class Action_End_Queue implements Action_Interface {
      * @since 2.0.0
      */
     public function handle() {
-        $option = get_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY );
+        $template_id = (int) $_REQUEST[ 'templateId' ];
+        $option = get_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id );
 
         Location_Domination_Admin::clear_permalinks_queued();
 
@@ -42,7 +43,7 @@ class Action_End_Queue implements Action_Interface {
         }
 
         // Delete queue transient
-        delete_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY );
+        delete_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id );
 
         return wp_send_json([ 'success' => true ] );
     }

@@ -65,6 +65,6 @@ class Metabox_Shortcodes implements Metabox_Interface {
      * @access public
      */
     public function get_title() {
-        return 'Available Shortcodes';
+        return 'Location Domination Shortcodes';
     }
 }

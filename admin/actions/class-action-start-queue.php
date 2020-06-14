@@ -92,7 +92,7 @@ class Action_Start_Queue implements Action_Interface {
             ];
         }
 
-        set_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY, $option, 0 );
+        set_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_'. $templateId, $option, 0 );
 
         return wp_send_json( [
             'success'        => true,
