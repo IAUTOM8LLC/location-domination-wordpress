@@ -13,9 +13,9 @@
  * @subpackage Location_Domination/admin
  * @author     iAutoM8 LLC <support@i-autom8.com>
  */
-class Action_Process_Index implements Action_Interface {
+class Action_Process_Indexing implements Action_Interface {
 
-    static $LOCATION_DOMINATION_PROGRESS_KEY = 'location-domination-index-progress';
+    static $LOCATION_DOMINATION_PROGRESS_KEY = 'location-domination-indexing-progress';
 
     /**
      * The shortcode name.
@@ -24,7 +24,7 @@ class Action_Process_Index implements Action_Interface {
      * @since 2.0.0
      */
     public function get_key() {
-        return 'location_domination_process_index';
+        return 'location_domination_process_indexing';
     }
 
     /**
@@ -37,7 +37,7 @@ class Action_Process_Index implements Action_Interface {
         $start = microtime( true );
         $template_id = (int) $_POST[ 'template' ];
 
-        $option = get_transient( Action_Process_Index::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id );
+        $option = get_transient( Action_Process_Indexing::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id );
 
         if ( ! $option ) {
             return wp_send_json( [ 'success' => false, 'message' => 'You have no active jobs running.' ] );
@@ -57,120 +57,24 @@ class Action_Process_Index implements Action_Interface {
 
         global $wpdb;
 
-        $template    = get_post( $template_id, 'ARRAY_A' );
+        $post_type = get_post_meta( $template_id, '_uuid', true );
 
-        $fields = get_fields( $template_id );
+        $query = new \WP_Query([
+            'post_type' => $post_type,
+            'posts_per_page' => 75,
+            'paged' => $option->batches->completed,
+        ]);
 
-        $enabled_templates = array_filter( $fields[ 'spin_templates' ], function ( $item ) {
-            return $item[ 'enabled' ];
-        } );
+        if ( $query->have_posts() ) {
+            while ( $query->have_posts() ) {
+                $query->the_post();
 
-        $enabled_templates_ids = array_map( function ( $item ) {
-            return $item[ 'template' ];
-        }, $enabled_templates );
-
-        $sub_template_spinning = count( $enabled_templates_ids ) > 0;
-
-        // Start batching responses
-        $last_post_request_id = (int) $option->request_id;
-        $url                  = sprintf( '%s/api/post-requests/%d/workload?batch=%d', trim( MAIN_URL, '/' ), $last_post_request_id, $option->batches->completed );
-
-        $response = wp_remote_get( $url );
-
-        if ( ! is_wp_error( $response ) ) {
-            $json_response = json_decode( $response[ 'body' ] );
-
-            $option->job_in_progress     = true;
-            $option->last_job_started_at = time();
-
-            set_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id, $option, 0 );
-
-            $page_title = isset( $fields[ 'page_title' ] ) ? $fields[ 'page_title' ] : null;
-            $page_slug  = isset( $fields[ 'page_slug' ] ) ? $fields[ 'page_slug' ] : null;
-
-            foreach ( $json_response->cities as $record ) {
-                $random_template_key    = array_rand( $enabled_templates_ids );
-                $base_template_id       = $sub_template_spinning ? $enabled_templates_ids[ $random_template_key ] : $template_id;
-                $base_template          = get_post( $base_template_id, 'ARRAY_A' );
-                $base_template_settings = $enabled_templates[ $random_template_key ];
-
-                $meta = get_post_custom( $base_template_id );
-
-                $shortcode_bindings = [
-                    '[city]'       => isset( $record->city ) ? $record->city : '',
-                    '[county]'     => isset( $record->county ) ? $record->county : '',
-                    '[state]'      => isset( $record->state ) ? $record->state : '',
-                    '[zips]'       => isset( $record->zips ) ? $record->zips : '',
-                    '[region]'     => isset( $record->region ) ? $record->region : '',
-                    '[country]'    => isset( $record->country ) ? $record->country : '',
-                    '[state_abbr]' => isset( $record->state ) ? Shortcode_State_Abbreviation::lookup( $record->state ) : '',
-                ];
-
-                $is_united_states = isset( $record->country ) ? $record->country === 'United States' : true;
-
-                $title = apply_filters( 'location_domination_shortcodes', ( $sub_template_spinning ? $base_template_settings[ 'post_name' ] : $base_template[ 'post_title' ] ), $shortcode_bindings );
-                $uuid  = get_post_meta( $template_id, '_uuid', true );
-
-                if ( ! $sub_template_spinning && $page_title ) {
-                    $title = apply_filters( 'location_domination_shortcodes', $page_title, $shortcode_bindings );
-                }
-
-                $arguments = [
-                    'post_type'    => get_post_meta( $template_id, '_uuid', true ),
-                    'post_title'   => Location_Domination_Spinner::spin( $title ),
-                    'post_content' => Location_Domination_Spinner::spin( $base_template[ 'post_content' ] ),
-                    'post_status'  => 'publish',
-                ];
-
-                if ( ! $sub_template_spinning && $page_title ) {
-                    $arguments[ 'post_name' ] = apply_filters( 'location_domination_shortcodes', $page_slug, $shortcode_bindings );
-                }
-
-//                $meta_title       = $this->get_parameter_with_shortcodes( $request, 'meta_title', $shortcode_bindings );
-//                $meta_description = $this->get_parameter_with_shortcodes( $request, 'meta_description', $shortcode_bindings );
-//                $job_title        = $this->get_parameter_with_shortcodes( $request, 'job_title', $shortcode_bindings );
-//                $job_description  = $this->get_parameter_with_shortcodes( $request, 'job_description', $shortcode_bindings );
-//                $schema           = $this->get_parameter_with_shortcodes( $request, 'schema', $shortcode_bindings );
-
-                $new_post_id = wp_insert_post( $arguments );
-
-                Endpoint_Create_Posts::meta_spinner( $meta, $new_post_id, $shortcode_bindings );
-
-                add_post_meta( $new_post_id, '_city', isset( $record->city ) ? $record->city : '' );
-                add_post_meta( $new_post_id, '_state', isset( $record->state ) ? $record->state : '' );
-                add_post_meta( $new_post_id, '_county', isset( $record->county ) ? $record->county : '' );
-                add_post_meta( $new_post_id, '_zips', isset( $record->zips ) ? $record->zips : '' );
-                add_post_meta( $new_post_id, '_region', isset( $record->region ) ? $record->region : '' );
-                add_post_meta( $new_post_id, '_country', isset( $record->country ) ? $record->country : '' );
-                update_post_meta( $new_post_id, '_uuid', $uuid );
-//                if ( isset( $schema ) && $schema ) {
-//                    add_post_meta( $arguments[ 'ID' ], '_ld_schema', $schema );
-//                }
-//
-//                $wpdb->query( 'COMMIT;' );
+                var_dump(get_post_meta( get_the_ID() ) );
             }
-
-            // Update transient to tell the next job it can continue
-            $option->job_in_progress     = false;
-            $option->last_job_started_at = false;
-            $option->batches->completed ++;
-            $option->progress = round( ( $option->batches->completed / $option->batches->needed ) * 100 );
-
-            set_transient( Action_Process_Index::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id, $option, 0 );
-
-            $execution_time           = microtime( true ) - $start;
-            $batches_remaining        = $option->batches->needed - $option->batches->completed;
-            $estimated_time_remaining = ( $batches_remaining + 10 ) * $execution_time;
-
-            return wp_send_json( [
-                'success'                  => true,
-                'execution_time'           => ceil( $execution_time ),
-                'progress'                 => $option->progress,
-                'batches_left'             => $batches_remaining,
-                'batches_remaining'        => $batches_remaining,
-                'estimated_time_remaining' => ceil( $estimated_time_remaining ),
-            ] );
         }
+        exit;
+
+        $template    = get_post( $template_id, 'ARRAY_A' );
 
         return wp_send_json( [ 'success' => false ] );
     }

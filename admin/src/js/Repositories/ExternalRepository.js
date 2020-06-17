@@ -55,6 +55,17 @@ export class ExternalRepository {
         return axios( options );
     }
 
+    static startIndexing( data, url, templateId, nonce ) {
+        const options = {
+            method: 'POST',
+            headers: { 'content-type': 'application/x-www-form-urlencoded' },
+            data: qs.stringify( data ),
+            url: `${url}?action=location_domination_start_queue&_nonce=${nonce}&templateId=${templateId}`
+        };
+
+        return axios( options );
+    }
+
     static cancelLocalQueuePostRequest( url, templateId, nonce ) {
         const options = {
             method: 'POST',
@@ -107,6 +118,19 @@ export class ExternalRepository {
                 template: templateId,
             }),
             url: `${url}?action=location_domination_process_queue`
+        };
+
+        return axios( options );
+    }
+
+    static pollIndex(url, templateId) {
+        const options = {
+            method: 'POST',
+            headers: { 'content-type': 'application/x-www-form-urlencoded' },
+            data: qs.stringify({
+                template: templateId,
+            }),
+            url: `${url}?action=location_domination_process_index`
         };
 
         return axios( options );
