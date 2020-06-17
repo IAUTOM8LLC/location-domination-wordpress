@@ -16,7 +16,7 @@
  * Plugin Name:       Location Domination
  * Plugin URI:        https://locationdomination.net
  * Description:       An iAutoM8 plugin designed to make mass page generating easy!
- * Version:           2.0.17
+ * Version:           2.0.18
  * Author:            iAutoM8 LLC
  * Author URI:        https://i-autom8.com
  * License:           GPL-2.0+
@@ -37,7 +37,7 @@ require_once( __DIR__ . '/vendor/autoload.php' );
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'LOCATION_DOMINATION_VERSION', '2.0.17' );
+define( 'LOCATION_DOMINATION_VERSION', '2.0.18' );
 
 /**
  * The URL to interact with Location Domination.
@@ -47,6 +47,12 @@ define( 'LOCATION_DOMINATION_VERSION', '2.0.17' );
 define( 'MAIN_URL', 'https://dashboard.locationdomination.net/' );
 //define( 'MAIN_URL', 'https://locationdomination.net/' );
 
+/**
+ * The option key for storing the API token.
+ *
+ * @since 2.0.0
+ */
+define( 'LOCATION_DOMINATION_INDEX_DB_TABLE', 'locationdomination_index' );
 
 /**
  * The option key for storing the API token.

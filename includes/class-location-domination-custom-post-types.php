@@ -168,6 +168,7 @@ class Location_Domination_Custom_Post_Types {
             'post_parent' => 0,
             'post_type'   => LOCATION_DOMINATION_TEMPLATE_CPT,
             'post_status' => 'publish',
+            'numberposts' => -1,
         ];
 
         $custom_post_types = get_posts( $arguments );
@@ -291,6 +292,7 @@ class Location_Domination_Custom_Post_Types {
         $arguments = [
             'post_type'   => LOCATION_DOMINATION_TEMPLATE_CPT,
             'post_status' => 'publish',
+            'numberposts' => -1,
         ];
 
         if ( $parent_only ) {
