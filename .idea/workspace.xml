@@ -3,11 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="cbf7d765-8423-41d9-8adf-1e8b0fa3243c" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin/actions/class-action-process-indexing.php" beforeDir="false" afterPath="$PROJECT_DIR$/admin/actions/class-action-process-indexing.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin/actions/class-action-start-indexing.php" beforeDir="false" afterPath="$PROJECT_DIR$/admin/actions/class-action-start-indexing.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin/class-location-domination-admin.php" beforeDir="false" afterPath="$PROJECT_DIR$/admin/class-location-domination-admin.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin/src/js/Components/PostBuilder.vue" beforeDir="false" afterPath="$PROJECT_DIR$/admin/src/js/Components/PostBuilder.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin/src/js/Repositories/ExternalRepository.js" beforeDir="false" afterPath="$PROJECT_DIR$/admin/src/js/Repositories/ExternalRepository.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/location-domination.php" beforeDir="false" afterPath="$PROJECT_DIR$/location-domination.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/metaboxes/views/settings.php" beforeDir="false" afterPath="$PROJECT_DIR$/metaboxes/views/settings.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -117,7 +113,7 @@
       <workItem from="1592001982040" duration="1482000" />
       <workItem from="1592154900975" duration="22471000" />
       <workItem from="1592265626972" duration="108000" />
-      <workItem from="1592411619235" duration="806000" />
+      <workItem from="1592411619235" duration="1257000" />
     </task>
     <servers />
   </component>
@@ -171,11 +167,11 @@
     </state>
     <state x="100" y="100" width="1720" height="840" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.0.1920.1040/-1920.-113.1920.1040@0.0.1920.1040" timestamp="1591149881154" />
     <state x="100" y="100" width="1720" height="840" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1591922182231" />
-    <state x="646" y="236" width="758" height="638" key="find.popup" timestamp="1592245098484">
+    <state x="646" y="236" width="758" height="638" key="find.popup" timestamp="1592412825531">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="646" y="236" width="758" height="638" key="find.popup/0.0.1920.1040/-1920.-113.1920.1040@0.0.1920.1040" timestamp="1591147726198" />
-    <state x="646" y="236" width="758" height="638" key="find.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1592245098484" />
+    <state x="646" y="236" width="758" height="638" key="find.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1592412825531" />
     <state x="845" y="171" key="ftp.server.browser" timestamp="1591391254101">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
