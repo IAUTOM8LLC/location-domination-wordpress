@@ -58,9 +58,6 @@ class Location_Domination_Admin {
         Action_Start_Queue::class,
         Action_Process_Queue::class,
         Action_End_Queue::class,
-
-        Action_Start_Indexing::class,
-        Action_Process_Indexing::class,
     ];
 
     /**

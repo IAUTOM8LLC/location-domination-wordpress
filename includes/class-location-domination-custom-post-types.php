@@ -169,16 +169,14 @@ class Location_Domination_Custom_Post_Types {
             'post_type'   => LOCATION_DOMINATION_TEMPLATE_CPT,
             'post_status' => 'publish',
             'numberposts' => -1,
+            'fields' => 'ids',
         ];
 
         $custom_post_types = get_posts( $arguments );
 
-        foreach ( $custom_post_types as $post ) {
-            setup_postdata( $post );
-
-            $title    = get_the_title( $post->ID );
+        foreach ( $custom_post_types as $post_id ) {
+            $title    = get_the_title( $post_id );
             $singular = $title;
-//            $singular = \Doctrine\Common\Inflector\Inflector::singularize( $title );
 
             $labels = [
                 'name'               => $title,
@@ -195,11 +193,11 @@ class Location_Domination_Custom_Post_Types {
                 'menu_name'          => wp_strip_all_tags( $title ),
             ];
 
-            $use_template_slug = get_field( 'use_template_slug', $post->ID );
+            $use_template_slug = get_field( 'use_template_slug', $post_id );
 
             $arguments = [
                 'labels'             => $labels,
-                'public'             => true,
+                'public'             => false,
                 'publicly_queryable' => true,
                 'show_ui'            => true,
                 'show_in_menu'       => true,
@@ -207,7 +205,7 @@ class Location_Domination_Custom_Post_Types {
                 'rewrite'            => ! $use_template_slug ? [
                     'slug'       => '/',
                     'with_front' => false
-                ] : [ 'slug' => $post->post_name ],
+                ] : [ 'slug' => get_post_field( 'post_name', $post_id ) ],
                 'capability_type'    => 'page',
                 'has_archive'        => true,
                 'hierarchical'       => false,
@@ -220,11 +218,9 @@ class Location_Domination_Custom_Post_Types {
                 ],
             ];
 
-            $template_name = self::get_template_name( $post );
+            $template_name = self::get_template_name( $post_id );
 
             register_post_type( $template_name, $arguments );
-
-            wp_reset_postdata();
         }
     }
 
@@ -260,20 +256,20 @@ class Location_Domination_Custom_Post_Types {
      * Determine the name of the template based upon the
      * WP_Post object.
      *
-     * @param \WP_Post $post
+     * @param int $post_id
      *
      * @return mixed|string
      * @since 2.0.0
      */
-    public static function get_template_name( WP_Post $post ) {
-        $uuid = get_post_meta( $post->ID, '_uuid', true );
+    public static function get_template_name( $post_id ) {
+        $uuid = get_post_meta( $post_id, '_uuid', true );
 
         if ( $uuid ) {
             $template_name = $uuid;
-        } else if ( $post->post_name ) {
-            $template_name = $post->post_name;
+        } else if ( $slug = get_post_field( 'post_name', $post_id ) ) {
+            $template_name = $slug;
         } else {
-            $template_name = sanitize_title_with_dashes( $post->post_title );
+            $template_name = sanitize_title_with_dashes( get_the_title( $post_id ) );
         }
 
         return $template_name;
