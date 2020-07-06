@@ -34,6 +34,8 @@ class Shortcode_Internal_Links implements Shortcode_Interface {
      * @since 2.0.0
      */
     public function handle( $attributes = [] ) {
+        require_once( __DIR__ . '/../../includes/class-location-domination-activator.php' );
+
         global $post, $wpdb;
 
         if ( is_admin() || ! $post ) {
@@ -46,59 +48,60 @@ class Shortcode_Internal_Links implements Shortcode_Interface {
             'region' => null,
             'state' => null,
             'country' => null,
+            'post_type' => null,
+            'scope' => 'states', // region, states, counties, cities,
         ], $attributes );
 
         /**
          * Get a collection of higher-grouped countries
          */
-        $meta_query = [];
+        $meta_query = '';
+
+        if ( $attributes[ 'post_type' ] ) {
+            $value = esc_attr( $attributes[ 'post_type' ] );
+
+            $meta_query = "post_type = '${value}'";
+        }
 
         if ( $attributes[ 'city' ] ) {
-            $meta_query[] = [
-                'key'     => '_city',
-                'value'   => esc_attr( $attributes[ 'city' ] ),
-                'compare' => '=',
-            ];
+            $value = esc_attr( $attributes[ 'city' ] );
+
+            $meta_query .= " AND city = '${value}'";
         }
 
         if ( $attributes[ 'country' ] ) {
-            $meta_query[] = [
-                'key'     => '_country',
-                'value'   => esc_attr( $attributes[ 'country' ] ),
-                'compare' => '=',
-            ];
+            $value = esc_attr( $attributes[ 'country' ] );
+
+            $meta_query .= " AND country = '${value}'";
         }
 
         if ( $attributes[ 'state' ] ) {
-            $meta_query[] = [
-                'key'     => '_state',
-                'value'   => esc_attr( $attributes[ 'state' ] ),
-                'compare' => '=',
-            ];
+            $value = esc_attr( $attributes[ 'state' ] );
+
+            $meta_query .= " AND state = '${value}'";
         }
 
         if ( $attributes[ 'region' ] ) {
-            $meta_query[] = [
-                'key'     => '_region',
-                'value'   => esc_attr( $attributes[ 'region' ] ),
-                'compare' => '=',
-            ];
+            $value = esc_attr( $attributes[ 'region' ] );
+
+            $meta_query .= " AND region = '${value}'";
         }
 
-        $arguments = [
-            'post_type'   => $post->post_type,
-            'post_status' => 'publish',
-            'numberposts' => -1,
-            'meta_query'  => array(
-                'relation' => 'AND',
-                $meta_query,
-            ),
-        ];
+        $meta_query = ltrim( $meta_query, ' AND' );
+        $table = Location_Domination_Activator::getTableName();
+
+        $query = "SELECT * FROM ${table} WHERE ${meta_query}";
+
+        $results = $wpdb->get_results( $query );
 
         echo '<ul>';
 
-        foreach ( get_posts( $arguments ) as $post ) {
-            echo sprintf( '<li>%s</li>', $post->post_title );
+        foreach ( $results as $result ) {
+            if ( $attributes[ 'scope' ] === 'cities' ) {
+                echo sprintf( '<li><a href="%s">%s</a></li>', get_the_permalink( $result->post_id ), $result->city );
+            } else if ( $attributes[ 'scope' ] === 'region' ) {
+                echo sprintf( '<li><a href="%s">%s</a></li>', get_the_permalink( $result->post_id ), get_the_title( $result->city ) );
+            }
         }
 
         echo '</ul>';

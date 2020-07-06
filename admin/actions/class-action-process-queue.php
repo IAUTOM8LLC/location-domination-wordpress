@@ -34,7 +34,7 @@ class Action_Process_Queue implements Action_Interface {
      * @since 2.0.0
      */
     public function handle() {
-        $start = microtime( true );
+        $start       = microtime( true );
         $template_id = (int) $_POST[ 'template' ];
 
         $option = get_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id );
@@ -57,7 +57,9 @@ class Action_Process_Queue implements Action_Interface {
 
         global $wpdb;
 
-        $template    = get_post( $template_id, 'ARRAY_A' );
+        require_once( __DIR__ . '/../../includes/class-location-domination-activator.php' );
+
+        $template = get_post( $template_id, 'ARRAY_A' );
 
         $fields = get_fields( $template_id );
 
@@ -143,6 +145,18 @@ class Action_Process_Queue implements Action_Interface {
                 add_post_meta( $new_post_id, '_region', isset( $record->region ) ? $record->region : '' );
                 add_post_meta( $new_post_id, '_country', isset( $record->country ) ? $record->country : '' );
                 update_post_meta( $new_post_id, '_uuid', $uuid );
+
+                $wpdb->insert( Location_Domination_Activator::getTableName(), [
+                    'post_type' => $uuid,
+                    'post_id'   => $new_post_id,
+                    'country'   => isset( $record->country ) ? $record->country : null,
+                    'state'     => isset( $record->state ) ? $record->state : null,
+                    'county'    => isset( $record->county ) ? $record->county : null,
+                    'region'    => isset( $record->region ) ? $record->region : null,
+                    'city'      => isset( $record->city ) ? $record->city : null,
+                    'locked'    => 0,
+                ] );
+
 //                if ( isset( $schema ) && $schema ) {
 //                    add_post_meta( $arguments[ 'ID' ], '_ld_schema', $schema );
 //                }

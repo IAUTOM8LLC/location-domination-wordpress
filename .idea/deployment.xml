@@ -2,6 +2,13 @@
 <project version="4">
   <component name="PublishConfigData" autoUpload="Always" serverName="wp.noonan.ltd">
     <serverData>
+      <paths name="Cookathome">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
       <paths name="Development Server">
         <serverdata>
           <mappings>
@@ -9,14 +16,28 @@
           </mappings>
         </serverdata>
       </paths>
-      <paths name="Development Server (WP)">
+      <paths name="En-Pro">
         <serverdata>
           <mappings>
             <mapping local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>
-      <paths name="En-Pro">
+      <paths name="Freelancer: Carl - QuizLive">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="Freelancer: EDWARD W">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="Freelancer: James M CRM">
         <serverdata>
           <mappings>
             <mapping local="$PROJECT_DIR$" web="/" />
@@ -44,6 +65,13 @@
           </mappings>
         </serverdata>
       </paths>
+      <paths name="Samantha Payne">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
       <paths name="Vapor server">
         <serverdata>
           <mappings>
@@ -51,7 +79,7 @@
           </mappings>
         </serverdata>
       </paths>
-      <paths name="flooring">
+      <paths name="buffetmonster">
         <serverdata>
           <mappings>
             <mapping local="$PROJECT_DIR$" web="/" />
@@ -59,6 +87,20 @@
         </serverdata>
       </paths>
       <paths name="fs-cil.easywp.com">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="gymontv.com">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="kinsta cloud">
         <serverdata>
           <mappings>
             <mapping local="$PROJECT_DIR$" web="/" />
@@ -94,6 +136,20 @@
         </serverdata>
       </paths>
       <paths name="poker site">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="reston staging">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="screenshot.webhostcrunch.com">
         <serverdata>
           <mappings>
             <mapping local="$PROJECT_DIR$" web="/" />
