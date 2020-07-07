@@ -2,18 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="cbf7d765-8423-41d9-8adf-1e8b0fa3243c" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin/actions/class-action-end-queue.php" beforeDir="false" afterPath="$PROJECT_DIR$/admin/actions/class-action-end-queue.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin/actions/class-action-process-queue.php" beforeDir="false" afterPath="$PROJECT_DIR$/admin/actions/class-action-process-queue.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin/actions/class-action-start-indexing.php" beforeDir="false" afterPath="$PROJECT_DIR$/admin/actions/class-action-start-indexing.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin/actions/class-action-start-queue.php" beforeDir="false" afterPath="$PROJECT_DIR$/admin/actions/class-action-start-queue.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin/class-location-domination-admin.php" beforeDir="false" afterPath="$PROJECT_DIR$/admin/class-location-domination-admin.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin/src/js/Components/PostBuilder.vue" beforeDir="false" afterPath="$PROJECT_DIR$/admin/src/js/Components/PostBuilder.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/js/admin.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/admin.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/includes/class-location-domination-custom-post-types.php" beforeDir="false" afterPath="$PROJECT_DIR$/includes/class-location-domination-custom-post-types.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/includes/class-location-domination.php" beforeDir="false" afterPath="$PROJECT_DIR$/includes/class-location-domination.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/shortcodes/class-shortcode-internal-links.php" beforeDir="false" afterPath="$PROJECT_DIR$/public/shortcodes/class-shortcode-internal-links.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/location-domination.php" beforeDir="false" afterPath="$PROJECT_DIR$/location-domination.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -130,7 +119,7 @@
       <workItem from="1593004486550" duration="12000" />
       <workItem from="1593625993862" duration="597000" />
       <workItem from="1593868321642" duration="2646000" />
-      <workItem from="1594039808023" duration="33339000" />
+      <workItem from="1594039808023" duration="33392000" />
     </task>
     <servers />
   </component>
