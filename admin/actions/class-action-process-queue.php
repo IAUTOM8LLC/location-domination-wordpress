@@ -152,7 +152,7 @@ class Action_Process_Queue implements Action_Interface {
                     'country'   => isset( $record->country ) ? $record->country : null,
                     'state'     => isset( $record->state ) ? $record->state : null,
                     'county'    => isset( $record->county ) ? $record->county : null,
-                    'region'    => isset( $record->region ) ? $record->region : null,
+                    'region'    => isset( $record->region ) ? $record->region : ( isset( $record->county ) ? $record->county : null ),
                     'city'      => isset( $record->city ) ? $record->city : null,
                     'locked'    => 0,
                 ] );

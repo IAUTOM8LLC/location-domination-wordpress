@@ -1,15 +1,5 @@
 <template>
-    <div v-if="requiresIndexing">
-        <p class="text-gray-600 text-base text-center mt-5 mb-4">In our latest release, we have added in
-            <strong>internal linking</strong>. In order to make use of this feature, we need to build an index of your posts for this post type. Would you like to continue?
-        </p>
-
-        <div class="mt-8 flex justify-center mb-6">
-            <button @click.prevent="continuePosts" type="button" class="bg-blue-700 px-5 py-2 mr-4 text-white font-semibold">Continue</button>
-            <button @click.prevent="cancelPosts" type="button" class="bg-transparent self-center block text-blue-500 font-semibold">Cancel</button>
-        </div>
-    </div>
-    <div v-else-if="(!previousRequestTransient || request.cancelled) && !request.started">
+    <div v-if="(!previousRequestTransient || request.cancelled) && !request.started">
         <advanced-select-input
                 :preselect="preselect.country"
                 v-model="gridForm.country"
@@ -202,10 +192,6 @@
                 type: String,
                 default: null
             },
-            requiresIndexing: {
-                type: Boolean,
-                default: false
-            },
             previousRequest: {
                 type: Object | Array | null,
                 default: null
@@ -344,19 +330,6 @@
                 return ExternalRepository.pollPostRequest( this.ajaxUrl, this.templateId );
             },
 
-            pollWorkerAtInterval( interval, callback) {
-                let progress = this.request.progress;
-                const _this = this;
-
-                callback( null );
-
-                const _interval = setInterval( function () {
-                    ExternalRepository.pollPostRequest( this.ajaxUrl, this.templateId ).then( ( { data } ) => {
-                        callback( _interval );
-                    } );
-                }, interval );
-            },
-
             cancelPosts() {
                 return ExternalRepository.cancelLocalQueuePostRequest( this.ajaxUrl, this.templateId, this.nonce ).then( () => {
                     this.request.cancelled = true;
@@ -436,33 +409,28 @@
                                         let progress = 0;
 
                                         const POLLING_TIME_IN_SECONDS = 20;
+                                        const interval = setInterval( () => {
+                                            _this.pollWorker().then( ( { data } ) => {
+                                                const _progress = parseFloat( data.progress );
+                                                const estimated_time_remaining = parseFloat( data.estimated_time_remaining );
 
-                                        this.pollWorkerAtInterval( POLLING_TIME_IN_SECONDS * 1000, ( _interval, data ) => {
-                                            const _progress = parseFloat( data.progress );
-                                            const estimated_time_remaining = parseFloat( data.estimated_time_remaining );
+                                                if ( _progress > progress ) {
+                                                    progress = _progress;
+                                                }
 
-                                            if ( _progress > progress ) {
-                                                progress = _progress;
-                                            }
+                                                if ( estimated_time_remaining ) {
+                                                    _this.request.estimated_time_in_seconds = estimated_time_remaining;
+                                                }
 
-                                            if ( estimated_time_remaining ) {
-                                                _this.request.estimated_time_in_seconds = estimated_time_remaining;
-                                            }
+                                                _this.request.progress = progress;
 
-                                            _this.request.progress = progress;
-
-                                            if ( _this.request.progress >= 100 ) {
-                                                _this.request.completed = true;
-
-                                                clearInterval( _interval );
-
-                                                return ExternalRepository.finishLocalQueuePostRequest( url, _this.templateId );
-                                            }
-
-                                            clearInterval( _interval );
-
-                                            _this.pollWorkerAtInterval( POLLING_TIME_IN_SECONDS * 1000 );
-                                        })
+                                                if ( _this.request.progress >= 100 ) {
+                                                    _this.request.completed = true;
+                                                    clearInterval( interval );
+                                                    ExternalRepository.finishLocalQueuePostRequest( url, _this.templateId );
+                                                }
+                                            } );
+                                        }, (POLLING_TIME_IN_SECONDS * 1000) );
                                     }
                                 }
                                 else {

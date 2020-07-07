@@ -90,6 +90,7 @@ class Action_Start_Queue implements Action_Interface {
                 'progress'            => 0,
                 'job_in_progress'     => false,
                 'last_job_started_at' => false,
+                'request'             => $_POST,
                 'requested_at'        => $job->data->requested_at,
                 'total_pages'         => $job->data->total_requested_pages,
                 'batches'             => (object) [

@@ -238,6 +238,11 @@ class Location_Domination_Admin {
                 $metabox->get_context()
             );
         }
+
+        remove_meta_box( 'seopress_cpt', LOCATION_DOMINATION_TEMPLATE_CPT, 'normal' );
+        remove_meta_box( 'seopress_content_analysis', LOCATION_DOMINATION_TEMPLATE_CPT, 'normal' );
+        remove_meta_box( 'wpseo_meta', LOCATION_DOMINATION_TEMPLATE_CPT, 'normal' );
+        remove_meta_box( 'aiosp', LOCATION_DOMINATION_TEMPLATE_CPT, 'normal' );
     }
 
     /**

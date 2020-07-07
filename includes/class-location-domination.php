@@ -164,7 +164,7 @@ class Location_Domination {
         $this->loader->add_Action( 'admin_init', $plugin_admin, 'check_permalink_structure' );
         $this->loader->add_action( 'admin_menu', $plugin_admin, 'register_admin_page' );
         $this->loader->add_action( 'admin_notices', $plugin_admin, 'show_error_notices' );
-        $this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'register_metaboxes' );
+        $this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'register_metaboxes', 999 );
         $this->loader->add_action( 'post_row_actions', $plugin_admin, 'add_send_to_location_domination_row_action', 10, 2 );
         $this->loader->add_action( 'edit_form_after_title', $plugin_admin, 'add_send_to_location_domination_button_below_editor', 10, 2 );
         $this->loader->add_action( 'save_post_' . LOCATION_DOMINATION_TEMPLATE_CPT, $plugin_admin, 'process_template_after_save', 10, 2 );
