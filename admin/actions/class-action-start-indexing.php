@@ -110,6 +110,7 @@ class Action_Start_Indexing implements Action_Interface {
         ]);
 
         if ( ! is_wp_error( $post_id ) ) {
+            update_post_meta( $post_id, '_ld_index', true );
             update_post_meta( $post_id, $context, $context_value );
         }
 

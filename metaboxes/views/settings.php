@@ -3,6 +3,8 @@
 
 //    $index_table_name = $wpdb->prefix . LOCATION_DOMINATION_INDEX_DB_TABLE;
 
+    $create_indexes = get_field( 'create_index_pages' );
+
     $previous_request_meta = get_post_meta( $post->ID, 'location_domination_post_request', true );
     $previous_request =  $previous_request_meta ? json_encode( $previous_request_meta ) : 'null';
     $previous_request_transient = get_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY  . '_' . $post->ID );

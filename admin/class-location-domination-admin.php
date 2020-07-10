@@ -509,7 +509,7 @@ class Location_Domination_Admin {
      * @since 2.0.0
      */
     public function process_child_templates_after_save( $post_id ) {
-        global $post;
+        global $post, $wpdb;
 
         // Prevents pages from getting deleted
         if ( isset( $_POST[ 'acf' ], $_POST[ 'acf' ][ 'field_5edaf5dd883e4' ] ) ) {
