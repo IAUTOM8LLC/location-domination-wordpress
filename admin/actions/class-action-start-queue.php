@@ -36,6 +36,8 @@ class Action_Start_Queue implements Action_Interface {
             return wp_send_json( [ 'success' => false, 'message' => 'Your session has expired.' ] );
         }
 
+        require_once( __DIR__ . '/../../includes/class-location-domination-activator.php' );
+
         global $wpdb;
 
         $option = get_option( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY );
@@ -44,7 +46,15 @@ class Action_Start_Queue implements Action_Interface {
             return wp_send_json( [ 'success' => false, 'message' => 'You already have a job started.' ] );
         }
 
-        $templateId = (int) $_REQUEST[ 'templateId' ];
+        maybe_create_table( Location_Domination_Activator::getTableName(), Location_Domination_Activator::getTableSql() );
+
+        $templateId   = (int) $_REQUEST[ 'templateId' ];
+        $templateUuid = get_post_meta( $templateId, '_uuid', true );
+
+        $wpdb->delete( Location_Domination_Activator::getTableName(), [
+            'post_type' => $templateUuid,
+            'locked'    => 0,
+        ] );
 
         // Start queue
         $response = wp_remote_post( trim( MAIN_URL, '/' ) . '/api/post-requests-local', [
@@ -62,8 +72,6 @@ class Action_Start_Queue implements Action_Interface {
         }
 
         // Remove all existing posts
-        $templateUuid = get_post_meta( $templateId, '_uuid', true );
-
         if ( $templateUuid ) {
             $wpdb->delete( $wpdb->prefix . 'posts', [
                 'post_type'  => $templateUuid,
@@ -82,6 +90,7 @@ class Action_Start_Queue implements Action_Interface {
                 'progress'            => 0,
                 'job_in_progress'     => false,
                 'last_job_started_at' => false,
+                'request'             => $_POST,
                 'requested_at'        => $job->data->requested_at,
                 'total_pages'         => $job->data->total_requested_pages,
                 'batches'             => (object) [
@@ -92,7 +101,7 @@ class Action_Start_Queue implements Action_Interface {
             ];
         }
 
-        set_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_'. $templateId, $option, 0 );
+        set_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $templateId, $option, 0 );
 
         return wp_send_json( [
             'success'        => true,

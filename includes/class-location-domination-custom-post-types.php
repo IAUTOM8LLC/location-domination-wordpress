@@ -207,7 +207,7 @@ class Location_Domination_Custom_Post_Types {
                     'with_front' => false
                 ] : [ 'slug' => get_post_field( 'post_name', $post_id ) ],
                 'capability_type'    => 'page',
-                'has_archive'        => true,
+                'has_archive'        => false,
                 'hierarchical'       => false,
                 'supports'           => [
                     'title',

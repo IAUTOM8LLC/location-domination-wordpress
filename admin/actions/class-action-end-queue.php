@@ -35,6 +35,15 @@ class Action_End_Queue implements Action_Interface {
         $template_id = (int) $_REQUEST[ 'templateId' ];
         $option = get_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id );
 
+        // Build index pages
+        $create_indexes = get_field( 'create_index_pages', $template_id );
+
+        if ( $create_indexes ) {
+            $indexer = new Action_Start_Indexing();
+            $indexer->setRequest( $option->request );
+            $indexer->handle();
+        }
+
         Location_Domination_Admin::clear_permalinks_queued();
 
         if ( class_exists( 'Elementor\\Plugin' ) ) {

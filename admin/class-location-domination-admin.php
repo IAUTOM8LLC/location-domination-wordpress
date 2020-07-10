@@ -238,6 +238,11 @@ class Location_Domination_Admin {
                 $metabox->get_context()
             );
         }
+
+        remove_meta_box( 'seopress_cpt', LOCATION_DOMINATION_TEMPLATE_CPT, 'normal' );
+        remove_meta_box( 'seopress_content_analysis', LOCATION_DOMINATION_TEMPLATE_CPT, 'normal' );
+        remove_meta_box( 'wpseo_meta', LOCATION_DOMINATION_TEMPLATE_CPT, 'normal' );
+        remove_meta_box( 'aiosp', LOCATION_DOMINATION_TEMPLATE_CPT, 'normal' );
     }
 
     /**
@@ -504,7 +509,7 @@ class Location_Domination_Admin {
      * @since 2.0.0
      */
     public function process_child_templates_after_save( $post_id ) {
-        global $post;
+        global $post, $wpdb;
 
         // Prevents pages from getting deleted
         if ( isset( $_POST[ 'acf' ], $_POST[ 'acf' ][ 'field_5edaf5dd883e4' ] ) ) {
