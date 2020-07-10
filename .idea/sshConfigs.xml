@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="SshConfigs">
-    <configs>
-      <sshConfig authType="PASSWORD" host="localhost" id="500e11ad-6781-468c-a6dc-73204c57a9cd" port="22" nameFormat="DESCRIPTIVE" />
-      <sshConfig authType="PASSWORD" host="159.65.89.26" id="417daf0c-9b1a-47ae-96ea-4aac1bcd14ad" port="22" customName="wp.noonan.ltd" nameFormat="CUSTOM" username="master_tbwetcmqyv" />
-    </configs>
-  </component>
-</project>
