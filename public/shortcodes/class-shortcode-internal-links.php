@@ -47,10 +47,25 @@ class Shortcode_Internal_Links implements Shortcode_Interface {
             'county'    => null,
             'region'    => null,
             'state'     => null,
-            'country'   => null,
-            'post_type' => null,
-            'scope'     => 'states', // region, states, counties, cities,
+            'country'   => 'United States',
+            'post_type' => $post->post_type,
+            'template' => null,
+            'scope'     => 'cities', // region, states, counties, cities,
         ], $attributes );
+
+        $output = '';
+
+        if ( $attributes['template'] ) {
+            $value = esc_attr( $attributes[ 'template' ] );
+            $templates = explode( ',', $value );
+            $post_types = [];
+
+            foreach( $templates as $template ) {
+                $post_types[] = get_post_meta( (int) $template, '_uuid', true );
+            }
+
+            $attributes['post_type'] = $post_types;
+        }
 
         if ( $attributes[ 'scope' ] === 'cities' ) {
 
@@ -60,9 +75,19 @@ class Shortcode_Internal_Links implements Shortcode_Interface {
             $meta_query = '';
 
             if ( $attributes[ 'post_type' ] ) {
-                $value = esc_attr( $attributes[ 'post_type' ] );
+                if ( is_array( $attributes[ 'post_type' ] ) ) {
+                    $post_types = '';
 
-                $meta_query = "post_type = '${value}'";
+                    foreach ( $attributes['post_type'] as $type ) {
+                        $post_types .= "'$type', ";
+                    }
+
+                    $post_types = rtrim( $post_types, ', ' );
+
+                    $meta_query = "post_type IN (${post_types})";
+                } else {
+                    $meta_query = "post_type = '${value}'";
+                }
             }
 
             if ( $attributes[ 'city' ] ) {
@@ -99,23 +124,22 @@ class Shortcode_Internal_Links implements Shortcode_Interface {
             $table      = Location_Domination_Activator::getTableName();
 
             $query = "SELECT * FROM ${table} WHERE ${meta_query}";
-
             $results = $wpdb->get_results( $query );
 
-            echo '<ul>';
+            $output .= '<ul>';
 
             foreach ( $results as $result ) {
-                echo sprintf( '<li><a href="%s">%s</a></li>', get_the_permalink( $result->post_id ), $result->city );
+                $output .= sprintf( '<li><a href="%s">%s</a></li>', get_the_permalink( $result->post_id ), $result->city );
 
 //                else if ( $attributes[ 'scope' ] === 'region' ) {
 //                    echo sprintf( '<li><a href="%s">%s</a></li>', get_the_permalink( $result->post_id ), get_the_title( $result->city ) );
 //                }
             }
 
-            echo '</ul>';
+            $output .= '</ul>';
         } else if ( $attributes[ 'scope' ] === 'counties' ) {
             $state    = esc_attr( $attributes[ 'state' ] );
-            $counties = $this->get_counties_in_state( $state );
+            $counties = $this->get_counties_in_state( $state, $attributes['post_type'] );
 
             if ( $counties ) {
                 // context = State, County
@@ -126,7 +150,7 @@ class Shortcode_Internal_Links implements Shortcode_Interface {
                 }
 
                 $posts = array(
-                    'post_type'  => $post->post_type,
+                    'post_type'  => $attributes['post_type'] ?: $post->post_type,
                     'fields'     => 'ids',
                     'meta_query' => array(
                         array(
@@ -140,18 +164,18 @@ class Shortcode_Internal_Links implements Shortcode_Interface {
                 $query = new \WP_Query( $posts );
 
                 if ( $query->have_posts() ) {
-                    echo '<ul>';
+                    $output .= '<ul>';
 
                     foreach ( $query->posts as $post_id ) {
-                        echo sprintf( '<li><a href="%s">%s</a></li>', get_the_permalink( $post_id ), get_the_title( $post_id ) );
+                        $output .= sprintf( '<li><a href="%s">%s</a></li>', get_the_permalink( $post_id ), get_the_title( $post_id ) );
                     }
 
-                    echo '</ul>';
+                    $output .= '</ul>';
                 }
             }
         } else if ( $attributes[ 'scope' ] === 'states' ) {
             $country    = esc_attr( $attributes[ 'country' ] );
-            $states = $this->get_states_in_country( $country );
+            $states = $this->get_states_in_country( $country, $attributes['post_type'] );
 
             if ( $states ) {
                 // context = State
@@ -162,7 +186,7 @@ class Shortcode_Internal_Links implements Shortcode_Interface {
                 }
 
                 $posts = array(
-                    'post_type'  => $post->post_type,
+                    'post_type'  => $attributes['post_type'] ?: $post->post_type,
                     'fields'     => 'ids',
                     'meta_query' => array(
                         array(
@@ -176,34 +200,60 @@ class Shortcode_Internal_Links implements Shortcode_Interface {
                 $query = new \WP_Query( $posts );
 
                 if ( $query->have_posts() ) {
-                    echo '<ul>';
+                    $output .= '<ul>';
 
                     foreach ( $query->posts as $post_id ) {
-                        echo sprintf( '<li><a href="%s">%s</a></li>', get_the_permalink( $post_id ), get_the_title( $post_id ) );
+                        $output .= sprintf( '<li><a href="%s">%s</a></li>', get_the_permalink( $post_id ), get_the_title( $post_id ) );
                     }
 
-                    echo '</ul>';
+                    $output .= '</ul>';
                 }
             }
         }
+
+        return $output;
     }
 
-    protected function get_counties_in_state( $state ) {
-        global $wpdb, $post;
+    protected function get_counties_in_state( $state, $post_type ) {
+        global $wpdb;
 
         $table_name = Location_Domination_Activator::getTableName();
 
-        $query = $wpdb->prepare( "SELECT state, county FROM ${table_name} WHERE post_type = '%s' AND state = '%s' GROUP BY state, county", $post->post_type, $state );
+        if ( is_array( $post_type ) ) {
+            $post_types = '';
+
+            foreach ( $post_type as $type ) {
+                $post_types .= "'$type', ";
+            }
+
+            $post_types = rtrim( $post_types, ', ' );
+
+            $query = $wpdb->prepare( "SELECT state, county FROM ${table_name} WHERE post_type IN (${post_types}) AND state = '%s' GROUP BY state, county", $post_type, $state );
+        } else {
+            $query = $wpdb->prepare( "SELECT state, county FROM ${table_name} WHERE post_type = '%s' AND state = '%s' GROUP BY state, county", $post_type, $state );
+        }
 
         return $wpdb->get_results( $query );
     }
 
-    protected function get_states_in_country( $country ) {
-        global $wpdb, $post;
+    protected function get_states_in_country( $country, $post_type ) {
+        global $wpdb;
 
         $table_name = Location_Domination_Activator::getTableName();
 
-        $query = $wpdb->prepare( "SELECT state FROM ${table_name} WHERE post_type = '%s' AND country = '%s' GROUP BY state", $post->post_type, $country );
+        if ( is_array( $post_type ) ) {
+            $post_types = '';
+
+            foreach ( $post_type as $type ) {
+                $post_types .= "'$type', ";
+            }
+
+            $post_types = rtrim($post_types, ', ' );
+
+            $query = $wpdb->prepare( "SELECT state FROM ${table_name} WHERE post_type IN (${post_types}) AND country = '%s' GROUP BY state", $country );
+        } else {
+            $query = $wpdb->prepare( "SELECT state FROM ${table_name} WHERE post_type = '%s' AND country = '%s' GROUP BY state", $post_type, $country );
+        }
 
         return $wpdb->get_results( $query );
     }
