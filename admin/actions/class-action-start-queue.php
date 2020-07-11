@@ -46,6 +46,28 @@ class Action_Start_Queue implements Action_Interface {
             return wp_send_json( [ 'success' => false, 'message' => 'You already have a job started.' ] );
         }
 
+        if ( ! function_exists( 'maybe_create_table' ) ) {
+            function maybe_create_table( $table_name, $create_ddl ) {
+                global $wpdb;
+
+                $query = $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table_name ) );
+
+                if ( $wpdb->get_var( $query ) == $table_name ) {
+                    return true;
+                }
+
+                // Didn't find it, so try to create it.
+                $wpdb->query( $create_ddl );
+
+                // We cannot directly tell that whether this succeeded!
+                if ( $wpdb->get_var( $query ) == $table_name ) {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
         maybe_create_table( Location_Domination_Activator::getTableName(), Location_Domination_Activator::getTableSql() );
 
         $templateId   = (int) $_REQUEST[ 'templateId' ];
