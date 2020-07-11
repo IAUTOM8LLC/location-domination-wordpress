@@ -74,7 +74,7 @@ class Location_Domination_Custom_Post_Types {
      */
     protected $arguments = [
         'public'             => true,
-        'publicly_queryable' => true,
+        'publicly_queryable' => false,
         'show_ui'            => true,
         'show_in_menu'       => true,
         'query_var'          => true,
@@ -197,7 +197,7 @@ class Location_Domination_Custom_Post_Types {
 
             $arguments = [
                 'labels'             => $labels,
-                'public'             => false,
+                'public'             => true,
                 'publicly_queryable' => true,
                 'show_ui'            => true,
                 'show_in_menu'       => true,
