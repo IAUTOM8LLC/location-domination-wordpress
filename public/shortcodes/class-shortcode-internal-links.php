@@ -49,22 +49,23 @@ class Shortcode_Internal_Links implements Shortcode_Interface {
             'state'     => null,
             'country'   => 'United States',
             'post_type' => $post->post_type,
-            'template' => null,
+            'template'  => null,
+            'bullets'   => 'yes',
             'scope'     => 'cities', // region, states, counties, cities,
         ], $attributes );
 
         $output = '';
 
-        if ( $attributes['template'] ) {
-            $value = esc_attr( $attributes[ 'template' ] );
-            $templates = explode( ',', $value );
+        if ( $attributes[ 'template' ] ) {
+            $value      = esc_attr( $attributes[ 'template' ] );
+            $templates  = explode( ',', $value );
             $post_types = [];
 
-            foreach( $templates as $template ) {
+            foreach ( $templates as $template ) {
                 $post_types[] = get_post_meta( (int) $template, '_uuid', true );
             }
 
-            $attributes['post_type'] = $post_types;
+            $attributes[ 'post_type' ] = $post_types;
         }
 
         if ( $attributes[ 'scope' ] === 'cities' ) {
@@ -78,7 +79,7 @@ class Shortcode_Internal_Links implements Shortcode_Interface {
                 if ( is_array( $attributes[ 'post_type' ] ) ) {
                     $post_types = '';
 
-                    foreach ( $attributes['post_type'] as $type ) {
+                    foreach ( $attributes[ 'post_type' ] as $type ) {
                         $post_types .= "'$type', ";
                     }
 
@@ -123,10 +124,14 @@ class Shortcode_Internal_Links implements Shortcode_Interface {
             $meta_query = ltrim( $meta_query, ' AND' );
             $table      = Location_Domination_Activator::getTableName();
 
-            $query = "SELECT * FROM ${table} WHERE ${meta_query}";
+            $query   = "SELECT * FROM ${table} WHERE ${meta_query}";
             $results = $wpdb->get_results( $query );
 
-            $output .= '<ul>';
+            if ( $attributes['bullets'] === 'no' ) {
+                $output .= '<ul style="margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; list-style-type: none !important;">';
+            } else {
+                $output .= '<ul>';
+            }
 
             foreach ( $results as $result ) {
                 $output .= sprintf( '<li><a href="%s">%s</a></li>', get_the_permalink( $result->post_id ), $result->city );
@@ -139,7 +144,7 @@ class Shortcode_Internal_Links implements Shortcode_Interface {
             $output .= '</ul>';
         } else if ( $attributes[ 'scope' ] === 'counties' ) {
             $state    = esc_attr( $attributes[ 'state' ] );
-            $counties = $this->get_counties_in_state( $state, $attributes['post_type'] );
+            $counties = $this->get_counties_in_state( $state, $attributes[ 'post_type' ] );
 
             if ( $counties ) {
                 // context = State, County
@@ -150,7 +155,7 @@ class Shortcode_Internal_Links implements Shortcode_Interface {
                 }
 
                 $posts = array(
-                    'post_type'  => $attributes['post_type'] ?: $post->post_type,
+                    'post_type'  => $attributes[ 'post_type' ] ? : $post->post_type,
                     'fields'     => 'ids',
                     'meta_query' => array(
                         array(
@@ -164,7 +169,12 @@ class Shortcode_Internal_Links implements Shortcode_Interface {
                 $query = new \WP_Query( $posts );
 
                 if ( $query->have_posts() ) {
-                    $output .= '<ul>';
+
+                    if ( $attributes[ 'bullets' ] === 'no' ) {
+                        $output .= '<ul style="margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; list-style-type: none !important;">';
+                    } else {
+                        $output .= '<ul>';
+                    }
 
                     foreach ( $query->posts as $post_id ) {
                         $output .= sprintf( '<li><a href="%s">%s</a></li>', get_the_permalink( $post_id ), get_the_title( $post_id ) );
@@ -174,8 +184,8 @@ class Shortcode_Internal_Links implements Shortcode_Interface {
                 }
             }
         } else if ( $attributes[ 'scope' ] === 'states' ) {
-            $country    = esc_attr( $attributes[ 'country' ] );
-            $states = $this->get_states_in_country( $country, $attributes['post_type'] );
+            $country = esc_attr( $attributes[ 'country' ] );
+            $states  = $this->get_states_in_country( $country, $attributes[ 'post_type' ] );
 
             if ( $states ) {
                 // context = State
@@ -186,7 +196,7 @@ class Shortcode_Internal_Links implements Shortcode_Interface {
                 }
 
                 $posts = array(
-                    'post_type'  => $attributes['post_type'] ?: $post->post_type,
+                    'post_type'  => $attributes[ 'post_type' ] ? : $post->post_type,
                     'fields'     => 'ids',
                     'meta_query' => array(
                         array(
@@ -200,7 +210,12 @@ class Shortcode_Internal_Links implements Shortcode_Interface {
                 $query = new \WP_Query( $posts );
 
                 if ( $query->have_posts() ) {
-                    $output .= '<ul>';
+
+                    if ( $attributes[ 'bullets' ] === 'no' ) {
+                        $output .= '<ul style="margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; list-style-type: none !important;">';
+                    } else {
+                        $output .= '<ul>';
+                    }
 
                     foreach ( $query->posts as $post_id ) {
                         $output .= sprintf( '<li><a href="%s">%s</a></li>', get_the_permalink( $post_id ), get_the_title( $post_id ) );
@@ -248,7 +263,7 @@ class Shortcode_Internal_Links implements Shortcode_Interface {
                 $post_types .= "'$type', ";
             }
 
-            $post_types = rtrim($post_types, ', ' );
+            $post_types = rtrim( $post_types, ', ' );
 
             $query = $wpdb->prepare( "SELECT state FROM ${table_name} WHERE post_type IN (${post_types}) AND country = '%s' GROUP BY state", $country );
         } else {
