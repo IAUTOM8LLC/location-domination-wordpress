@@ -552,7 +552,7 @@ if ( function_exists( 'acf_add_local_field_group' ) ):
                 'placeholder'       => '',
                 'prepend'           => '',
                 'append'            => '',
-                'maxlength'         => 255,
+                'maxlength'         => '',
             ),
             array(
                 'key'               => 'field_5ed842a641abb',

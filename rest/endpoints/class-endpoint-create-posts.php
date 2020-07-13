@@ -118,7 +118,7 @@ class Endpoint_Create_Posts {
 
         $post_content = apply_filters( 'location_domination_content_pre_spin', $request->get_param( 'content' ) );
 
-        $meta       = $request->get_param( 'meta' );
+        $meta = $request->get_param( 'meta' );
 
         if ( ! is_array( $meta ) ) {
             $meta = unserialize( base64_decode( $meta ) );
@@ -126,12 +126,13 @@ class Endpoint_Create_Posts {
 
         foreach ( $request->get_param( 'records' ) as $record ) {
             $shortcode_bindings = [
-                '[city]'    => isset( $record[ 'city' ] ) ? $record[ 'city' ] : '',
-                '[county]'  => isset( $record[ 'county' ] ) ? $record[ 'county' ] : '',
-                '[state]'   => isset( $record[ 'state' ] ) ? $record[ 'state' ] : '',
-                '[zips]'    => isset( $record[ 'zips' ] ) ? $record[ 'zips' ] : '',
-                '[region]'  => isset( $record[ 'region' ] ) ? $record[ 'region' ] : '',
-                '[country]' => isset( $record[ 'country' ] ) ? $record[ 'country' ] : '',
+                '[city]'      => isset( $record[ 'city' ] ) ? $record[ 'city' ] : '',
+                '[county]'    => isset( $record[ 'county' ] ) ? $record[ 'county' ] : '',
+                '[state]'     => isset( $record[ 'state' ] ) ? $record[ 'state' ] : '',
+                '[zips]'      => isset( $record[ 'zips' ] ) ? $record[ 'zips' ] : '',
+                '[zip_codes]' => isset( $record[ 'zips' ] ) ? $record[ 'zips' ] : '',
+                '[region]'    => isset( $record[ 'region' ] ) ? $record[ 'region' ] : '',
+                '[country]'   => isset( $record[ 'country' ] ) ? $record[ 'country' ] : '',
             ];
 
             $title = apply_filters( 'location_domination_shortcodes', $request->get_param( 'title' ), $shortcode_bindings );
@@ -158,9 +159,9 @@ class Endpoint_Create_Posts {
 //
 //                wp_update_post( $arguments );
 //            } else {
-                $post_ID = wp_insert_post( $arguments );
+            $post_ID = wp_insert_post( $arguments );
 
-                $arguments[ 'ID' ] = $post_ID;
+            $arguments[ 'ID' ] = $post_ID;
 //            }
 
             $wpdb->query( 'SET autocommit = 0;' );
@@ -171,12 +172,12 @@ class Endpoint_Create_Posts {
 
             Endpoint_Create_Posts::meta_spinner( $meta, $arguments[ 'ID' ] );
 
-            add_post_meta( $arguments[ 'ID' ], '_city', isset( $record['city'] ) ? $record[ 'city' ] : '' );
-            add_post_meta( $arguments[ 'ID' ], '_state', isset( $record['state'] ) ? $record[ 'state' ] : '' );
-            add_post_meta( $arguments[ 'ID' ], '_county', isset( $record['county'] ) ? $record[ 'county' ] : '' );
-            add_post_meta( $arguments[ 'ID' ], '_zips', isset( $record['zips'] ) ? $record[ 'zips' ] : '' );
-            add_post_meta( $arguments[ 'ID' ], '_region', isset( $record['region'] ) ? $record[ 'region' ] : '' );
-            add_post_meta( $arguments[ 'ID' ], '_country', isset( $record['country'] ) ? $record[ 'country' ] : '' );
+            add_post_meta( $arguments[ 'ID' ], '_city', isset( $record[ 'city' ] ) ? $record[ 'city' ] : '' );
+            add_post_meta( $arguments[ 'ID' ], '_state', isset( $record[ 'state' ] ) ? $record[ 'state' ] : '' );
+            add_post_meta( $arguments[ 'ID' ], '_county', isset( $record[ 'county' ] ) ? $record[ 'county' ] : '' );
+            add_post_meta( $arguments[ 'ID' ], '_zips', isset( $record[ 'zips' ] ) ? $record[ 'zips' ] : '' );
+            add_post_meta( $arguments[ 'ID' ], '_region', isset( $record[ 'region' ] ) ? $record[ 'region' ] : '' );
+            add_post_meta( $arguments[ 'ID' ], '_country', isset( $record[ 'country' ] ) ? $record[ 'country' ] : '' );
 
             if ( isset( $schema ) && $schema ) {
                 add_post_meta( $arguments[ 'ID' ], '_ld_schema', $schema );
