@@ -22,7 +22,7 @@ class Shortcode_Map implements Shortcode_Interface {
      * @since 2.0.0
      */
     public function get_key() {
-        return 'ld_map';
+        return [ 'ld_map', 'ld-map' ];
     }
 
     /**

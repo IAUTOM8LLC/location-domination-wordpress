@@ -87,6 +87,7 @@ class Shortcode_Internal_Links implements Shortcode_Interface {
 
                     $meta_query = "post_type IN (${post_types})";
                 } else {
+                    $value = esc_attr($attributes['post_type']);
                     $meta_query = "post_type = '${value}'";
                 }
             }

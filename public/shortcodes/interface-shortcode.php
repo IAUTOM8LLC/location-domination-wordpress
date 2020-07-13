@@ -18,7 +18,7 @@ Interface Shortcode_Interface {
     /**
      * The shortcode name.
      *
-     * @return string
+     * @return string|array
      * @since 2.0.0
      */
     public function get_key();

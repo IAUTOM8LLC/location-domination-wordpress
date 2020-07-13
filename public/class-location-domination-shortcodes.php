@@ -44,7 +44,6 @@ class Location_Domination_Shortcodes {
     protected $shortcodes = [
         Shortcode_Map::class,
         Shortcode_Zips::class,
-        Shortcode_Zip_Codes::class, // Alternative name
         Shortcode_City::class,
         Shortcode_State::class,
         Shortcode_County::class,
@@ -80,7 +79,20 @@ class Location_Domination_Shortcodes {
         foreach ( $this->shortcodes as $shortcode ) {
             $this->loaded_shortcodes[ $shortcode ] = new $shortcode();
 
-            add_shortcode( $this->loaded_shortcodes[ $shortcode ]->get_key(), [ $this->loaded_shortcodes[ $shortcode ], 'handle' ] );
+            if ( is_array( $this->loaded_shortcodes[ $shortcode ]->get_key() ) ) {
+                foreach( $this->loaded_shortcodes[ $shortcode ]->get_key() as $key ) {
+                    add_shortcode( $key, [
+                        $this->loaded_shortcodes[ $shortcode ],
+                        'handle'
+                    ] );
+                }
+            } else {
+                add_shortcode( $this->loaded_shortcodes[ $shortcode ]->get_key(), [
+                    $this->loaded_shortcodes[ $shortcode ],
+                    'handle'
+                ] );
+            }
+
         }
     }
 
@@ -93,7 +105,13 @@ class Location_Domination_Shortcodes {
      */
     public function standardize_shortcodes( $content ) {
         foreach ( $this->loaded_shortcodes as $shortcode ) {
-            $content = str_ireplace( $shortcode->get_key(), strtolower( $shortcode->get_key() ), $content );
+            if ( is_array( $shortcode->get_key() ) ) {
+                foreach ( $shortcode->get_key() as $key ) {
+                    $content = str_ireplace( $key, strtolower( $key ), $content );
+                }
+            } else {
+                $content = str_ireplace( $shortcode->get_key(), strtolower( $shortcode->get_key() ), $content );
+            }
         }
 
         return $content;
