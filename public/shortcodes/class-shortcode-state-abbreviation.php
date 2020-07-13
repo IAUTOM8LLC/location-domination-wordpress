@@ -89,7 +89,7 @@ class Shortcode_State_Abbreviation implements Shortcode_Interface {
         $state = get_post_meta( get_the_ID(), '_state', true );
 
         if ( $state ) {
-            echo Shortcode_State_Abbreviation::lookup( $state );
+            return Shortcode_State_Abbreviation::lookup( $state );
         }
     }
 

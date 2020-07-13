@@ -103,6 +103,7 @@ class Action_Process_Queue implements Action_Interface {
                     '[county]'     => isset( $record->county ) ? $record->county : '',
                     '[state]'      => isset( $record->state ) ? $record->state : '',
                     '[zips]'       => isset( $record->zips ) ? $record->zips : '',
+                    '[zip_codes]'  => isset( $record->zips ) ? $record->zips : '',
                     '[region]'     => isset( $record->region ) ? $record->region : '',
                     '[country]'    => isset( $record->country ) ? $record->country : '',
                     '[state_abbr]' => isset( $record->state ) ? Shortcode_State_Abbreviation::lookup( $record->state ) : '',

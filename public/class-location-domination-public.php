@@ -79,12 +79,13 @@ class Location_Domination_Public {
         }
 
         $shortcode_bindings = [
-            '[city]'    => get_post_meta( $post->ID, '_city', true ),
-            '[county]'  => get_post_meta( $post->ID, '_county', true ),
-            '[state]'   => get_post_meta( $post->ID, '_state', true ),
-            '[zips]'    => get_post_meta( $post->ID, '_zips', true ),
-            '[region]'  => get_post_meta( $post->ID, '_region', true ),
-            '[country]' => get_post_meta( $post->ID, '_country', true ),
+            '[city]'      => get_post_meta( $post->ID, '_city', true ),
+            '[county]'    => get_post_meta( $post->ID, '_county', true ),
+            '[state]'     => get_post_meta( $post->ID, '_state', true ),
+            '[zips]'      => get_post_meta( $post->ID, '_zips', true ),
+            '[zip_codes]' => get_post_meta( $post->ID, '_zips', true ),
+            '[region]'    => get_post_meta( $post->ID, '_region', true ),
+            '[country]'   => get_post_meta( $post->ID, '_country', true ),
         ];
 
         $schema = str_replace( [ '<script type="application/ld+json">', '</script>' ], '', $schema );
