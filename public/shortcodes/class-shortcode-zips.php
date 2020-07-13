@@ -22,7 +22,7 @@ class Shortcode_Zips implements Shortcode_Interface {
      * @since 2.0.0
      */
     public function get_key() {
-        return 'zips';
+        return [ 'zips', 'zip_codes' ];
     }
 
     /**
