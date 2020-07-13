@@ -107,6 +107,14 @@ class Location_Domination_Custom_Post_Types {
      * @since 2.0.0
      */
     public function register() {
+        if ( is_admin() || is_user_logged_in() ) {
+            $this->arguments['publicly_queryable'] = true;
+        }
+
+        if ( in_array( trim( $_SERVER[ 'REQUEST_URI' ], '/' ), [ 'sitemap.xml', 'sitemap_index.xml' ] ) ) {
+            $this->arguments[ 'publicly_queryable' ] = false;
+        }
+
         register_post_type( LOCATION_DOMINATION_TEMPLATE_CPT, array_merge( $this->arguments, [
             'labels' => $this->labels,
         ] ) );
