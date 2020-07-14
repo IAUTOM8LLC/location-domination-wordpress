@@ -87,9 +87,16 @@ class Shortcode_State_Abbreviation implements Shortcode_Interface {
      */
     public function handle( $attributes = null ) {
         $state = get_post_meta( get_the_ID(), '_state', true );
+        $country = get_post_meta( get_the_ID(), '_country', true );
 
-        if ( $state ) {
+        if ( $country === 'United States' ) {
             return Shortcode_State_Abbreviation::lookup( $state );
+        }
+
+        $abbr = get_post_meta( get_the_ID(), '_region_abbr', true );
+
+        if ( $abbr ) {
+            return $abbr;
         }
     }
 

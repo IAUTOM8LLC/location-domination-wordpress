@@ -13,7 +13,7 @@
  * @subpackage Location_Domination/admin
  * @author     iAutoM8 LLC <support@i-autom8.com>
  */
-class Shortcode_Zips implements Shortcode_Interface {
+class Shortcode_Region implements Shortcode_Interface {
 
     /**
      * The shortcode name.
@@ -22,7 +22,7 @@ class Shortcode_Zips implements Shortcode_Interface {
      * @since 2.0.0
      */
     public function get_key() {
-        return [ 'zips', 'zip_codes' ];
+        return 'region';
     }
 
     /**
@@ -32,21 +32,7 @@ class Shortcode_Zips implements Shortcode_Interface {
      * @since 2.0.0
      */
     public function handle( $attributes = null ) {
-        $attributes = shortcode_atts([
-            'show_first' => false,
-        ], $attributes );
-
-        $zips = get_post_meta( get_the_ID(), '_zips', true );
-
-        if ( $attributes['show_first'] ) {
-            $zips_array = explode(',', $zips );
-
-            if ( isset( $zips_array[0] ) ) {
-                return $zips_array[0];
-            }
-        }
-
-        return str_replace( ',', ', ', $zips );
+        return get_post_meta( get_the_ID(), '_region', true );
     }
 
 }

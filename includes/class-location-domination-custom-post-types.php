@@ -41,6 +41,14 @@ class Location_Domination_Custom_Post_Types {
     private $version;
 
     /**
+     * An instance of the page template class.
+     *
+     * @since 2.0.34
+     * @var \Location_Domination_Page_Template $page_templater
+     */
+    protected $page_templater;
+
+    /**
      * The labels for our Template post type.
      *
      * @since  2.0.0
@@ -96,6 +104,8 @@ class Location_Domination_Custom_Post_Types {
     public function __construct( $plugin_name, $version ) {
         $this->plugin_name = $plugin_name;
         $this->version     = $version;
+
+        $this->page_templater = new Location_Domination_Page_Template( $this->plugin_name, $this->version );
     }
 
     /**
@@ -182,6 +192,9 @@ class Location_Domination_Custom_Post_Types {
 
         $custom_post_types = get_posts( $arguments );
 
+        add_filter( 'theme_mptemplates_templates', [ $this->page_templater, 'add_page_template' ], 99 );
+        add_filter( 'single_template', [ $this->page_templater, 'redirect_page_template' ], 99 );
+
         foreach ( $custom_post_types as $post_id ) {
             $title    = get_the_title( $post_id );
             $singular = $title;
@@ -229,6 +242,8 @@ class Location_Domination_Custom_Post_Types {
             $template_name = self::get_template_name( $post_id );
 
             register_post_type( $template_name, $arguments );
+
+            add_filter( "theme_{$template_name}_templates", [ $this->page_templater, 'add_page_template' ], 99 );
         }
     }
 
