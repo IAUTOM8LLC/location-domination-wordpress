@@ -93,8 +93,13 @@ class Location_Domination_Public {
 
         $json_schema = json_decode( $schema );
 
-        $json_schema->title       = Location_Domination_Spinner::spin( $json_schema->title, $post->ID );
-        $json_schema->description = Location_Domination_Spinner::spin( $json_schema->description, $post->ID );
+        if ( isset( $json_schema->title ) ) {
+            $json_schema->title = Location_Domination_Spinner::spin( $json_schema->title, $post->ID );
+        }
+
+        if ( isset( $json_schema->description ) ) {
+            $json_schema->description = Location_Domination_Spinner::spin( $json_schema->description, $post->ID );
+        }
 
         echo '<script type="application/ld+json">' . json_encode( $json_schema ) . '</script>';
     }

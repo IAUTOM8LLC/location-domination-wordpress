@@ -111,6 +111,11 @@ class Location_Domination {
         require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-location-domination-spinner.php';
 
         /**
+         * The class responsible for adding in our custom page template.
+         */
+        require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-location-domination-page-template.php';
+
+        /**
          * The class responsible for registering the custom post types.
          */
         require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-location-domination-custom-post-types.php';
@@ -161,7 +166,7 @@ class Location_Domination {
         $plugin_admin = new Location_Domination_Admin( $this->get_plugin_name(), $this->get_version() );
 
         $this->loader->add_action( 'admin_init', $plugin_admin, 'redirect_back_to_edit_page' );
-        $this->loader->add_Action( 'admin_init', $plugin_admin, 'check_permalink_structure' );
+        $this->loader->add_action( 'admin_init', $plugin_admin, 'check_permalink_structure' );
         $this->loader->add_action( 'admin_menu', $plugin_admin, 'register_admin_page' );
         $this->loader->add_action( 'admin_notices', $plugin_admin, 'show_error_notices' );
         $this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'register_metaboxes', 999 );

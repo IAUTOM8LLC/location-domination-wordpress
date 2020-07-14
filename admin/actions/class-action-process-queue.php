@@ -98,15 +98,22 @@ class Action_Process_Queue implements Action_Interface {
 
                 $meta = get_post_custom( $base_template_id );
 
+                $region_abbr     = '';
+                $region_abbr_key = 'region-abbr';
+
+                if ( isset( $record->$region_abbr_key ) ) {
+                    $region_abbr = str_replace( '-', '', $record->$region_abbr_key );
+                }
+
                 $shortcode_bindings = [
                     '[city]'       => isset( $record->city ) ? $record->city : '',
-                    '[county]'     => isset( $record->county ) ? $record->county : '',
-                    '[state]'      => isset( $record->state ) ? $record->state : '',
+                    '[county]'     => isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : '' ),
+                    '[state]'      => isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : '' ),
                     '[zips]'       => isset( $record->zips ) ? $record->zips : '',
                     '[zip_codes]'  => isset( $record->zips ) ? $record->zips : '',
                     '[region]'     => isset( $record->region ) ? $record->region : '',
                     '[country]'    => isset( $record->country ) ? $record->country : '',
-                    '[state_abbr]' => isset( $record->state ) ? Shortcode_State_Abbreviation::lookup( $record->state ) : '',
+                    '[state_abbr]' => isset( $record->state ) ? Shortcode_State_Abbreviation::lookup( $record->state ) : $region_abbr,
                 ];
 
                 $is_united_states = isset( $record->country ) ? $record->country === 'United States' : true;
@@ -140,22 +147,27 @@ class Action_Process_Queue implements Action_Interface {
                 Endpoint_Create_Posts::meta_spinner( $meta, $new_post_id, $shortcode_bindings );
 
                 add_post_meta( $new_post_id, '_city', isset( $record->city ) ? $record->city : '' );
-                add_post_meta( $new_post_id, '_state', isset( $record->state ) ? $record->state : '' );
-                add_post_meta( $new_post_id, '_county', isset( $record->county ) ? $record->county : '' );
+                add_post_meta( $new_post_id, '_state', isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : null ) );
+                add_post_meta( $new_post_id, '_county', isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : null ) );
                 add_post_meta( $new_post_id, '_zips', isset( $record->zips ) ? $record->zips : '' );
                 add_post_meta( $new_post_id, '_region', isset( $record->region ) ? $record->region : '' );
                 add_post_meta( $new_post_id, '_country', isset( $record->country ) ? $record->country : '' );
+
+                if ( $region_abbr ) {
+                    add_post_meta( $new_post_id, '_region_abbr', $region_abbr );
+                }
+
                 update_post_meta( $new_post_id, '_uuid', $uuid );
 
                 $wpdb->insert( Location_Domination_Activator::getTableName(), [
-                    'post_type' => $uuid,
-                    'post_id'   => $new_post_id,
-                    'country'   => isset( $record->country ) ? $record->country : null,
-                    'state'     => isset( $record->state ) ? $record->state : null,
-                    'county'    => isset( $record->county ) ? $record->county : null,
-                    'region'    => isset( $record->region ) ? $record->region : ( isset( $record->county ) ? $record->county : null ),
-                    'city'      => isset( $record->city ) ? $record->city : null,
-                    'locked'    => 0,
+                    'post_type'   => $uuid,
+                    'post_id'     => $new_post_id,
+                    'country'     => isset( $record->country ) ? $record->country : null,
+                    'state'       => isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : null ),
+                    'county'      => isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : null ),
+                    'region'      => isset( $record->region ) ? $record->region : ( isset( $record->county ) ? $record->county : null ),
+                    'city'        => isset( $record->city ) ? $record->city : null,
+                    'locked'      => 0,
                 ] );
 
 //                if ( isset( $schema ) && $schema ) {
