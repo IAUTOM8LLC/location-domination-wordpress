@@ -238,6 +238,7 @@
                     started: false,
                     completed: false,
                     progress: 0,
+                    request_in_progress: false,
                     estimated_time_in_seconds: 140
                 },
                 preselect: {
@@ -394,10 +395,13 @@
                             ExternalRepository.startLocalQueuePostRequest( form, url, this.templateId, this.nonce ).then( ( { data } ) => {
                                 if ( data.success ) {
                                     _this.request.started = true;
+                                    _this.request.request_in_progress = true;
+
                                     _this.pollWorker().then( ( { data } ) => {
                                         console.log( { data } );
                                         _this.request.estimated_time_in_seconds = 60;
                                         _this.request.progress = parseFloat( data.progress );
+                                        _this.request.request_in_progress = false;
 
                                         if ( _this.request.progress >= 100 ) {
                                             _this.request.completed = true;
@@ -408,11 +412,18 @@
                                     if ( parseInt( data.batches_needed ) > 1 ) {
                                         let progress = 0;
 
-                                        const POLLING_TIME_IN_SECONDS = 20;
+                                        const POLLING_TIME_IN_SECONDS = 3;
                                         const interval = setInterval( () => {
+                                            if ( _this.request.request_in_progress ) {
+                                                return;
+                                            }
+
+                                            _this.request.request_in_progress = true;
+
                                             _this.pollWorker().then( ( { data } ) => {
                                                 const _progress = parseFloat( data.progress );
                                                 const estimated_time_remaining = parseFloat( data.estimated_time_remaining );
+                                                _this.request.request_in_progress = false;
 
                                                 if ( _progress > progress ) {
                                                     progress = _progress;
@@ -470,9 +481,13 @@
                 ExternalRepository.continueLocalQueuePostRequest( url, this.templateId, this.nonce ).then( ( { data } ) => {
                     if ( data.success ) {
                         _this.request.started = true;
+                        _this.request.request_in_progress = true;
+
                         _this.pollWorker().then( ( { data } ) => {
                             _this.request.estimated_time_in_seconds = 60;
                             _this.request.progress = parseFloat( data.progress );
+                            _this.request.request_in_progress = false;
+
 
                             if ( _this.request.progress >= 100 ) {
                                 _this.request.completed = true;
@@ -483,9 +498,16 @@
                         if ( parseInt( data.batches_needed ) > 1 ) {
                             let progress = 0;
 
-                            const POLLING_TIME_IN_SECONDS = 20;
+                            const POLLING_TIME_IN_SECONDS = 3;
                             const interval = setInterval( () => {
+                                if ( _this.request.request_in_progress ) {
+                                    return;
+                                }
+
+                                _this.request.request_in_progress = true;
+
                                 _this.pollWorker().then( ( { data } ) => {
+                                    _this.request.request_in_progress = false;
                                     const _progress = parseFloat( data.progress );
                                     const estimated_time_remaining = parseFloat( data.estimated_time_remaining );
 

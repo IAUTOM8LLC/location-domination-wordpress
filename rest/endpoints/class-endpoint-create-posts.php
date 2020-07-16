@@ -78,6 +78,7 @@ class Endpoint_Create_Posts {
         wp_defer_comment_counting( true );
         wp_suspend_cache_addition( true );
 
+        remove_action( 'do_pings', 'do_all_pings', 10, 1 );
 
         $slug = $this->get_template_slug( $request );
 
