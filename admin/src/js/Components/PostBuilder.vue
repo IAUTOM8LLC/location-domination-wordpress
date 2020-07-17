@@ -66,7 +66,7 @@
 
     <div v-else-if="request.started">
         <p class="text-gray-600 text-center mt-5 mb-4">Please do not close this tab whilst we're working on adding your
-                                                       pages.
+            pages.
             <strong>Estimated time: </strong> {{ readableTime }}</p>
         <div class="relative py-3">
             <div class="flex mb-2 items-center justify-between">

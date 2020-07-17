@@ -84,7 +84,13 @@ class Action_Start_Queue implements Action_Interface {
         ] );
 
         // Save post request
-        update_post_meta( $templateId, 'location_domination_post_request', $_POST );
+        $last_post_request = get_post_meta( $templateId, 'location_domination_post_request', true );
+
+        if ( ! $last_post_request ) {
+            $last_post_request = [];
+        }
+
+        update_post_meta( $templateId, 'location_domination_post_request', array_merge( $last_post_request, $_POST ) );
 
         if ( is_wp_error( $response ) || $response[ 'response' ][ 'code' ] !== 200 ) {
             return wp_send_json( [

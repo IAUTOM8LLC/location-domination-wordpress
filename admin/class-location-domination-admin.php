@@ -415,6 +415,14 @@ class Location_Domination_Admin {
     }
 
     /**
+     * Add an option to the templates area to allow
+     * duplication.
+     */
+    public function add_duplicate_option( $actions, $post ) {
+        // TODO: Duplicate option
+    }
+
+    /**
      * Populate the last post request from Location Domination.
      *
      * @since 2.0.10
