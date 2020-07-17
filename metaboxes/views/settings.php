@@ -8,7 +8,7 @@
     $previous_request_meta = get_post_meta( $post->ID, 'location_domination_post_request', true );
     $previous_request =  $previous_request_meta ? json_encode( $previous_request_meta ) : 'null';
     $previous_request_transient = get_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY  . '_' . $post->ID );
-    $previous_request_transient = json_encode( $previous_request_transient ) ?: $previous_request;
+    $previous_request_transient = json_encode( $previous_request_transient ) ?: 'null';
 
     $post_type = get_post_meta( $post->ID, '_uuid', true );
     $post_type_post_count = wp_count_posts( $post_type );
