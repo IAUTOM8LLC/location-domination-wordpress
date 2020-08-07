@@ -32,7 +32,8 @@
             <advanced-select-input
                     :preselect="preselect.cities" v-model="gridForm.cities"
                     v-if="gridForm.group && gridForm.group === 'For specific cities'" :close-on-select="false"
-                    :multiple="true" track-by="id" :options="cities" label-key="city" label="Select cities to target" />
+                    group-values="cities" group-label="state"
+                    :multiple="true" track-by="id" :options="groupedCities" label-key="city" label="Select cities to target" />
 
         </template>
 
@@ -179,9 +180,43 @@
                 }
 
                 return [];
+            },
+
+            groupedCities() {
+                let groups = {};
+
+                if ( this.hasOwnProperty( 'cities' ) && this.cities ) {
+                    for ( let city of this.cities ) {
+                        if ( !Object.keys( groups ).includes( city.state ) ) {
+                            groups[ city.state ] = [];
+                        }
+
+                        groups[ city.state ].push( city );
+                    }
+
+                    let _groups = [];
+
+                    for ( let state in groups ) {
+                        if ( !groups.hasOwnProperty( state ) ) {
+                            continue;
+                        }
+
+                        let cities = groups[ state ];
+
+                        _groups.push( {
+                            state,
+                            cities
+                        } );
+                    }
+
+                    return _groups;
+                }
+
+                return [];
             }
 
         },
+
 
         props: {
             model: {

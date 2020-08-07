@@ -142,6 +142,7 @@ class Action_Process_Queue implements Action_Interface {
 //                $job_description  = $this->get_parameter_with_shortcodes( $request, 'job_description', $shortcode_bindings );
 //                $schema           = $this->get_parameter_with_shortcodes( $request, 'schema', $shortcode_bindings );
 
+
                 $new_post_id = wp_insert_post( $arguments );
 
                 Endpoint_Create_Posts::meta_spinner( $meta, $new_post_id, $shortcode_bindings );
@@ -158,6 +159,46 @@ class Action_Process_Queue implements Action_Interface {
                 }
 
                 update_post_meta( $new_post_id, '_uuid', $uuid );
+
+                if ( get_field( 'create_neighborhood_pages', $base_template_id ) ) {
+                    if ( isset ( $record->neighborhoods ) ) {
+                        foreach ( $record->neighborhoods as $neighborhood ) {
+                            $neighborhood_shortcode_bindings             = $shortcode_bindings;
+                            $neighborhood_shortcode_bindings[ '[city]' ] = $neighborhood->neighborhood;
+
+                            $title = apply_filters( 'location_domination_shortcodes', ( $sub_template_spinning ? $base_template_settings[ 'post_name' ] : $base_template[ 'post_title' ] ), $neighborhood_shortcode_bindings  );
+
+                            if ( ! $sub_template_spinning && $page_title ) {
+                                $title = apply_filters( 'location_domination_shortcodes', $page_title, $neighborhood_shortcode_bindings );
+                            }
+
+                            $arguments = [
+                                'post_type'    => get_post_meta( $template_id, '_uuid', true ),
+                                'post_title'   => Location_Domination_Spinner::spin( $title ),
+                                'post_content' => Location_Domination_Spinner::spin( $base_template[ 'post_content' ] ),
+                                'post_status'  => 'publish',
+                                'post_parent'  => $new_post_id,
+                            ];
+
+                            if ( ! $sub_template_spinning && $page_title ) {
+                                $arguments[ 'post_name' ] = apply_filters( 'location_domination_shortcodes', $page_slug, $neighborhood_shortcode_bindings );
+                            }
+
+                            $neighborhood_post_id = wp_insert_post( $arguments );
+
+                            Endpoint_Create_Posts::meta_spinner( $meta, $neighborhood_post_id, $neighborhood_shortcode_bindings );
+
+                            add_post_meta( $neighborhood_post_id, '_neighborhood', $neighborhood );
+                            add_post_meta( $neighborhood_post_id, '_city', isset( $record->city ) ? $record->city : '' );
+                            add_post_meta( $neighborhood_post_id, '_state', isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : null ) );
+                            add_post_meta( $neighborhood_post_id, '_county', isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : null ) );
+                            add_post_meta( $neighborhood_post_id, '_zips', isset( $record->zips ) ? $record->zips : '' );
+                            add_post_meta( $neighborhood_post_id, '_country', isset( $record->country ) ? $record->country : '' );
+
+                            update_post_meta( $neighborhood_post_id, '_uuid', $uuid );
+                        }
+                    }
+                }
 
                 $wpdb->insert( Location_Domination_Activator::getTableName(), [
                     'post_type'   => $uuid,

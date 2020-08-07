@@ -125,7 +125,7 @@ class Shortcode_Internal_Links implements Shortcode_Interface {
             $meta_query = ltrim( $meta_query, ' AND' );
             $table      = Location_Domination_Activator::getTableName();
 
-            $query   = "SELECT * FROM ${table} WHERE ${meta_query}";
+            $query   = "SELECT * FROM ${table} WHERE ${meta_query} ORDER BY city";
             $results = $wpdb->get_results( $query );
 
             if ( $attributes['bullets'] === 'no' ) {
