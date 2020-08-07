@@ -51,6 +51,7 @@ class Location_Domination_Shortcodes {
         Shortcode_Internal_Links::class,
         Shortcode_Job_Posting::class,
         Shortcode_State_Abbreviation::class,
+        Shortcode_Neighborhoods::class,
     ];
 
     /**

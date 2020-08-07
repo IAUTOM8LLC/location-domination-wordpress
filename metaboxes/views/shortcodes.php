@@ -10,5 +10,6 @@
         <li><code>[ld_map]</code>Use to get a Google Maps embed of current location</li>
         <li><code>[zips]</code>Use to get a list of all ZIP codes related to the city</li>
         <li><code>[breadcrumb]</code>Use to display a breadcrumb by city, state, county for current page.</li>
+        <li><code>[neighborhoods]</code> Use to display a list of neighborhoods (US only)</li>
     </ul>
 </div>

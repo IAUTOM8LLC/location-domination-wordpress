@@ -93,6 +93,8 @@ class Location_Domination_Custom_Post_Types {
         'menu_position'      => null,
     ];
 
+    protected $cpts = [];
+
     /**
      * Initialize the class and set its properties.
      *
@@ -118,7 +120,7 @@ class Location_Domination_Custom_Post_Types {
      */
     public function register() {
         if ( is_admin() || is_user_logged_in() ) {
-            $this->arguments['publicly_queryable'] = true;
+            $this->arguments[ 'publicly_queryable' ] = true;
         }
 
         if ( in_array( trim( $_SERVER[ 'REQUEST_URI' ], '/' ), [ 'sitemap.xml', 'sitemap_index.xml' ] ) ) {
@@ -186,8 +188,8 @@ class Location_Domination_Custom_Post_Types {
             'post_parent' => 0,
             'post_type'   => LOCATION_DOMINATION_TEMPLATE_CPT,
             'post_status' => 'publish',
-            'numberposts' => -1,
-            'fields' => 'ids',
+            'numberposts' => - 1,
+            'fields'      => 'ids',
         ];
 
         $custom_post_types = get_posts( $arguments );
@@ -243,8 +245,109 @@ class Location_Domination_Custom_Post_Types {
 
             register_post_type( $template_name, $arguments );
 
+            $this->cpts[] = $template_name;
+
             add_filter( "theme_{$template_name}_templates", [ $this->page_templater, 'add_page_template' ], 99 );
+            add_filter( "manage_{$template_name}_posts_columns", [ $this, 'display_custom_fields' ], 99, 2 );
+            add_filter( "manage_{$template_name}_posts_custom_column", [ $this, 'cpt_type_column' ], 99, 2 );
+            add_filter( "restrict_manage_posts", [ $this, 'register_custom_filters' ] );
+            add_filter( "parse_query", [ $this, 'modify_cpt_filter_query' ] );
         }
+    }
+
+    public function modify_cpt_filter_query( $query ) {
+        global $pagenow;
+
+        $type = 'post';
+
+        if ( isset( $_GET[ 'post_type' ] ) ) {
+            $type = $_GET[ 'post_type' ];
+        }
+
+        if ( in_array( $type, $this->cpts ) && is_admin() && $pagenow == 'edit.php' && isset( $_GET[ 'LOCATION_DOMINATION_FILTER' ] ) && $_GET[ 'LOCATION_DOMINATION_FILTER' ] != '' ) {
+            switch ( $_GET[ 'LOCATION_DOMINATION_FILTER' ] ) {
+                case 'neighborhoods':
+                    $query->query_vars[ 'meta_key' ]     = '_neighborhood';
+                    $query->query_vars[ 'meta_compare' ] = 'EXISTS';
+                    break;
+                case 'indexes':
+                    $query->query_vars[ 'meta_key' ]     = '_ld_index';
+                    $query->query_vars[ 'meta_compare' ] = 'EXISTS';
+                    break;
+                case 'cities':
+                    $query->query_vars[ 'meta_query' ] = array(
+                        'relation' => 'AND',
+                        array(
+                            'key'     => '_neighborhood',
+                            'compare' => 'NOT EXISTS'
+                        ),
+
+                        array(
+                            'key'     => '_ld_index',
+                            'compare' => 'NOT EXISTS'
+                        )
+                    );
+                    break;
+            }
+        }
+    }
+
+    public function register_custom_filters( $query ) {
+        $type = 'post';
+
+        if ( isset( $_GET[ 'post_type' ] ) ) {
+            $type = $_GET[ 'post_type' ];
+        }
+
+        if ( in_array( $type, $this->cpts ) ) {
+            $values = array(
+                __( 'Index Pages', 'location-domination' )        => 'indexes',
+                __( 'City Pages', 'location-domination' )         => 'cities',
+                __( 'Neighborhood Pages', 'location-domination' ) => 'neighborhoods',
+            );
+            ?>
+            <select name="LOCATION_DOMINATION_FILTER">
+                <option value=""><?php _e( 'Filter By Type', 'wose45436' ); ?></option>
+                <?php
+                $current_v = isset( $_GET[ 'LOCATION_DOMINATION_FILTER' ] ) ? $_GET[ 'LOCATION_DOMINATION_FILTER' ] : '';
+                foreach ( $values as $label => $value ) {
+                    printf
+                    (
+                        '<option value="%s"%s>%s</option>',
+                        $value,
+                        $value == $current_v ? ' selected="selected"' : '',
+                        $label
+                    );
+                }
+                ?>
+            </select>
+            <?php
+        }
+    }
+
+    public function cpt_type_column( $column, $post_id ) {
+        if ( $column === "ld_type" ) {
+            if ( get_post_meta( $post_id, '_ld_index', true ) ) {
+                echo 'Index Page';
+            } else if ( get_post_meta( $post_id, '_neighborhood', true ) ) {
+                echo 'Neighborhood Page';
+            } else {
+                echo 'City Page';
+            }
+
+            return;
+        }
+    }
+
+    /**
+     * @param $columns
+     *
+     * @return mixed
+     */
+    public function display_custom_fields( $columns ) {
+        $columns[ 'ld_type' ] = __( 'Type', 'location-domination' );
+
+        return $columns;
     }
 
     /**
@@ -311,14 +414,14 @@ class Location_Domination_Custom_Post_Types {
         $arguments = [
             'post_type'   => LOCATION_DOMINATION_TEMPLATE_CPT,
             'post_status' => 'publish',
-            'numberposts' => -1,
+            'numberposts' => - 1,
         ];
 
         if ( $parent_only ) {
             $arguments[ 'post_parent' ] = 0;
         }
 
-        $uuids = [];
+        $uuids             = [];
         $custom_post_types = get_posts( $arguments );
 
         foreach ( $custom_post_types as $post_type ) {

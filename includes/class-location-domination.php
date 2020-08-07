@@ -177,7 +177,7 @@ class Location_Domination {
         $this->loader->add_action( 'acf/save_post', $plugin_admin, 'process_child_templates_after_save', 10, 2 );
         $this->loader->add_action( 'admin_head-post.php', $plugin_admin, 'retrieve_last_post_request', 40 );
 
-        $this->loader->add_filter( 'post_row_actions', $plugin_admin, 'add_duplicate_option', 10, 2 );
+//        $this->loader->add_filter( 'post_row_actions', $plugin_admin, 'add_duplicate_option', 10, 2 );
         $this->loader->add_filter( 'location_domination_content_pre_spin', $plugin_admin, 'location_domination_content_pre_spin' );
         $this->loader->add_filter( 'location_domination_shortcodes', $plugin_admin, 'shortcode_filters', 10, 2 );
         $this->loader->add_filter( 'acf/settings/url', $plugin_admin, 'set_acf_url', 10 );

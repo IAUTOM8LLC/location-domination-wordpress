@@ -29,6 +29,9 @@ class Action_Start_Indexing implements Action_Interface {
      */
     protected $template_uuid;
 
+    /**
+     * @var
+     */
     protected $request;
 
     /**
@@ -101,6 +104,14 @@ class Action_Start_Indexing implements Action_Interface {
         }
     }
 
+    /**
+     * @param $name
+     * @param $scope
+     * @param $context
+     * @param $context_value
+     *
+     * @return bool
+     */
     protected function insert_index_page( $name, $scope, $context, $context_value ) {
         $post_id = wp_insert_post([
             'post_title' => $name,
@@ -117,6 +128,9 @@ class Action_Start_Indexing implements Action_Interface {
         return false;
     }
 
+    /**
+     * @return array|object|null
+     */
     protected function get_regions() {
         global $wpdb;
 
@@ -127,6 +141,9 @@ class Action_Start_Indexing implements Action_Interface {
         return $wpdb->get_results( $query );
     }
 
+    /**
+     * @return array|object|null
+     */
     protected function get_states() {
         global $wpdb;
 
@@ -137,6 +154,9 @@ class Action_Start_Indexing implements Action_Interface {
         return $wpdb->get_results( $query );
     }
 
+    /**
+     * @return array|object|null
+     */
     protected function get_counties() {
         global $wpdb;
 
