@@ -36,7 +36,11 @@ class Shortcode_Map implements Shortcode_Interface {
         $post_meta = get_post_meta( get_the_ID() );
 
         // Is United States?
-        if ( isset( $post_meta[ '_city' ], $post_meta[ '_county' ] ) ) {
+        if ( isset( $post_meta[ '_neighborhood' ], $post_meta[ '_county' ] ) ) {
+            $neighborhood = unserialize( $post_meta[ '_neighborhood' ][0] );
+
+            $query = sprintf( '%s, %s, United States', $neighborhood->neighborhood, $post_meta[ '_county' ][0] );
+        } else if ( isset( $post_meta[ '_city' ], $post_meta[ '_county' ] ) ) {
             $query = sprintf( '%s, %s, United States', $post_meta[ '_city' ][0], $post_meta[ '_county' ][0] );
         } else if ( isset( $post_meta[ '_city' ], $post_meta[ '_region' ], $post_meta[ '_country' ] ) ) {
             $query = sprintf( '%s, %s, %s', $post_meta[ '_city' ][0], $post_meta[ '_region' ][0], $post_meta[ '_country' ][0] );
