@@ -32,6 +32,12 @@ class Shortcode_City implements Shortcode_Interface {
      * @since 2.0.0
      */
     public function handle( $attributes = null ) {
+        $neighborhood = get_post_meta( get_the_ID(), '_neighborhood', true );
+
+        if ( $neighborhood && $neighborhood->neighborhood ) {
+            return $neighborhood->neighborhood;
+        }
+
         return get_post_meta( get_the_ID(), '_city', true );
     }
 
