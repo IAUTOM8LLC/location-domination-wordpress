@@ -46,7 +46,7 @@ class Shortcode_Zips implements Shortcode_Interface {
             }
         }
 
-        return str_replace( ',', ', ', $zips );
+        return '<span style="overflow-wrap: break-word;">' . str_replace( ',', ', ', $zips ) . '</span>';
     }
 
 }

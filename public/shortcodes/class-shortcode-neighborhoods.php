@@ -54,6 +54,7 @@ class Shortcode_Neighborhoods implements Shortcode_Interface {
         $query = new \WP_Query( [
             'post_type'  => $post->post_type,
             'post_status' => 'publish',
+            'posts_per_page' => -1,
             'meta_query' => array(
                 'relation' => 'AND',
                 array(
