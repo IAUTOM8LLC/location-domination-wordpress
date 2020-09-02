@@ -37,6 +37,10 @@ class Action_Process_Queue implements Action_Interface {
         $start       = microtime( true );
         $template_id = (int) $_POST[ 'template' ];
 
+        if ( get_field( 'disable_jit', $template_id ) ) {
+            ini_set( 'pcre.jit', false );
+        }
+
         $option = get_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id );
 
         if ( ! $option ) {
