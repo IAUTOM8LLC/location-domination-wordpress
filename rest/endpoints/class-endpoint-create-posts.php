@@ -304,7 +304,7 @@ class Endpoint_Create_Posts {
         foreach ( $meta as $key => $value ) {
             if ( is_array( $value ) && count( $value ) > 0 ) {
                 foreach ( $value as $i => $v ) {
-                    if ( is_string( $v ) ) {
+                    if ( is_string( $v ) || is_int( $v ) ) {
                         // Check for serializations
                         $value         = self::meta_array_crawler( $v, $bindings );
                         $prepped_value = null;
@@ -315,6 +315,10 @@ class Endpoint_Create_Posts {
 
                         if ( is_json( $v ) ) {
                             $prepped_value = json_encode( $value );
+                        }
+
+                        if ( preg_match( '/"\d+"/s', $value ) !== false ) {
+                            $prepped_value = (int) trim( $value, '"' );
                         }
 
                         $wpdb->insert( $wpdb->prefix . 'postmeta', array(
