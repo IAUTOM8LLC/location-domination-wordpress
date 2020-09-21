@@ -93,6 +93,10 @@ class Location_Domination_Public {
 
         $json_schema = json_decode( $schema );
 
+        if ( ! $json_schema ) {
+            return;
+        }
+
         if ( isset( $json_schema->title ) ) {
             $json_schema->title = Location_Domination_Spinner::spin( $json_schema->title, $post->ID );
         }

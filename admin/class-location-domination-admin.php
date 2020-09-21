@@ -778,9 +778,9 @@ class Location_Domination_Admin {
                 'date_posted'     => get_field( 'job_date_posted', $post_id ),
                 'valid_through'   => get_field( 'job_valid_through_date', $post_id ),
                 'employment_type' => get_field( 'job_employment_type', $post_id ),
-                'job_title'       => get_field( '_ld_job_title', $post_id ),
-                'job_description' => get_field( '_ld_job_description', $post_id ),
-                'company_name'    => get_field( 'company_name', $post_id ),
+                'job_title'       => esc_html( get_field( '_ld_job_title', $post_id ) ),
+                'job_description' => esc_html( get_field( '_ld_job_description', $post_id ) ),
+                'company_name'    => esc_html( get_field( 'company_name', $post_id ) ),
                 'base_salary'     => $salary[ 'base_salary' ],
                 'currency'        => $salary[ 'currency' ],
             ]
