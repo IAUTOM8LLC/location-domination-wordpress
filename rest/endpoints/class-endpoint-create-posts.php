@@ -309,6 +309,7 @@ class Endpoint_Create_Posts {
                         $value         = self::meta_array_crawler( $v, $bindings );
                         $prepped_value = null;
 
+                        // Return to previous states
                         if ( is_serialized( $v ) ) {
                             $prepped_value = serialize( $value );
                         }
@@ -317,8 +318,17 @@ class Endpoint_Create_Posts {
                             $prepped_value = json_encode( $value );
                         }
 
-                        if ( preg_match( '/"\d+"/s', $value ) !== false ) {
-                            $prepped_value = (int) trim( $value, '"' );
+                        if ( preg_match( '/"\d+"/s', $v ) !== false ) {
+                            $prepped_value = (int) trim( $v, '"' );
+                        }
+
+                        if ( strpos( $key, '_css' ) !== false ) {
+                            $prepped_value = $v;
+                        }
+
+                        if ( is_array( $value ) && ! $prepped_value ) {
+                            Endpoint_Create_Posts::meta_spinner( $value, $post_ID, $bindings );
+                            continue;
                         }
 
                         $wpdb->insert( $wpdb->prefix . 'postmeta', array(

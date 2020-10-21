@@ -14,7 +14,8 @@ class Location_Domination_Spinner {
     /**
      * The regex pattern used for grabbing spintaxs
      */
-    const REGEX_PATTERN = '/\{(((?>[^\{\}]+)|(?R))*?)\}/xu';
+    /*    const REGEX_PATTERN = '/\{(((?>[^\{\}]+)|(?R))*?)\}/xu';*/
+    const REGEX_PATTERN = '/((__)|(_\[))?\{(((?>[^\{\}]+)|(?R))*?)\}((__|\]_))?/xu';
 
     /**
      * @param $content
@@ -26,7 +27,7 @@ class Location_Domination_Spinner {
         if ( $seed ) {
             $integer_seed = crc32( $seed );
 
-            mt_srand($integer_seed);
+            mt_srand( $integer_seed );
         }
 
         return preg_replace_callback( self::REGEX_PATTERN, [
@@ -42,7 +43,13 @@ class Location_Domination_Spinner {
      * @since 2.0.0
      */
     static function replace( $text ) {
-        $text = Location_Domination_Spinner::spin( $text[ 1 ] );
+        $thrive_regex_pattern = '/(([_\[]){(.*)}([_\]]))/m';
+
+        if ( preg_match( $thrive_regex_pattern, $text[ 0 ] ) ) {
+            return $text[ 0 ];
+        }
+
+        $text  = Location_Domination_Spinner::spin( $text[ 1 ] );
         $parts = explode( '|', $text );
 
         return $parts[ array_rand( $parts ) ];
