@@ -63,11 +63,9 @@ class Action_Process_Queue implements Action_Interface {
 
         require_once( __DIR__ . '/../../includes/class-location-domination-activator.php' );
 
-        $template = get_post( $template_id, 'ARRAY_A' );
-
         $fields = get_fields( $template_id );
 
-        $enabled_templates = array_filter( $fields[ 'spin_templates' ], function ( $item ) {
+        $enabled_templates = array_filter( $fields[ 'spin_templates' ] ? : [], function ( $item ) {
             return $item[ 'enabled' ];
         } );
 
@@ -95,10 +93,10 @@ class Action_Process_Queue implements Action_Interface {
             $page_slug  = isset( $fields[ 'page_slug' ] ) ? $fields[ 'page_slug' ] : null;
 
             foreach ( $json_response->cities as $record ) {
-                $random_template_key    = array_rand( $enabled_templates_ids );
-                $base_template_id       = $sub_template_spinning ? $enabled_templates_ids[ $random_template_key ] : $template_id;
+                $random_template_key    = $sub_template_spinning ? array_rand( $enabled_templates_ids ) : false;
+                $base_template_id       = $sub_template_spinning && $random_template_key ? $enabled_templates_ids[ $random_template_key ] : $template_id;
                 $base_template          = get_post( $base_template_id, 'ARRAY_A' );
-                $base_template_settings = $enabled_templates[ $random_template_key ];
+                $base_template_settings = $sub_template_spinning ? $enabled_templates[ $random_template_key ] : false;
 
                 $meta = get_post_custom( $base_template_id );
 
@@ -170,7 +168,7 @@ class Action_Process_Queue implements Action_Interface {
                             $neighborhood_shortcode_bindings             = $shortcode_bindings;
                             $neighborhood_shortcode_bindings[ '[city]' ] = $neighborhood->neighborhood;
 
-                            $title = apply_filters( 'location_domination_shortcodes', ( $sub_template_spinning ? $base_template_settings[ 'post_name' ] : $base_template[ 'post_title' ] ), $neighborhood_shortcode_bindings  );
+                            $title = apply_filters( 'location_domination_shortcodes', ( $sub_template_spinning ? $base_template_settings[ 'post_name' ] : $base_template[ 'post_title' ] ), $neighborhood_shortcode_bindings );
 
                             if ( ! $sub_template_spinning && $page_title ) {
                                 $title = apply_filters( 'location_domination_shortcodes', $page_title, $neighborhood_shortcode_bindings );
@@ -205,14 +203,14 @@ class Action_Process_Queue implements Action_Interface {
                 }
 
                 $wpdb->insert( Location_Domination_Activator::getTableName(), [
-                    'post_type'   => $uuid,
-                    'post_id'     => $new_post_id,
-                    'country'     => isset( $record->country ) ? $record->country : null,
-                    'state'       => isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : null ),
-                    'county'      => isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : null ),
-                    'region'      => isset( $record->region ) ? $record->region : ( isset( $record->county ) ? $record->county : null ),
-                    'city'        => isset( $record->city ) ? $record->city : null,
-                    'locked'      => 0,
+                    'post_type' => $uuid,
+                    'post_id'   => $new_post_id,
+                    'country'   => isset( $record->country ) ? $record->country : null,
+                    'state'     => isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : null ),
+                    'county'    => isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : null ),
+                    'region'    => isset( $record->region ) ? $record->region : ( isset( $record->county ) ? $record->county : null ),
+                    'city'      => isset( $record->city ) ? $record->city : null,
+                    'locked'    => 0,
                 ] );
 
 //                if ( isset( $schema ) && $schema ) {
