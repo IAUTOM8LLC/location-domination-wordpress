@@ -14,8 +14,8 @@ class Location_Domination_Spinner {
     /**
      * The regex pattern used for grabbing spintaxs
      */
-    /*    const REGEX_PATTERN = '/\{(((?>[^\{\}]+)|(?R))*?)\}/xu';*/
-    const REGEX_PATTERN = '/((__)|(_\[))?\{(((?>[^\{\}]+)|(?R))*?)\}((__|\]_))?/xu';
+    /*        const REGEX_PATTERN = '/\{(((?>[^\{\}]+)|(?R))*?)\}/xu';*/
+    const REGEX_PATTERN = '/(__|_\[)?\{(((?>[^\{\}]+)|(?R))*?)\}(__|\]_)?/xu';
 
     /**
      * @param $content
@@ -49,7 +49,7 @@ class Location_Domination_Spinner {
             return $text[ 0 ];
         }
 
-        $text  = Location_Domination_Spinner::spin( $text[ 1 ] );
+        $text  = Location_Domination_Spinner::spin( $text[ 2 ] );
         $parts = explode( '|', $text );
 
         return $parts[ array_rand( $parts ) ];
