@@ -73,8 +73,8 @@ class Action_Start_Indexing implements Action_Interface {
 //        }
         require_once( __DIR__ . '/../../includes/class-location-domination-activator.php' );
 
-        $country = (int) esc_attr( $this->request[ 'country' ] );
-        $this->table_name = Location_Domination_Activator::getTableName();
+        $country             = (int) esc_attr( $this->request[ 'country' ] );
+        $this->table_name    = Location_Domination_Activator::getTableName();
         $this->template_uuid = esc_attr( $this->request[ 'uuid' ] );
 
         if ( $country === 236 ) {
@@ -82,24 +82,24 @@ class Action_Start_Indexing implements Action_Interface {
             $states = $this->get_states();
 
             if ( count( $states ) > 1 ) {
-                $this->insert_index_page( 'United States', sprintf( 'scope="states" country="%s"', 'United States' ), 'country', 'United States' );
+                $this->insert_index_page( 'United States', sprintf( 'scope="states" country="%s" post_type="%s"', 'United States', $this->request[ 'uuid' ] ), 'country', 'United States' );
             }
 
             foreach ( $states as $record ) {
-                $this->insert_index_page( $record->state, sprintf( 'scope="counties" state="%s"', $record->state ), 'state', $record->state );
+                $this->insert_index_page( $record->state, sprintf( 'scope="counties" state="%s" post_type="%s"', $record->state, $this->request[ 'uuid' ] ), 'state', $record->state );
             }
 
             $counties = $this->get_counties();
 
             foreach ( $counties as $record ) {
-                $this->insert_index_page( $record->county, sprintf( 'scope="cities" state="%s" county="%s"', $record->state, $record->county ), 'county', sprintf( '%s, %s', $record->state, $record->county ) );
+                $this->insert_index_page( $record->county, sprintf( 'scope="cities" state="%s" county="%s" post_type="%s"', $record->state, $record->county, $this->request[ 'uuid' ] ), 'county', sprintf( '%s, %s', $record->state, $record->county ) );
             }
         } else {
             // Regions
             $regions = $this->get_regions();
 
             foreach ( $regions as $record ) {
-                $this->insert_index_page( $record->region, sprintf( 'region="%s"', $record->region ), 'region', sprintf( '%s, %s', $record->country, $record->region ) );
+                $this->insert_index_page( $record->region, sprintf( 'region="%s" post_type="%s"', $record->region, $this->request[ 'uuid' ] ), 'region', sprintf( '%s, %s', $record->country, $record->region ) );
             }
         }
     }
@@ -113,12 +113,12 @@ class Action_Start_Indexing implements Action_Interface {
      * @return bool
      */
     protected function insert_index_page( $name, $scope, $context, $context_value ) {
-        $post_id = wp_insert_post([
-            'post_title' => $name,
-            'post_type' => $this->template_uuid,
-            'post_status' => 'publish',
+        $post_id = wp_insert_post( [
+            'post_title'   => $name,
+            'post_type'    => $this->template_uuid,
+            'post_status'  => 'publish',
             'post_content' => "[internal_links $scope]",
-        ]);
+        ] );
 
         if ( ! is_wp_error( $post_id ) ) {
             update_post_meta( $post_id, '_ld_index', true );
