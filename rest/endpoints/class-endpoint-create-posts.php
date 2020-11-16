@@ -318,17 +318,19 @@ class Endpoint_Create_Posts {
                             $prepped_value = json_encode( $value );
                         }
 
-                        if ( preg_match( '/"\d+"/s', $v ) !== false ) {
-                            $prepped_value = (int) trim( $v, '"' );
-                        }
+                        if ( is_beaverbuilder_installed() ) {
+                            if ( preg_match( '/"\d+"/s', $v ) !== false ) {
+                                $prepped_value = (int) trim( $v, '"' );
+                            }
 
-                        if ( strpos( $key, '_css' ) !== false ) {
-                            $prepped_value = $v;
-                        }
+                            if ( strpos( $key, '_css' ) !== false ) {
+                                $prepped_value = $v;
+                            }
 
-                        if ( is_array( $value ) && ! $prepped_value ) {
-                            Endpoint_Create_Posts::meta_spinner( $value, $post_ID, $bindings );
-                            continue;
+                            if ( is_array( $value ) && ! $prepped_value ) {
+                                Endpoint_Create_Posts::meta_spinner( $value, $post_ID, $bindings );
+                                continue;
+                            }
                         }
 
                         $wpdb->insert( $wpdb->prefix . 'postmeta', array(

@@ -15,3 +15,10 @@ if ( ! function_exists( 'is_json' ) ) {
         return ( json_last_error() == JSON_ERROR_NONE );
     }
 }
+
+if ( ! function_exists( 'is_beaverbuilder_installed' ) ) {
+    function is_beaverbuilder_installed() {
+        return class_exists( 'FLBuilderModel' ) && FLBuilderModel::is_builder_enabled() );
+    }
+}
+
