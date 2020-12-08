@@ -171,6 +171,11 @@ class Endpoint_Create_Posts {
                 'post_id' => $arguments[ 'ID' ],
             ] );
 
+	        // GMB Vault integration
+	        if ( isset( $meta[ '_gmbvault_business_listing' ] ) && isset( $meta[ '_gmbvault_business_listing' ][0] ) ) {
+		        $meta[ '_gmbvault_business_listing' ][0] = (int) $meta[ '_gmbvault_business_listing' ][0];
+	        }
+
             Endpoint_Create_Posts::meta_spinner( $meta, $arguments[ 'ID' ] );
 
             add_post_meta( $arguments[ 'ID' ], '_city', isset( $record[ 'city' ] ) ? $record[ 'city' ] : '' );

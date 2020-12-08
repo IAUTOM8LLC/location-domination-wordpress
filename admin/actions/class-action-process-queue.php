@@ -147,6 +147,11 @@ class Action_Process_Queue implements Action_Interface {
 
                 $new_post_id = wp_insert_post( $arguments );
 
+				// GMB Vault integration
+	            if ( isset( $meta[ '_gmbvault_business_listing' ] ) && isset( $meta[ '_gmbvault_business_listing' ][0] ) ) {
+		            $meta[ '_gmbvault_business_listing' ][0] = (int) $meta[ '_gmbvault_business_listing' ][0];
+	            }
+
                 Endpoint_Create_Posts::meta_spinner( $meta, $new_post_id, $shortcode_bindings );
 
                 add_post_meta( $new_post_id, '_city', isset( $record->city ) ? $record->city : '' );
@@ -187,6 +192,11 @@ class Action_Process_Queue implements Action_Interface {
                             }
 
                             $neighborhood_post_id = wp_insert_post( $arguments );
+
+	                        // GMB Vault integration
+	                        if ( isset( $meta[ '_gmbvault_business_listing' ] ) && isset( $meta[ '_gmbvault_business_listing' ][0] ) ) {
+		                        $meta[ '_gmbvault_business_listing' ][0] = (int) $meta[ '_gmbvault_business_listing' ][0];
+	                        }
 
                             Endpoint_Create_Posts::meta_spinner( $meta, $neighborhood_post_id, $neighborhood_shortcode_bindings );
 
