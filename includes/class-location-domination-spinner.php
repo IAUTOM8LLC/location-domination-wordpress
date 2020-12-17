@@ -49,14 +49,12 @@ class Location_Domination_Spinner {
             return $text[ 0 ];
         }
 
-        if ( function_exists( 'oxygen_can_activate_builder_compression' ) ) {
-            if (is_string($text) && json_decode('{' . $text . '}')) {
-                return '{' . $text . '}';
-            }
-        }
-
         $text  = Location_Domination_Spinner::spin( $text[ 2 ] );
         $parts = explode( '|', $text );
+
+        if ( is_string( $text ) && json_decode( '{' . $text . '}' ) ) {
+            return '{' . $text . '}';
+        }
 
         return $parts[ array_rand( $parts ) ];
     }
