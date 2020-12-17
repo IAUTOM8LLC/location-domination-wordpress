@@ -338,6 +338,20 @@ class Endpoint_Create_Posts {
                             }
                         }
 
+                        // Does Oxygen builder exist?
+                        if ( function_exists( 'oxygen_can_activate_builder_compression' ) ) {
+                            if ( strpos( $key, 'ct_builder_shortcodes' ) !== false ) {
+                                $prepped_value = $value;
+
+                                foreach ( $bindings as $_key => $replacement ) {
+                                    $_key = str_replace( '[', '_OXY_OPENING_BRACKET_', $_key );
+                                    $_key = str_replace( ']', '_OXY_CLOSING_BRACKET_', $_key );
+
+                                    $prepped_value = str_replace( $_key, $replacement, $prepped_value );
+                                }
+                            }
+                        }
+
                         $wpdb->insert( $wpdb->prefix . 'postmeta', array(
                             'post_id'    => $post_ID,
                             'meta_key'   => $key,
