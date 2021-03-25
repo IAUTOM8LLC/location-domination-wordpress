@@ -111,7 +111,7 @@ class Location_Domination_Shortcodes {
                     $content = str_ireplace( $key, strtolower( $key ), $content );
                 }
             } else {
-                $content = str_ireplace( $shortcode->get_key(), strtolower( $shortcode->get_key() ), $content );
+                $content = str_ireplace( '[' . $shortcode->get_key(), '[' . strtolower( $shortcode->get_key() ), $content );
             }
         }
 
