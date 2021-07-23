@@ -252,7 +252,7 @@ class Location_Domination {
         $plugin_public = new Location_Domination_Public( $this->get_plugin_name(), $this->get_version() );
 
         $this->loader->add_action( 'wp_head', $plugin_public, 'display_schema', 99 );
-        $this->loader->add_action( 'pre_get_posts', $plugin_public, 'remove_template_slug_from_request', 10 );
+        $this->loader->add_action( 'pre_get_posts', $plugin_public, 'remove_template_slug_from_request', 9999 );
         $this->loader->add_filter( 'post_type_link', $plugin_public, 'remove_template_slug_from_links', 10, 2 );
     }
 

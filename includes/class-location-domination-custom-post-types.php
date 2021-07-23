@@ -225,10 +225,10 @@ class Location_Domination_Custom_Post_Types {
                 'show_ui'            => true,
                 'show_in_menu'       => true,
                 'query_var'          => true,
-                'rewrite'            => ! $use_template_slug ? [
-                    'slug'       => '/',
-                    'with_front' => false
-                ] : [ 'slug' => get_post_field( 'post_name', $post_id ) ],
+//                'rewrite'            => ! $use_template_slug ? [
+//                    'slug'       => '/',
+//                    'with_front' => false
+//                ] : [ 'slug' => get_post_field( 'post_name', $post_id ) ],
                 'capability_type'    => 'page',
                 'has_archive'        => false,
                 'hierarchical'       => false,
