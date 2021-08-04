@@ -152,6 +152,31 @@ class Location_Domination_Custom_Post_Types {
                 }
             }
         }
+
+        $templates = new WP_Query([
+            'posts_per_page' => -1,
+            'post_type' => LOCATION_DOMINATION_TEMPLATE_CPT,
+        ]);
+
+        if ( is_singular() && ! empty( $templates->posts ) ) {
+            $template_post_types = array_filter( array_map( function( $template ) {
+	            return get_post_meta( $template->ID, "_uuid", true );
+            }, $templates->posts ) );
+
+            global $post;
+
+            $template = self::get_template_by_uuid( $post->post_type );
+
+            if ( ! empty( $template ) && $post instanceof WP_Post && in_array( $post->post_type, $template_post_types ) ) {
+                $use_template_slug = get_field( "use_template_slug", $template->ID );
+
+                // Redirect if they are accessing via the old slug
+                if ( ! $use_template_slug && strpos( $_SERVER[ 'REQUEST_URI' ], $post->post_type ) !== false ) {
+	                wp_safe_redirect( get_permalink( $post->ID ), 301 );
+	                exit;
+                }
+            }
+        }
     }
 
 
