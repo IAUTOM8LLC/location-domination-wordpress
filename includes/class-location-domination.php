@@ -170,6 +170,7 @@ class Location_Domination {
         $this->loader->add_action( 'admin_menu', $plugin_admin, 'register_admin_page' );
         $this->loader->add_action( 'admin_notices', $plugin_admin, 'show_error_notices' );
         $this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'register_metaboxes', 999 );
+        $this->loader->add_action( 'acf/save_post', $plugin_admin, 'update_lock_on_index' );
         $this->loader->add_filter( 'post_row_actions', $plugin_admin, 'add_send_to_location_domination_row_action', 10, 2 );
 
         $this->loader->add_action( 'edit_form_after_title', $plugin_admin, 'add_send_to_location_domination_button_below_editor', 10, 2 );

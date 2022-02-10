@@ -508,6 +508,26 @@ class Location_Domination_Admin {
     }
 
     /**
+     * Updates the index once the page has been updated with the latest
+     * status of whether it has been locked or not.
+     *
+     * @param $post_id
+     */
+    public function update_lock_on_index( $post_id ) {
+        global $post, $wpdb;
+
+        $allowed_post_types = ld_get_template_post_types();
+
+        if ( empty( $post_id ) || ! in_array( $post->post_type, $allowed_post_types ) ) {
+            return;
+        }
+
+        $wpdb->update( $wpdb->prefix . "locationdomination_index", [
+            'locked' => get_field( 'lock_page' ) ? "1" : "0",
+        ], [ 'post_id' => $post_id ] );
+    }
+
+    /**
      * Hooks into ACF to get the latest data from the fields
      * before we save it into the database.
      *

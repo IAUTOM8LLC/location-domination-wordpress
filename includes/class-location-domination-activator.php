@@ -22,6 +22,9 @@
  */
 class Location_Domination_Activator {
 
+    /**
+     * @var string
+     */
     static $INDEX_CREATE_TABLE_SQL = "CREATE TABLE `{prefix}locationdomination_index`  (
   `ID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `post_type` varchar(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL,
@@ -83,6 +86,9 @@ class Location_Domination_Activator {
 	    return str_replace( '{prefix}', $wpdb->prefix, $sql );
     }
 
+    /**
+     * @return string
+     */
     public static function getTableName() {
 	    global $wpdb;
 

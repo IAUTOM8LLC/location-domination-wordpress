@@ -92,6 +92,8 @@ class Action_Process_Queue implements Action_Interface {
             $page_title = isset( $fields[ 'page_title' ] ) ? $fields[ 'page_title' ] : null;
             $page_slug  = isset( $fields[ 'page_slug' ] ) ? $fields[ 'page_slug' ] : null;
 
+            $template_post_type = get_post_meta( $template_id, '_uuid', true );
+
             foreach ( $json_response->cities as $record ) {
                 $random_template_key    = $sub_template_spinning ? array_rand( $enabled_templates_ids ) : false;
                 $base_template_id       = $sub_template_spinning && $random_template_key ? $enabled_templates_ids[ $random_template_key ] : $template_id;
@@ -99,6 +101,46 @@ class Action_Process_Queue implements Action_Interface {
                 $base_template_settings = $sub_template_spinning ? $enabled_templates[ $random_template_key ] : false;
 
                 $meta = get_post_custom( $base_template_id );
+
+                $locked_query_args = [
+                    'post_status' => 'publish',
+                    'post_type' => $template_post_type,
+                    'posts_per_page' => -1,
+                    'meta_query' => [
+                        'relation' => 'AND',
+                        [
+                            'key' => 'lock_page',
+                            'value' => '1',
+                            'compare' => '=',
+                        ],
+                        [
+                            'key' => '_city',
+                            'value' => isset( $record->city ) ? $record->city : '',
+                            'compare' => '=',
+                        ],
+                        [
+                            'key' => '_state',
+                            'value' => isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : '' ),
+                            'compare' => '=',
+                        ],
+                        [
+                            'key' => '_county',
+                            'value' => isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : '' ),
+                            'compare' => '=',
+                        ],
+                        [
+                            'key' => '_country',
+                            'value' => isset( $record->country ) ? $record->country : '',
+                            'compare' => '=',
+                        ],
+                    ]
+                ];
+
+                $locked_query = new \WP_Query( $locked_query_args );
+
+                if ( $locked_query->post_count > 0 ) {
+                    continue;
+                }
 
                 $region_abbr     = '';
                 $region_abbr_key = 'region-abbr';
@@ -128,7 +170,7 @@ class Action_Process_Queue implements Action_Interface {
                 }
 
                 $arguments = [
-                    'post_type'    => get_post_meta( $template_id, '_uuid', true ),
+                    'post_type'    => $template_post_type,
                     'post_title'   => Location_Domination_Spinner::spin( $title ),
                     'post_content' => Location_Domination_Spinner::spin( $base_template[ 'post_content' ] ),
                     'post_status'  => 'publish',
