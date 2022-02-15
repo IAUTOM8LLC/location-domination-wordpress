@@ -252,6 +252,14 @@ class Action_Process_Queue implements Action_Interface {
                             update_post_meta( $neighborhood_post_id, '_uuid', $uuid );
                         }
                     }
+                } else {
+                    if ( isset( $record->neighborhoods ) && ! empty( $record->neighborhoods ) ) {
+                        $neighborhoods = array_map( function( $object ) {
+                            return $object->neighborhood;
+                        }, $record->neighborhoods );
+
+                        add_post_meta( $new_post_id, "_neighborhoods", $neighborhoods );
+                    }
                 }
 
                 $wpdb->insert( Location_Domination_Activator::getTableName(), [
