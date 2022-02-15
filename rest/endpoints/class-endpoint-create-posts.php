@@ -171,10 +171,10 @@ class Endpoint_Create_Posts {
                 'post_id' => $arguments[ 'ID' ],
             ] );
 
-	        // GMB Vault integration
-	        if ( isset( $meta[ '_gmbvault_business_listing' ] ) && isset( $meta[ '_gmbvault_business_listing' ][0] ) ) {
-		        $meta[ '_gmbvault_business_listing' ][0] = (int) $meta[ '_gmbvault_business_listing' ][0];
-	        }
+            // GMB Vault integration
+            if ( isset( $meta[ '_gmbvault_business_listing' ] ) && isset( $meta[ '_gmbvault_business_listing' ][0] ) ) {
+                $meta[ '_gmbvault_business_listing' ][0] = (int) $meta[ '_gmbvault_business_listing' ][0];
+            }
 
             Endpoint_Create_Posts::meta_spinner( $meta, $arguments[ 'ID' ] );
 
@@ -240,7 +240,7 @@ class Endpoint_Create_Posts {
      * @since 2.0.0
      */
     public static function meta_array_crawler( $i, $bindings = [] ) {
-        if ( is_int( $i ) || is_float( $i ) || is_bool( $i ) || ( is_string( $i ) && strlen( $i ) < 10 ) ) {
+        if ( is_int( $i ) || is_float( $i ) || is_bool( $i ) || ( is_string( $i ) && strlen( $i ) < 10 && ! is_serialized( $i ) ) ) {
             return $i;
         }
 
@@ -352,11 +352,11 @@ class Endpoint_Create_Posts {
                             }
                         }
 
-                        $wpdb->insert( $wpdb->prefix . 'postmeta', array(
-                            'post_id'    => $post_ID,
-                            'meta_key'   => $key,
-                            'meta_value' => $prepped_value ? : $value,
-                        ) );
+//                        $wpdb->insert( $wpdb->prefix . 'postmeta', array(
+//                            'post_id'    => $post_ID,
+//                            'meta_key'   => $key,
+//                            'meta_value' => $prepped_value ? : $value,
+//                        ) );
                     }
                 }
             }
