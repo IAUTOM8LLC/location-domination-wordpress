@@ -352,11 +352,11 @@ class Endpoint_Create_Posts {
                             }
                         }
 
-//                        $wpdb->insert( $wpdb->prefix . 'postmeta', array(
-//                            'post_id'    => $post_ID,
-//                            'meta_key'   => $key,
-//                            'meta_value' => $prepped_value ? : $value,
-//                        ) );
+                        $wpdb->insert( $wpdb->prefix . 'postmeta', array(
+                            'post_id'    => $post_ID,
+                            'meta_key'   => $key,
+                            'meta_value' => $prepped_value ? : $value,
+                        ) );
                     }
                 }
             }
