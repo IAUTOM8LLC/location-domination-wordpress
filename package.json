@@ -19,7 +19,7 @@
     "lodash": "^4.17.15",
     "moment": "^2.26.0",
     "postcss-loader": "^3.0.0",
-    "qs": "^6.9.3",
+    "qs": "^6.9.7",
     "sweetalert2": "^9.14.0",
     "tailwindcss": "^1.2.0",
     "vue": "^2.6.11",
