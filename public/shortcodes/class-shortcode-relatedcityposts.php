@@ -51,7 +51,7 @@ class Shortcode_RelatedCityPosts implements Shortcode_Interface {
     		$links = '';
     		$query = new WP_Query( $args );
     		if ( $query->have_posts() ) {
-    			$links = "We also serve the following cities in $county, $state <br>";
+    			$links = "<br>We also serve the following cities in $county, $state <br>";
     			while ( $query->have_posts() ) {
     				$query->the_post();
     				if ($parent_id != get_the_ID()) {
