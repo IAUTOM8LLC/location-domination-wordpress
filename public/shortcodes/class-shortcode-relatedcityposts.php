@@ -38,7 +38,8 @@ class Shortcode_RelatedCityPosts implements Shortcode_Interface {
     	if (!empty($county)) {
     		$parent_id = get_the_ID();
     		$args = array( 
-    			'post_type'  => get_post_type(get_the_ID()),           
+    			'post_type'  => get_post_type(get_the_ID()),
+                'posts_per_page' => '-1', 
     			'meta_query' => array(
     				array(
     					'key'     => '_county',   
