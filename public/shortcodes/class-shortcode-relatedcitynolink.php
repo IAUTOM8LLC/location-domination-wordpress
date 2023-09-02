@@ -13,7 +13,7 @@
  * @subpackage Location_Domination/admin
  * @author     iAutoM8 LLC <support@i-autom8.com>
  */
-class Shortcode_RelatedCityPosts implements Shortcode_Interface {
+class Shortcode_RelatedCityNoLink implements Shortcode_Interface {
 
     /**
      * The shortcode name.
@@ -22,7 +22,7 @@ class Shortcode_RelatedCityPosts implements Shortcode_Interface {
      * @since 2.0.0
      */
     public function get_key() {
-        return 'ld_nearby_cities_county_only';
+        return 'ld_nearby_cities_county_only_no_links';
     }
 
     /**
@@ -59,7 +59,7 @@ class Shortcode_RelatedCityPosts implements Shortcode_Interface {
                 while ( $query->have_posts() ) {
                     $query->the_post();
                     if ($parent_id != get_the_ID()) {
-                        $links .= "<br><a href=".get_permalink(get_the_ID()).">".get_post_meta( get_the_ID(), '_city', true )."</a>";
+                        $links .= "<p class='ld_nearby_cities_county_only_no_links'>".get_post_meta( get_the_ID(), '_city', true )."</p>";
                     }
                 }
                 wp_reset_postdata();
