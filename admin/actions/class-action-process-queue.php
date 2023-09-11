@@ -79,11 +79,12 @@ class Action_Process_Queue implements Action_Interface {
         $last_post_request_id = (int) $option->request_id;
         $url                  = sprintf( '%s/api/post-requests/%d/workload?batch=%d', trim( MAIN_URL, '/' ), $last_post_request_id, $option->batches->completed );
 
-        $response = wp_remote_get( $url );
-
+        $response = wp_remote_get( $url,array(
+            'timeout' => 1000, // Set timeout to 10 seconds
+        ) );
         if ( ! is_wp_error( $response ) ) {
             $json_response = json_decode( $response[ 'body' ] );
-
+        // print_r($json_response);
             $option->job_in_progress     = true;
             $option->last_job_started_at = time();
 
@@ -91,7 +92,9 @@ class Action_Process_Queue implements Action_Interface {
 
             $page_title = isset( $fields[ 'page_title' ] ) ? $fields[ 'page_title' ] : null;
             $page_slug  = isset( $fields[ 'page_slug' ] ) ? $fields[ 'page_slug' ] : null;
-
+            $page_title_sc = $this->extract_short_code_attr($page_title);
+            $page_slug_sc = $this->extract_short_code_attr($page_slug);
+            // print_r($page_title_sc);exit;
             $template_post_type = get_post_meta( $template_id, '_uuid', true );
 
             foreach ( $json_response->cities as $record ) {
@@ -99,7 +102,6 @@ class Action_Process_Queue implements Action_Interface {
                 $base_template_id       = $sub_template_spinning && $random_template_key ? $enabled_templates_ids[ $random_template_key ] : $template_id;
                 $base_template          = get_post( $base_template_id, 'ARRAY_A' );
                 $base_template_settings = $sub_template_spinning ? $enabled_templates[ $random_template_key ] : false;
-
                 $meta = get_post_custom( $base_template_id );
 
                 $locked_query_args = [
@@ -158,9 +160,16 @@ class Action_Process_Queue implements Action_Interface {
                     '[region]'     => isset( $record->region ) ? $record->region : '',
                     '[country]'    => isset( $record->country ) ? $record->country : '',
                     '[state_abbr]' => isset( $record->state ) ? Shortcode_State_Abbreviation::lookup( $record->state ) : $region_abbr,
+                    '[population]' => isset($record->city_meta->population) ? $record->city_meta->population : '',
+                    '[lat]' => isset($record->city_meta->lat) ? $record->city_meta->lat : '',
+                    '[lng]' => isset($record->city_meta->lng) ? $record->city_meta->lng : '',
+                    '[density]' => isset($record->city_meta->density) ? $record->city_meta->density : '',
+                    '[ranking]' => isset($record->city_meta->ranking) ? $record->city_meta->ranking : ''
                 ];
-
+                $shortcode_bindings_slug = $shortcode_bindings;
                 $is_united_states = isset( $record->country ) ? $record->country === 'United States' : true;
+
+                $shortcode_pattern = '/\[citymeta name="([^"]+)"\]/';
 
                 $title = apply_filters( 'location_domination_shortcodes', ( $sub_template_spinning ? $base_template_settings[ 'post_name' ] : $base_template[ 'post_title' ] ), $shortcode_bindings );
                 $uuid  = get_post_meta( $template_id, '_uuid', true );
@@ -168,6 +177,34 @@ class Action_Process_Queue implements Action_Interface {
                 if ( ! $sub_template_spinning && $page_title ) {
                     $title = apply_filters( 'location_domination_shortcodes', $page_title, $shortcode_bindings );
                 }
+              if ($record->city_meta !== null) {
+                    $dynamicValues = json_decode(json_encode($record->city_meta), true);
+                } else {
+                    // Handle the case where $record->city_meta->citymeta is null
+                    $dynamicValues = array(); // Or any other default value or handling you prefer
+                }
+                if (isset($page_title_sc['citymeta']['name'])) {
+                    // $dynamicValues = json_decode(json_encode($record->city_meta), true);;
+                    $title = preg_replace_callback($shortcode_pattern, function($matches) use ($dynamicValues) {
+                        $attrName = $matches[1];
+                        if (array_key_exists($attrName, $dynamicValues)) {
+                            return $dynamicValues[$attrName];
+                        }
+                        return $matches[0];
+                    }, $title);
+
+                }
+                if (isset($page_slug_sc['citymeta']['name'])) {
+                    // $dynamicValues = json_decode(json_encode($record->city_meta), true);;
+                    $page_slug = preg_replace_callback($shortcode_pattern, function($matches) use ($dynamicValues) {
+                        $attrName = $matches[1];
+                        if (array_key_exists($attrName, $dynamicValues)) {
+                            return $dynamicValues[$attrName];
+                        }
+                        return $matches[0];
+                    }, $page_slug);
+                }
+                // print_r($page_slug);
 
                 $arguments = [
                     'post_type'    => $template_post_type,
@@ -202,7 +239,13 @@ class Action_Process_Queue implements Action_Interface {
                 add_post_meta( $new_post_id, '_zips', isset( $record->zips ) ? $record->zips : '' );
                 add_post_meta( $new_post_id, '_region', isset( $record->region ) ? $record->region : '' );
                 add_post_meta( $new_post_id, '_country', isset( $record->country ) ? $record->country : '' );
+                add_post_meta( $new_post_id, '_population', isset($record->city_meta->population) ? $record->city_meta->population : '' );
+                add_post_meta( $new_post_id, '_lat', isset($record->city_meta->lat) ? $record->city_meta->lat : '' );
+                add_post_meta( $new_post_id, '_lng', isset($record->city_meta->lng) ? $record->city_meta->lng : '' );
+                add_post_meta( $new_post_id, '_density', isset($record->city_meta->density) ? $record->city_meta->density : '' );
+                add_post_meta( $new_post_id, '_ranking', isset($record->city_meta->ranking) ? $record->city_meta->ranking : '' );
 
+                add_post_meta( $new_post_id, '_city_meta', isset($record->city_meta) ? json_encode($record->city_meta) : '' );
                 if ( $region_abbr ) {
                     add_post_meta( $new_post_id, '_region_abbr', $region_abbr );
                 }
@@ -248,7 +291,7 @@ class Action_Process_Queue implements Action_Interface {
                             add_post_meta( $neighborhood_post_id, '_county', isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : null ) );
                             add_post_meta( $neighborhood_post_id, '_zips', isset( $record->zips ) ? $record->zips : '' );
                             add_post_meta( $neighborhood_post_id, '_country', isset( $record->country ) ? $record->country : '' );
-
+                            add_post_meta( $neighborhood_post_id, '_population', isset($record->city_meta->population) ? $record->city_meta->population : '' );
                             update_post_meta( $neighborhood_post_id, '_uuid', $uuid );
                         }
                     }
@@ -305,4 +348,41 @@ class Action_Process_Queue implements Action_Interface {
         return wp_send_json( [ 'success' => false ] );
     }
 
+    public function extract_short_code_attr($string) {
+        // $string = 'Manish [city]-[population]-[lat]-[density][citymeta name="lat"]';
+
+        // Define the resulting array
+        $result_array = array();
+
+        // Define a regular expression pattern to match shortcodes and their attributes
+        $pattern = '/\[(\w+)([^\]]*?)\]/';
+
+        // Use preg_match_all to find all matches of the pattern in the string
+        preg_match_all($pattern, $string, $matches, PREG_SET_ORDER);
+
+        // Iterate through the matches to extract shortcode information
+        foreach ($matches as $match) {
+            $shortcode_name = $match[1]; // Shortcode name
+            $shortcode_attrs_str = $match[2]; // Shortcode attribute string (e.g., 'name="lat"')
+
+            // Initialize the shortcode attributes array
+            $shortcode_attrs = array();
+
+            // Parse shortcode attributes into key-value pairs
+            if (preg_match_all('/(\w+)="([^"]+)"/', $shortcode_attrs_str, $attr_matches, PREG_SET_ORDER)) {
+                foreach ($attr_matches as $attr_match) {
+                    $attr_key = $attr_match[1];
+                    $attr_value = $attr_match[2];
+                    $shortcode_attrs[$attr_key] = $attr_value;
+                }
+            }
+
+            // Add the shortcode information to the result array, even if there are no attributes
+            $result_array[$shortcode_name] = $shortcode_attrs;
+        }
+
+        // Print the resulting array
+        return $result_array;
+
+    }
 }

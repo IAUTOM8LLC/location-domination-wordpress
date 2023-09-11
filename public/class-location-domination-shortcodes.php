@@ -54,6 +54,7 @@ class Location_Domination_Shortcodes {
         Shortcode_Neighborhoods::class,
         Shortcode_RelatedCityPosts::class,
         Shortcode_RelatedCityNoLink::class,
+        Shortcode_MetaCity::class,
     ];
 
     /**
