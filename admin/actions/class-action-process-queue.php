@@ -304,7 +304,59 @@ class Action_Process_Queue implements Action_Interface {
                         add_post_meta( $new_post_id, "_neighborhoods", $neighborhoods );
                     }
                 }
+                // print_r($record);exit;
+                if ( get_field( 'create_suburb_pages', $base_template_id ) ) {
+                    if ( isset ( $record->suburbs ) ) {
+                        foreach ( $record->suburbs as $suburb ) {
+                            $suburb_shortcode_bindings             = $shortcode_bindings;
+                            $suburb_shortcode_bindings[ '[city]' ] = $suburb->suburb;
 
+                            $title = apply_filters( 'location_domination_shortcodes', ( $sub_template_spinning ? $base_template_settings[ 'post_name' ] : $base_template[ 'post_title' ] ), $suburb_shortcode_bindings );
+
+                            if ( ! $sub_template_spinning && $page_title ) {
+                                $title = apply_filters( 'location_domination_shortcodes', $page_title, $suburb_shortcode_bindings );
+                            }
+
+                            $arguments = [
+                                'post_type'    => get_post_meta( $template_id, '_uuid', true ),
+                                'post_title'   => Location_Domination_Spinner::spin( $title ),
+                                'post_content' => Location_Domination_Spinner::spin( $base_template[ 'post_content' ] ),
+                                'post_status'  => 'publish',
+                                'post_parent'  => $new_post_id,
+                            ];
+
+                            if ( ! $sub_template_spinning && $page_title ) {
+                                $arguments[ 'post_name' ] = apply_filters( 'location_domination_shortcodes', $page_slug, $suburb_shortcode_bindings );
+                            }
+
+                            $suburb_post_id = wp_insert_post( $arguments );
+
+                        // GMB Vault integration
+                            if ( isset( $meta[ '_gmbvault_business_listing' ] ) && isset( $meta[ '_gmbvault_business_listing' ][0] ) ) {
+                                $meta[ '_gmbvault_business_listing' ][0] = (int) $meta[ '_gmbvault_business_listing' ][0];
+                            }
+
+                            Endpoint_Create_Posts::meta_spinner( $meta, $suburb_post_id, $suburb_shortcode_bindings );
+
+                            add_post_meta( $suburb_post_id, '_suburb', $suburb );
+                            add_post_meta( $suburb_post_id, '_city', isset( $record->city ) ? $record->city : '' );
+                            add_post_meta( $suburb_post_id, '_state', isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : null ) );
+                            add_post_meta( $suburb_post_id, '_county', isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : null ) );
+                            add_post_meta( $suburb_post_id, '_zips', isset( $record->zips ) ? $record->zips : '' );
+                            add_post_meta( $suburb_post_id, '_country', isset( $record->country ) ? $record->country : '' );
+                            add_post_meta( $suburb_post_id, '_population', isset($record->city_meta->population) ? $record->city_meta->population : '' );
+                            update_post_meta( $suburb_post_id, '_uuid', $uuid );
+                        }
+                    }
+                } else {
+                    if ( isset( $record->suburbs ) && ! empty( $record->suburbs ) ) {
+                        $suburbs = array_map( function( $object ) {
+                            return $object->suburb;
+                        }, $record->suburbs );
+
+                        add_post_meta( $new_post_id, "_suburbs", $suburbs );
+                    }
+                }
                 $wpdb->insert( Location_Domination_Activator::getTableName(), [
                     'post_type' => $uuid,
                     'post_id'   => $new_post_id,
