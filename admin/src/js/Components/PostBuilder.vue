@@ -317,6 +317,17 @@ export default {
 
   mounted() {
     const _this = this;
+    const populationcheckbox = document.getElementById('acf-field_8ff41b8044an1212');
+    const populationselect = document.querySelectorAll('.acf-field-8ff41b8044an1212d');;
+    
+    // populationcheckbox.addEventListener('click', _this.toggleSelects(populationcheckbox,populationselect));
+    populationcheckbox.addEventListener('change', function() {
+            _this.toggleSelects(populationcheckbox,populationselect);
+
+    });
+
+
+    _this.toggleSelects(populationcheckbox,populationselect);
 
     ExternalRepository.getCountries().then( ( Response ) => {
       this.countries = Response.data;
@@ -721,7 +732,14 @@ export default {
           } );
         }, 1000 );
       }
-    }
+    },
+
+    toggleSelects(populationcheckbox,populationselect) {
+      const displayValue = populationcheckbox.checked ? 'block' : 'none';
+            populationselect.forEach(select => {
+                select.style.display = displayValue;
+            });
+    },
   }
 };
 </script>

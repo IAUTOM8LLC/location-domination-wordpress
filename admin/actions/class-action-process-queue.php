@@ -94,10 +94,14 @@ class Action_Process_Queue implements Action_Interface {
             $page_slug  = isset( $fields[ 'page_slug' ] ) ? $fields[ 'page_slug' ] : null;
             $page_title_sc = $this->extract_short_code_attr($page_title);
             $page_slug_sc = $this->extract_short_code_attr($page_slug);
-            // print_r($page_title_sc);exit;
             $template_post_type = get_post_meta( $template_id, '_uuid', true );
 
             foreach ( $json_response->cities as $record ) {
+                if (isset($fields['create_base_on_population']) && $fields['create_base_on_population'] == 1) {
+                    if (!isset($fields['population_range']) || ( $record->city_meta->population < $fields['population_range']) || $record->city_meta == null) {
+                        continue(1);
+                    }
+                }
                 $random_template_key    = $sub_template_spinning ? array_rand( $enabled_templates_ids ) : false;
                 $base_template_id       = $sub_template_spinning && $random_template_key ? $enabled_templates_ids[ $random_template_key ] : $template_id;
                 $base_template          = get_post( $base_template_id, 'ARRAY_A' );
@@ -437,4 +441,5 @@ class Action_Process_Queue implements Action_Interface {
         return $result_array;
 
     }
+
 }

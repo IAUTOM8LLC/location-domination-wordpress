@@ -16,7 +16,7 @@
  * Plugin Name:       Location Domination
  * Plugin URI:        https://locationdomination.net
  * Description:       An iAutoM8 plugin designed to make mass page generating easy!
- * Version:           2.0.69
+ * Version:           2.0.70
  * Author:            iAutoM8 LLC
  * Author URI:        https://i-autom8.com
  * License:           GPL-2.0+
@@ -37,7 +37,7 @@ require_once( __DIR__ . '/vendor/autoload.php' );
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'LOCATION_DOMINATION_VERSION', '2.0.69' );
+define( 'LOCATION_DOMINATION_VERSION', '2.0.70' );
 
 /**
  * The URL to interact with Location Domination.
@@ -108,9 +108,9 @@ include_once( LOCATION_DOMINATION_ACF_PATH . '/fields.php' );
  * updates from the GitHub repository.
  */
 $checker = Puc_v4_Factory::buildUpdateChecker(
-    'https://github.com/IAUTOM8LLC/location-domination-wordpress/',
-    __FILE__,
-    'location-domination'
+	'https://github.com/IAUTOM8LLC/location-domination-wordpress/',
+	__FILE__,
+	'location-domination'
 );
 
 $checker->setBranch('stable');
@@ -154,6 +154,18 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-location-domination.php';
 function run_location_domination() {
 	$plugin = new Location_Domination();
 	$plugin->run();
+}
+
+add_filter('display_post_states', 'change_tree_meta',1,2);
+function change_tree_meta($states, $post){
+
+	$tree_meta = get_post_meta($post->ID, 'breakdance_data', true);
+
+	if(!empty($tree_meta)){
+		$new_meta = json_encode($tree_meta);
+		update_post_meta($post->ID, 'breakdance_data', $new_meta);
+	}
+
 }
 
 run_location_domination();
