@@ -248,7 +248,7 @@ if ( function_exists( 'acf_add_local_field_group' ) ):
             ),
             array(
                 'key'               => 'field_8ff41b8044an1212d',
-                'label'             => 'Population Range',
+                'label'             => 'Minimum Population',
                 'name'              => 'population_range',
                 'type'              => 'number',
                 'instructions'      => 'Page will be created if city population is greater then given value.',
