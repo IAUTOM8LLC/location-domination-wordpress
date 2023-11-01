@@ -94,12 +94,23 @@ class Action_Start_Indexing implements Action_Interface {
             foreach ( $counties as $record ) {
                 $this->insert_index_page( $record->county, sprintf( 'scope="cities" state="%s" county="%s" post_type="%s"', $record->state, $record->county, $this->request[ 'uuid' ] ), 'county', sprintf( '%s, %s', $record->state, $record->county ) );
             }
-        } else {
+        } elseif ($country == 13) {
+            $regions = $this->get_regions();
+            
+            // if ( count( $regions ) > 1 ) {
+            //     $this->insert_index_page( 'Australia', sprintf( 'scope="regions" country="%s" post_type="%s"', 'Australia', $this->request[ 'uuid' ] ), 'country', 'Australia' );
+            // }
+
+            foreach ( $regions as $record ) {
+                $this->insert_index_page( $record->region, sprintf( 'region="%s" post_type="%s" country="%s"', $record->region, $this->request[ 'uuid' ],'Australia' ), 'region', sprintf( '%s, %s', $record->country, $record->region ) );
+            }
+        } 
+        else {
             // Regions
             $regions = $this->get_regions();
 
             foreach ( $regions as $record ) {
-                $this->insert_index_page( $record->region, sprintf( 'region="%s" post_type="%s"', $record->region, $this->request[ 'uuid' ] ), 'region', sprintf( '%s, %s', $record->country, $record->region ) );
+                $this->insert_index_page( $country, sprintf( 'region="%s" post_type="%s"', $record->region, $this->request[ 'uuid' ] ), 'region', sprintf( '%s, %s', 'Australia', $record->region ) );
             }
         }
     }

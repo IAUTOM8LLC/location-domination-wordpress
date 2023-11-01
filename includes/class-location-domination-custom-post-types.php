@@ -354,7 +354,11 @@ class Location_Domination_Custom_Post_Types
 				echo 'Index Page';
 			} else if ( get_post_meta( $post_id, '_neighborhood', true ) ) {
 				echo 'Neighborhood Page';
-			} else {
+			}
+			else if ( get_post_meta( $post_id, '_suburb', true ) ) {
+				echo 'Suburb Page';
+			}
+			 else {
 				echo 'City Page';
 			}
 

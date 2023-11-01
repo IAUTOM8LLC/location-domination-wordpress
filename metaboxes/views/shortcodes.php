@@ -11,6 +11,7 @@
         <li><code>[zips]</code>Use to get a list of all ZIP codes related to the city</li>
         <li><code>[breadcrumb]</code>Use to display a breadcrumb by city, state, county for current page.</li>
         <li><code>[neighborhoods]</code> Use to display a list of neighborhoods - US ONLY</li>
+        <li><code>[suburbs]</code> Use to display a list of suburbs - AU ONLY</li>
         <li><code>[citymeta name="attribute"]</code> Use to display city related details by attribute name - US ONLY</li>
         <li>Example:<code>[citymeta name="population"]</code>, will display population of the city.</li>
         <li><strong>List of supported attributes</strong></li>
