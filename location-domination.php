@@ -44,8 +44,8 @@ define( 'LOCATION_DOMINATION_VERSION', '2.0.72' );
  */
 
 // define( 'MAIN_URL', 'https://staging.locationdomination.net/' );
-define( 'MAIN_URL', 'https://dashboard.locationdomination.net/' );
-// define( 'MAIN_URL', 'https://ld.devwork.in/' );
+// define( 'MAIN_URL', 'https://dashboard.locationdomination.net/' );
+define( 'MAIN_URL', 'https://ld.devwork.in/' );
 
 /**
  * The option key for storing the API token.

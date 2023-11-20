@@ -82,7 +82,6 @@ class Action_Start_Queue implements Action_Interface {
         $response = wp_remote_post( trim( MAIN_URL, '/' ) . '/api/post-requests-local', [
             'body' => $_POST,
         ] );
-
         // Save post request
         $last_post_request = get_post_meta( $templateId, 'location_domination_post_request', true );
 

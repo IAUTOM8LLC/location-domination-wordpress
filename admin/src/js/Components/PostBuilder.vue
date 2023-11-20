@@ -52,10 +52,17 @@
           label-key="name" label="Select regions to target" />
       <advanced-select-input
           :preselect="preselect.cities"
+          @input="updateSuburbs"
           v-model="gridForm.cities"
           v-if="gridForm.group && gridForm.group === 'For specific cities'"
           :close-on-select="false" :multiple="true" track-by="id" :options="cities"
           label-key="city" label="Select cities to target" />
+      <advanced-select-input
+          :preselect="preselect.suburbs"
+          v-model="gridForm.suburbs"
+          v-if="gridForm.group && gridForm.group === 'For specific cities'"
+          :close-on-select="false" :multiple="true" track-by="id" :options="suburbs"
+          label-key="suburb" label="Select suburbs to target" />
     </template>
 
     <button
@@ -139,6 +146,12 @@ export default {
 
     regionIds() {
       return this.gridForm.hasOwnProperty( 'regions' ) && this.gridForm.regions ? this.gridForm.regions.map( item => {
+        return item.id;
+      } ) : [];
+    },
+
+    cityIds() {
+      return this.gridForm.hasOwnProperty( 'cities' ) && this.gridForm.cities ? this.gridForm.cities.map( item => {
         return item.id;
       } ) : [];
     },
@@ -281,13 +294,15 @@ export default {
         cities: false,
         states: false,
         regions: false,
-        counties: false
+        counties: false,
+        suburbs: false
       },
       countries: [],
       counties: [],
       states: [],
       cities: [],
       regions: [],
+      suburbs: [],
       debouncers: {},
       debounces: {}
     };
@@ -418,6 +433,9 @@ export default {
       }
       else {
         form.regions = this.gridForm.regions.map( item => {
+          return item.id;
+        } );
+        form.suburbs = this.gridForm.suburbs.map( item => {
           return item.id;
         } );
       }
@@ -620,6 +638,42 @@ export default {
 
                 return match[ 0 ];
               } ).filter( city => city );
+            }
+          } );
+        }, 1000 );
+      }
+    },
+
+    updateSuburbs() {
+      let _this = this;
+
+      if ( this.debounces.suburbs ) {
+        clearTimeout( this.debounces.suburbs );
+      }
+
+      if ( (!this.gridForm.country || this.gridForm.country.id === 236) && _this.stateIds.length === 0 ) {
+        // _this.counties = [];
+      }
+      else {
+        this.debounces.suburbs = setTimeout( () => {
+          ExternalRepository.getSuburbs( {
+            params: {
+              cities: this.cityIds.join( ',' )
+            }
+          } ).then( ( { data } ) => {
+            // _this.counties = response.data;
+            _this.suburbs = data;
+
+            const _suburbs = this.suburbs;
+
+            if ( this.previousRequest && this.previousRequest.hasOwnProperty( 'suburbs' ) ) {
+              this.preselect.suburbs = this.previousRequest.suburbs.map( ( id ) => {
+                const match = _suburbs.filter( function ( suburb ) {
+                  return parseInt( id ) === suburb.id;
+                } );
+
+                return match[ 0 ];
+              } ).filter( suburb => suburb );
             }
           } );
         }, 1000 );

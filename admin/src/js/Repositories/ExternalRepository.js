@@ -33,6 +33,10 @@ export class ExternalRepository {
         return axios.get( `${BASE_URL}/api/worldcities`, data );
     }
 
+    static getSuburbs( data ) {
+        return axios.get( `${BASE_URL}/api/suburbs`, data );
+    }
+
     static setPostRequest( data ) {
         const options = {
             method: 'POST',

@@ -78,13 +78,12 @@ class Action_Process_Queue implements Action_Interface {
         // Start batching responses
         $last_post_request_id = (int) $option->request_id;
         $url                  = sprintf( '%s/api/post-requests/%d/workload?batch=%d', trim( MAIN_URL, '/' ), $last_post_request_id, $option->batches->completed );
-
+// echo $url;exit;
         $response = wp_remote_get( $url,array(
             'timeout' => 1000, // Set timeout to 10 seconds
         ) );
         if ( ! is_wp_error( $response ) ) {
             $json_response = json_decode( $response[ 'body' ] );
-        // print_r($json_response);
             $option->job_in_progress     = true;
             $option->last_job_started_at = time();
 
@@ -309,7 +308,7 @@ class Action_Process_Queue implements Action_Interface {
                     }
                 }
                 // print_r($record);exit;
-                if ( get_field( 'create_suburb_pages', $base_template_id ) ) {
+                if ( get_field( 'create_suburb_pages', $base_template_id ) || $json_response->suburb_only == true) {
                     if ( isset ( $record->suburbs ) ) {
                         foreach ( $record->suburbs as $suburb ) {
                             $suburb_shortcode_bindings             = $shortcode_bindings;

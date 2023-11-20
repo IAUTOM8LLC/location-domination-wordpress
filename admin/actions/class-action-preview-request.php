@@ -32,6 +32,7 @@ class Action_Preview_Request implements Action_Interface {
      * @since 2.0.0
      */
     public function handle() {
+        // print_r($_POST);exit;
         if ( wp_verify_nonce( $_REQUEST[ '_nonce' ], 'location-domination-start-queue' ) === false ) {
             return wp_send_json( [ 'success' => false, 'message' => 'Your session has expired.' ] );
         }
@@ -50,7 +51,7 @@ class Action_Preview_Request implements Action_Interface {
         $response = wp_remote_post( trim( MAIN_URL, '/' ) . '/api/post-requests-local?preview=1', [
             'body' => $_POST,
         ] );
-
+        
         if ( is_wp_error( $response ) || $response[ 'response' ][ 'code' ] !== 200 ) {
             return wp_send_json( [
                 'success' => false,
@@ -60,7 +61,6 @@ class Action_Preview_Request implements Action_Interface {
 
         // Remove all existing posts
         $job = json_decode( $response[ 'body' ] );
-
         return wp_send_json( [
             'success' => true,
             'posts'   => $job->count,
