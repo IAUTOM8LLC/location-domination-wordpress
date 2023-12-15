@@ -162,6 +162,12 @@ export default {
       } ) : [];
     },
 
+    suburbIds() {
+      return this.gridForm.hasOwnProperty( 'suburbs' ) && this.gridForm.suburbs ? this.gridForm.suburbs.map( item => {
+        return item.id;
+      } ) : [];
+    },
+
     groupedCounties() {
       let groups = {};
 
@@ -272,6 +278,7 @@ export default {
         states: [],
         cities: [],
         regions: [],
+        suburbs: [],
         post_slug: '',
         apiKey: '',
         uuid: '',
