@@ -190,11 +190,20 @@ class Endpoint_Create_Posts {
             }
 
             if ( isset( $meta_title ) && $meta_title ) {
-                add_post_meta( $arguments[ 'ID' ], '_yoast_wpseo_title', Location_Domination_Spinner::spin( $meta_title ) );
+                $spin_meta_title = Location_Domination_Spinner::spin( $meta_title );
+                add_post_meta( $arguments[ 'ID' ], '_yoast_wpseo_title', $spin_meta_title );
+                add_post_meta( $arguments[ 'ID' ], '_aioseo_title', $spin_meta_title );
+                add_post_meta( $arguments[ 'ID' ], '_aioseo_og_title', $spin_meta_title );
+                add_post_meta( $arguments[ 'ID' ], '_aioseo_twitter_title', $spin_meta_title );
+
             }
 
             if ( isset( $meta_description ) && $meta_description ) {
-                add_post_meta( $arguments[ 'ID' ], '_yoast_wpseo_metadesc', Location_Domination_Spinner::spin( $meta_description ) );
+                $spin_meta_description = Location_Domination_Spinner::spin( $meta_description );
+                add_post_meta( $arguments[ 'ID' ], '_yoast_wpseo_metadesc', $spin_meta_description );
+                add_post_meta( $arguments[ 'ID' ], '_aioseo_description', $spin_meta_description );
+                add_post_meta( $arguments[ 'ID' ], '_aioseo_og_description', $spin_meta_description );
+                add_post_meta( $arguments[ 'ID' ], '_aioseo_twitter_description', $spin_meta_description );
             }
 
             if ( isset( $job_title ) && $job_title ) {
@@ -305,7 +314,6 @@ class Endpoint_Create_Posts {
      */
     public static function meta_spinner( $meta, $post_ID, $bindings = [] ) {
         global $wpdb;
-
         foreach ( $meta as $key => $value ) {
             if ( is_array( $value ) && count( $value ) > 0 ) {
                 foreach ( $value as $i => $v ) {
@@ -361,6 +369,7 @@ class Endpoint_Create_Posts {
                 }
             }
         }
+        Self::create_seo_tag($post_ID);
     }
 
     /**
@@ -390,7 +399,6 @@ class Endpoint_Create_Posts {
         $title = $request->get_param( 'title' );
         $slug  = $request->get_param( 'slug' ) ? : sanitize_title_with_dashes( $title );
         $slug  = str_replace( ' ', '-', $slug );
-
         return strtolower( apply_filters( 'location_domination_shortcodes', $slug, $bindings ) );
     }
 
@@ -447,5 +455,31 @@ class Endpoint_Create_Posts {
         $posts = get_posts( $arguments );
 
         return isset( $posts[ 0 ] ) ? $posts[ 0 ] : null;
+    }
+
+    public static function create_seo_tag($post_id) {
+
+        $aios = [];
+        global $wpdb;
+        
+        $aios['title'] = get_post_meta($post_id,'_aioseo_title',true);
+        $aios['description'] = get_post_meta($post_id,'_aioseo_description',true);
+        $aios['og_title'] = get_post_meta($post_id,'_aioseo_og_title',true);
+        $aios['og_description'] = get_post_meta($post_id,'_aioseo_og_description',true);
+        $aios['twitter_title'] = get_post_meta($post_id,'_aioseo_twitter_title',true);
+        $aios['twitter_description'] = get_post_meta($post_id,'_aioseo_twitter_description',true);
+        if (!empty($aios['title'])) {
+            
+            $table = $wpdb->prefix ."aioseo_posts";
+            $sql = "select COUNT(*) from  $table where post_id = $post_id";
+            $result = $wpdb->get_var($sql);
+
+            if ($result > 0 ) {
+                $wpdb->update($wpdb->prefix .'aioseo_posts', $aios, array('post_id'=>$post_id));
+            } else {
+                $aios['post_id'] = $post_id;
+                $wpdb->insert($wpdb->prefix .'aioseo_posts', $aios);
+            }
+        }
     }
 }

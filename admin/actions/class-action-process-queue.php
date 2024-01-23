@@ -234,6 +234,18 @@ class Action_Process_Queue implements Action_Interface {
 		            $meta[ '_gmbvault_business_listing' ][0] = (int) $meta[ '_gmbvault_business_listing' ][0];
 	            }
 
+                if ( isset( $meta[ '_yoast_wpseo_title' ] ) && isset( $meta[ '_yoast_wpseo_title' ][0] ) ) {
+                    $meta[ '_aioseo_title' ][0] = $meta[ '_yoast_wpseo_title' ][0];
+                    $meta[ '_aioseo_og_title' ][0] = $meta[ '_yoast_wpseo_title' ][0];
+                    $meta[ '_aioseo_twitter_title' ][0] = $meta[ '_yoast_wpseo_title' ][0];
+                }
+
+                if ( isset( $meta[ '_yoast_wpseo_metadesc' ] ) && isset( $meta[ '_yoast_wpseo_metadesc' ][0] ) ) {
+                    $meta[ '_aioseo_description' ][0] = $meta[ '_yoast_wpseo_metadesc' ][0];
+                    $meta[ '_aioseo_og_description' ][0] = $meta[ '_yoast_wpseo_metadesc' ][0];
+                    $meta[ '_aioseo_twitter_description' ][0] = $meta[ '_yoast_wpseo_metadesc' ][0];
+                }
+
                 Endpoint_Create_Posts::meta_spinner( $meta, $new_post_id, $shortcode_bindings );
 
                 add_post_meta( $new_post_id, '_city', isset( $record->city ) ? $record->city : '' );

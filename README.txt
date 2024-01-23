@@ -66,6 +66,8 @@ directory take precedence. For example, `/assets/screenshot-1.png` would win ove
 2. This is the second screen shot
 
 == Changelog ==
+= 2.0.75 =
+* All In One Seo Plugin Support.
 
 = 1.0 =
 * A change since the previous version.
