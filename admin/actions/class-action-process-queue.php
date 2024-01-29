@@ -167,7 +167,9 @@ class Action_Process_Queue implements Action_Interface {
                     '[lat]' => isset($record->city_meta->lat) ? $record->city_meta->lat : '',
                     '[lng]' => isset($record->city_meta->lng) ? $record->city_meta->lng : '',
                     '[density]' => isset($record->city_meta->density) ? $record->city_meta->density : '',
-                    '[ranking]' => isset($record->city_meta->ranking) ? $record->city_meta->ranking : ''
+                    '[ranking]' => isset($record->city_meta->ranking) ? $record->city_meta->ranking : '',
+                    '[suburb]' => isset($record->suburb->suburb) ? $record->suburb->suburb : ''
+
                 ];
                 $shortcode_bindings_slug = $shortcode_bindings;
                 $is_united_states = isset( $record->country ) ? $record->country === 'United States' : true;
@@ -324,14 +326,20 @@ class Action_Process_Queue implements Action_Interface {
                     if ( isset ( $record->suburbs ) ) {
                         foreach ( $record->suburbs as $suburb ) {
                             $suburb_shortcode_bindings             = $shortcode_bindings;
-                            $suburb_shortcode_bindings[ '[city]' ] = $suburb->suburb;
+
+                            if (strpos($page_title,'[suburb]') !== false) {
+                                $suburb_shortcode_bindings[ '[city]' ] = $record->city;
+                            } else {
+                                $suburb_shortcode_bindings[ '[city]' ] = $suburb->suburb;
+                            }
+                            
+                            $suburb_shortcode_bindings[ '[suburb]' ] = $suburb->suburb;
 
                             $title = apply_filters( 'location_domination_shortcodes', ( $sub_template_spinning ? $base_template_settings[ 'post_name' ] : $base_template[ 'post_title' ] ), $suburb_shortcode_bindings );
-
+                            
                             if ( ! $sub_template_spinning && $page_title ) {
                                 $title = apply_filters( 'location_domination_shortcodes', $page_title, $suburb_shortcode_bindings );
                             }
-
                             $arguments = [
                                 'post_type'    => get_post_meta( $template_id, '_uuid', true ),
                                 'post_title'   => Location_Domination_Spinner::spin( $title ),
@@ -346,7 +354,7 @@ class Action_Process_Queue implements Action_Interface {
 
                             $suburb_post_id = wp_insert_post( $arguments );
 
-                        // GMB Vault integration
+                            // GMB Vault integration
                             if ( isset( $meta[ '_gmbvault_business_listing' ] ) && isset( $meta[ '_gmbvault_business_listing' ][0] ) ) {
                                 $meta[ '_gmbvault_business_listing' ][0] = (int) $meta[ '_gmbvault_business_listing' ][0];
                             }

@@ -50,6 +50,7 @@ class Action_Preview_Request implements Action_Interface {
         // Start queue
         $response = wp_remote_post( trim( MAIN_URL, '/' ) . '/api/post-requests-local?preview=1', [
             'body' => $_POST,
+            'timeout' => 300
         ] );
         
         if ( is_wp_error( $response ) || $response[ 'response' ][ 'code' ] !== 200 ) {

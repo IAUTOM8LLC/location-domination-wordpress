@@ -56,6 +56,7 @@ class Location_Domination_Shortcodes {
         Shortcode_RelatedCityNoLink::class,
         Shortcode_MetaCity::class,
         Shortcode_Suburbs::class,
+        Shortcode_Suburb::class,
     ];
 
     /**
