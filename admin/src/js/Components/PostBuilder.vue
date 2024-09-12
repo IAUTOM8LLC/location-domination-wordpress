@@ -8,11 +8,32 @@
         label-key="name" label="Select a country" />
 
     <template v-if="gridForm.country && gridForm.country.id === 236">
-      <select-input name="requestType" v-model="gridForm.group" label="How would you like to build posts?">
+      <select-input name="ld[group]" v-model="gridForm.group" label="How would you like to build posts?">
         <option v-for="option in groupOptions">
           {{ option }}
         </option>
       </select-input>
+
+      <input
+          v-if="gridForm.group && gridForm.group !== 'For all cities/counties'"
+          type="hidden"
+          name="ld[states]"
+          :value="statesJoined"
+      />
+
+      <input
+          v-if="gridForm.group && (gridForm.group === 'For specific counties' || gridForm.group === 'For specific cities' )"
+          type="hidden"
+          name="ld[counties]"
+          :value="countiesJoined"
+      />
+
+      <input
+          v-if="gridForm.group && gridForm.group === 'For specific cities'"
+          type="hidden"
+          name="ld[cities]"
+          :value="citiesJoined"
+      />
 
       <advanced-select-input
           :preselect="preselect.states"
@@ -168,6 +189,18 @@ export default {
       } ) : [];
     },
 
+    citiesJoined() {
+      return this.cityIds.join(',');
+    },
+
+    countiesJoined() {
+      return this.countiesIds.join(',');
+    },
+
+    statesJoined() {
+      return this.stateIds.join(',');
+    },
+
     groupedCounties() {
       let groups = {};
 
@@ -232,8 +265,7 @@ export default {
       }
 
       return [];
-    }
-
+    },
   },
 
 

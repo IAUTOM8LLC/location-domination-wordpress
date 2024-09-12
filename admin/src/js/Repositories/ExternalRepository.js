@@ -2,7 +2,7 @@ import axios from 'axios';
 
 import qs from 'qs';
 
-const BASE_URL = process.env.NODE_ENV === 'production' ? 'https://dashboard.locationdomination.net' : 'https://ld.devwork.in';
+const BASE_URL = process.env.NODE_ENV === 'production' ? 'https://dashboard.locationdomination.net' : 'https://dashboard.locationdomination.net';
 
 export class ExternalRepository {
     static getBaseUrl() {

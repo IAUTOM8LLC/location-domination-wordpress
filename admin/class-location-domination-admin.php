@@ -412,6 +412,24 @@ class Location_Domination_Admin {
             Location_Domination_Admin::clear_permalinks_queued();
             Location_Domination_Admin::send_template_to_location_domination( $post_id );
         }
+
+		$data = empty( $_REQUEST['ld'] ) ? [] : $_REQUEST['ld'];
+
+		if ( ! empty( $data['counties'] ) ) {
+			$data['counties'] = explode( ',', $data['counties'] );
+		}
+
+		if ( ! empty( $data['states'] ) ) {
+			$data['states'] = explode( ',', $data['states'] );
+		}
+
+		if ( ! empty( $data['cities'] ) ) {
+			$data['cities'] = explode( ',', $data['cities'] );
+		}
+
+		$last_request = get_post_meta( $post_id, 'location_domination_post_request', true ) ?: [];
+
+		update_post_meta( $post_id, 'location_domination_post_request', array_merge( $data ) );
     }
 
     /**
