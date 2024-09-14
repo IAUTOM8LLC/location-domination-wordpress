@@ -30,8 +30,6 @@ const buildBaseUrl = () => {
 
 const BASE_URL = buildBaseUrl();
 
-console.log({ BASE_URL });
-
 export class ExternalRepository {
     static getBaseUrl() {
         return BASE_URL;
