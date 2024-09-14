@@ -43,9 +43,13 @@ define( 'LOCATION_DOMINATION_VERSION', '2.0.77' );
  * The URL to interact with Location Domination.
  */
 
-// define( 'MAIN_URL', 'https://staging.locationdomination.net/' );
-define( 'MAIN_URL', 'https://dashboard.locationdomination.net/' );
-// define( 'MAIN_URL', 'https://ld.devwork.in/' );
+if ( ! defined( 'LOCATION_DOMINATION_ENV' ) || strtolower( LOCATION_DOMINATION_ENV ) === "production" ) {
+	define( 'MAIN_URL', 'https://dashboard.locationdomination.net/' );
+} else if ( strtolower( LOCATION_DOMINATION_ENV ) === "staging" ) {
+    define( 'MAIN_URL', 'https://staging.locationdomination.net/' );
+} else {
+	define( 'MAIN_URL', 'https://location-domination.test/' );
+}
 
 /**
  * The option key for storing the API token.

@@ -203,6 +203,10 @@ class Location_Domination_Admin {
             'jquery',
             sprintf( '%s_vendors', $this->plugin_name )
         ), $this->version, true );
+
+	    wp_localize_script($this->plugin_name . '_admin', 'location_domination', array(
+		    'main_url' => defined( 'MAIN_URL' ) ? MAIN_URL : '',
+	    ));
     }
 
     /**

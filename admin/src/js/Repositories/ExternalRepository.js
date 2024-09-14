@@ -2,7 +2,35 @@ import axios from 'axios';
 
 import qs from 'qs';
 
-const BASE_URL = process.env.NODE_ENV === 'production' ? 'https://dashboard.locationdomination.net' : 'https://dashboard.locationdomination.net';
+const trimChar = (string, charToRemove) => {
+    while(string.charAt(0)==charToRemove) {
+        string = string.substring(1);
+    }
+
+    while(string.charAt(string.length-1)==charToRemove) {
+        string = string.substring(0,string.length-1);
+    }
+
+    return string;
+}
+
+const buildBaseUrl = () => {
+    const defaultUrl = "https://dashboard.locationdomination.net";
+
+    if ( ! window.hasOwnProperty( 'location_domination' ) ) {
+        return defaultUrl;
+    }
+
+    if ( ! window.location_domination.main_url ) {
+        return defaultUrl;
+    }
+
+    return trimChar( window.location_domination.main_url, '/' );
+}
+
+const BASE_URL = buildBaseUrl();
+
+console.log({ BASE_URL });
 
 export class ExternalRepository {
     static getBaseUrl() {
