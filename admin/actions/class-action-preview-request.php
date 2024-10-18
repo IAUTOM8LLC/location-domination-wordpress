@@ -52,7 +52,7 @@ class Action_Preview_Request implements Action_Interface {
             'body' => $_POST,
             'timeout' => 300
         ] );
-        
+
         if ( is_wp_error( $response ) || $response[ 'response' ][ 'code' ] !== 200 ) {
             return wp_send_json( [
                 'success' => false,

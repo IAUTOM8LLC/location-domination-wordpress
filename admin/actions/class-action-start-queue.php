@@ -121,9 +121,13 @@ class Action_Start_Queue implements Action_Interface {
                 'requested_at'        => $job->data->requested_at,
                 'total_pages'         => $job->data->total_requested_pages,
                 'batches'             => (object) [
-                    'needed'       => $job->data->batches_needed,
-                    'completed'    => $job->data->batches_completed,
-                    'payload_size' => $job->data->pages_per_batch,
+	                'needed'            => $job->data->batches_needed,
+	                'completed'         => $job->data->batches_completed,
+	                'payload_size'      => $job->data->pages_per_batch,
+	                'dripfed'           => $job->data->dripfed,
+	                'dripfed_per_day'   => $job->data->dripfed_per_day,
+	                'dripfed_day_count' => 0,
+	                'dripfed_index'     => 0,
                 ]
             ];
         }
