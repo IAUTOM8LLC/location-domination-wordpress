@@ -95,6 +95,11 @@ class Action_Process_Queue implements Action_Interface {
             $page_slug_sc = $this->extract_short_code_attr($page_slug);
             $template_post_type = get_post_meta( $template_id, '_uuid', true );
 
+			$dripfed = isset( $option->batches->dripfed ) ? $option->batches->dripfed : false;
+	        $dripfed_day_count = isset( $option->batches->dripfed_day_count ) ? $option->batches->dripfed_day_count : 0;
+	        $dripfed_per_day = isset( $option->batches->dripfed_per_day ) ? $option->batches->dripfed_per_day : 0;
+	        $dripfed_index = isset( $option->batches->dripfed_index ) ? $option->batches->dripfed_index : 0;
+
             foreach ( $json_response->cities as $record ) {
                 if (isset($fields['create_base_on_population']) && $fields['create_base_on_population'] == 1) {
                     if (!isset($fields['population_range']) || ( $record->city_meta->population < $fields['population_range']) || $record->city_meta == null) {
@@ -217,6 +222,28 @@ class Action_Process_Queue implements Action_Interface {
                     'post_content' => Location_Domination_Spinner::spin( $base_template[ 'post_content' ] ),
                     'post_status'  => 'publish',
                 ];
+
+				if ( $dripfed ) {
+					$datetime = new DateTime();
+
+					if ( $option->batches->dripfed_index >= $dripfed_per_day ) {
+						$option->batches->dripfed_index = 0;
+						$option->batches->dripfed_day_count++;
+					}
+
+					if ( $option->batches->dripfed_day_count > 0 ) {
+						$datetime->modify( '+' . $option->batches->dripfed_day_count . ' day' );
+
+						$formatted_datetime = $datetime->format( 'Y-m-d H:i:s' );
+						$formatted_gmt_datetime = get_gmt_from_date( $formatted_datetime );
+
+						$arguments[ 'post_status' ] = 'future';
+						$arguments[ 'post_date' ] = $formatted_datetime;
+						$arguments[ 'post_date_gmt' ] = $formatted_gmt_datetime;
+					}
+
+					$option->batches->dripfed_index++;
+				}
 
                 if ( ! $sub_template_spinning && $page_title ) {
                     $arguments[ 'post_name' ] = apply_filters( 'location_domination_shortcodes', $page_slug, $shortcode_bindings );
