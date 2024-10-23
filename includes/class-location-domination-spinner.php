@@ -36,6 +36,74 @@ class Location_Domination_Spinner {
         ], $content );
     }
 
+    static function conntact_ai_spinner($body, $target){
+        $api_key = trim( get_option( 'mpb_api_key' ) );
+        $rest_url = sprintf( '%s/api/ai-spin/%s', trim( MAIN_URL, '/' ), $target );
+        $body['api_key'] = $api_key;
+        $ai_response = wp_remote_post( $rest_url, [
+            'body' => $body,
+        ] );
+        return json_decode($ai_response['body']);
+    }
+
+    static function is_ai_spin($fields){
+        return isset($fields['use_ai_spin']) && $fields['use_ai_spin'] == 1;
+    }
+
+    static function spin_title_content($title, $fields, $base_template, $shortcode_bindings){
+        if (isset($fields['use_ai_spin']) && $fields['use_ai_spin'] == 1) {
+            $ai_spin = self::conntact_ai_spinner([
+                'post_title' =>  $title,
+                'post_content' => $base_template[ 'post_content' ],
+                'context' => $shortcode_bindings
+            ], 'title_content');
+
+            return [
+                'post_title' => $ai_spin->post->title,
+                'post_content' => $ai_spin->post->content
+            ];
+        } else {
+            return [
+                'post_title' => Location_Domination_Spinner::spin( $title ),
+                'post_content' => Location_Domination_Spinner::spin( $base_template[ 'post_content' ] )
+            ];
+        }
+    }
+
+    static function spin_meta_title($meta_title, $fields, $shortcode_bindings){
+        if ( self::is_ai_spin($fields) ) {
+            $ai_spin = self::conntact_ai_spinner([
+                'meta_title' =>  $meta_title,
+                'context' => $shortcode_bindings
+            ], 'meta_title');
+
+            return [
+                'meta_title' => $ai_spin->post->meta_title
+            ];
+        } else {
+            return [
+                'meta_title' => Location_Domination_Spinner::spin( $meta_title ),
+            ];
+        }
+    }
+
+    static function spin_meta_description($meta_description, $fields, $shortcode_bindings){
+        if ( self::is_ai_spin($fields) ) {
+            $ai_spin = self::conntact_ai_spinner([
+                'meta_description' =>  $meta_description,
+                'context' => $shortcode_bindings
+            ], 'meta_description');
+
+            return [
+                'meta_description' => $ai_spin->post->meta_description
+            ];
+        } else {
+            return [
+                'meta_description' => Location_Domination_Spinner::spin( $meta_description ),
+            ];
+        }
+    }
+
     /**
      * @param $text
      *

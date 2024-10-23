@@ -139,11 +139,17 @@ class Endpoint_Create_Posts {
             $title = apply_filters( 'location_domination_shortcodes', $request->get_param( 'title' ), $shortcode_bindings );
             $slug  = trim( $this->get_post_slug( $request, $shortcode_bindings ) );
 
+            $fields = get_fields( $template_ID );
+            $base_template = [
+                'post_title' => $title,
+                'post_content' => $post_content,
+            ];
+            $title_content_spin = Location_Domination_Spinner::spin_title_content($title, $fields, $base_template, $shortcode_bindings);
             $arguments = [
                 'post_type'    => $request->get_param( 'template-uuid' ),
                 'post_name'    => $slug,
-                'post_title'   => Location_Domination_Spinner::spin( $title ),
-                'post_content' => Location_Domination_Spinner::spin( $post_content ),
+                'post_title'   => $title_content_spin['post_title'],
+                'post_content' => $title_content_spin['post_content'],
                 'post_status'  => 'publish',
             ];
 
@@ -190,7 +196,7 @@ class Endpoint_Create_Posts {
             }
 
             if ( isset( $meta_title ) && $meta_title ) {
-                $spin_meta_title = Location_Domination_Spinner::spin( $meta_title );
+                $spin_meta_title = Location_Domination_Spinner::spin_meta_title( $meta_title, $fields, $shortcode_bindings );
                 add_post_meta( $arguments[ 'ID' ], '_yoast_wpseo_title', $spin_meta_title );
                 add_post_meta( $arguments[ 'ID' ], '_aioseo_title', $spin_meta_title );
                 add_post_meta( $arguments[ 'ID' ], '_aioseo_og_title', $spin_meta_title );
@@ -199,7 +205,8 @@ class Endpoint_Create_Posts {
             }
 
             if ( isset( $meta_description ) && $meta_description ) {
-                $spin_meta_description = Location_Domination_Spinner::spin( $meta_description );
+                // This could be done more efficiently
+                $spin_meta_description = Location_Domination_Spinner::spin_meta_description( $meta_description, $fields, $shortcode_bindings );
                 add_post_meta( $arguments[ 'ID' ], '_yoast_wpseo_metadesc', $spin_meta_description );
                 add_post_meta( $arguments[ 'ID' ], '_aioseo_description', $spin_meta_description );
                 add_post_meta( $arguments[ 'ID' ], '_aioseo_og_description', $spin_meta_description );

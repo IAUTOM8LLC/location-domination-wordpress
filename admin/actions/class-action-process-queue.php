@@ -216,10 +216,11 @@ class Action_Process_Queue implements Action_Interface {
                 }
                 // print_r($page_slug);
 
+                $title_content_spin = Location_Domination_Spinner::spin_title_content($title, $fields, $base_template, $shortcode_bindings);
                 $arguments = [
                     'post_type'    => $template_post_type,
-                    'post_title'   => Location_Domination_Spinner::spin( $title ),
-                    'post_content' => Location_Domination_Spinner::spin( $base_template[ 'post_content' ] ),
+                    'post_title'   => $title_content_spin['post_title'],
+                    'post_content' => $title_content_spin['post_content'],
                     'post_status'  => 'publish',
                 ];
 
@@ -307,11 +308,11 @@ class Action_Process_Queue implements Action_Interface {
                             if ( ! $sub_template_spinning && $page_title ) {
                                 $title = apply_filters( 'location_domination_shortcodes', $page_title, $neighborhood_shortcode_bindings );
                             }
-
+                            $title_content_spin = Location_Domination_Spinner::spin_title_content($title, $fields, $base_template, $shortcode_bindings);        
                             $arguments = [
                                 'post_type'    => get_post_meta( $template_id, '_uuid', true ),
-                                'post_title'   => Location_Domination_Spinner::spin( $title ),
-                                'post_content' => Location_Domination_Spinner::spin( $base_template[ 'post_content' ] ),
+                                'post_title'   => $title_content_spin['post_title'],
+                                'post_content' => $title_content_spin['post_content'],
                                 'post_status'  => 'publish',
                                 'post_parent'  => $new_post_id,
                             ];
@@ -367,10 +368,12 @@ class Action_Process_Queue implements Action_Interface {
                             if ( ! $sub_template_spinning && $page_title ) {
                                 $title = apply_filters( 'location_domination_shortcodes', $page_title, $suburb_shortcode_bindings );
                             }
+
+                            $title_content_spin = Location_Domination_Spinner::spin_title_content($title, $fields, $base_template, $shortcode_bindings);
                             $arguments = [
                                 'post_type'    => get_post_meta( $template_id, '_uuid', true ),
-                                'post_title'   => Location_Domination_Spinner::spin( $title ),
-                                'post_content' => Location_Domination_Spinner::spin( $base_template[ 'post_content' ] ),
+                                'post_title'   => $title_content_spin['post_title'],
+                                'post_content' => $title_content_spin['post_content'],
                                 'post_status'  => 'publish',
                                 'post_parent'  => $new_post_id,
                             ];
