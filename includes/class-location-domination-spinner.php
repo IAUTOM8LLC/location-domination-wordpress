@@ -42,6 +42,7 @@ class Location_Domination_Spinner {
         $body['api_key'] = $api_key;
         $ai_response = wp_remote_post( $rest_url, [
             'body' => $body,
+            'timeout' => 60000
         ] );
         return json_decode($ai_response['body']);
     }
