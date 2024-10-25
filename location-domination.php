@@ -66,6 +66,13 @@ define( 'LOCATION_DOMINATION_INDEX_DB_TABLE', 'locationdomination_index' );
 define( 'LOCATION_DOMINATION_API_OPTION_KEY', 'mpb_api_key' );
 
 /**
+ * The option key for storing the Open AI API token.
+ *
+ * @since 2.0.0
+ */
+define( 'LOCATION_DOMINATION_OPEN_AI_API_OPTION_KEY', 'mpb_openai_api_key' );
+
+/**
  * The option key for checking whether the website is connected.
  *
  * @since 2.0.0

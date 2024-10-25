@@ -82,371 +82,380 @@ class Action_Process_Queue implements Action_Interface {
         $response = wp_remote_get( $url,array(
             'timeout' => 1000, // Set timeout to 10 seconds
         ) );
-        if ( ! is_wp_error( $response ) ) {
-            $json_response = json_decode( $response[ 'body' ] );
-            $option->job_in_progress     = true;
-            $option->last_job_started_at = time();
 
-            set_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id, $option, 0 );
-
-            $page_title = isset( $fields[ 'page_title' ] ) ? $fields[ 'page_title' ] : null;
-            $page_slug  = isset( $fields[ 'page_slug' ] ) ? $fields[ 'page_slug' ] : null;
-            $page_title_sc = $this->extract_short_code_attr($page_title);
-            $page_slug_sc = $this->extract_short_code_attr($page_slug);
-            $template_post_type = get_post_meta( $template_id, '_uuid', true );
-
-			$dripfed = isset( $option->batches->dripfed ) ? $option->batches->dripfed : false;
-	        $dripfed_day_count = isset( $option->batches->dripfed_day_count ) ? $option->batches->dripfed_day_count : 0;
-	        $dripfed_per_day = isset( $option->batches->dripfed_per_day ) ? $option->batches->dripfed_per_day : 0;
-	        $dripfed_index = isset( $option->batches->dripfed_index ) ? $option->batches->dripfed_index : 0;
-
-            foreach ( $json_response->cities as $record ) {
-                if (isset($fields['create_base_on_population']) && $fields['create_base_on_population'] == 1) {
-                    if (!isset($fields['population_range']) || ( $record->city_meta->population < $fields['population_range']) || $record->city_meta == null) {
-                        continue(1);
-                    }
-                }
-                $random_template_key    = $sub_template_spinning ? array_rand( $enabled_templates_ids ) : false;
-                $base_template_id       = $sub_template_spinning && $random_template_key ? $enabled_templates_ids[ $random_template_key ] : $template_id;
-                $base_template          = get_post( $base_template_id, 'ARRAY_A' );
-                $base_template_settings = $sub_template_spinning ? $enabled_templates[ $random_template_key ] : false;
-                $meta = get_post_custom( $base_template_id );
-
-                $locked_query_args = [
-                    'post_status' => 'publish',
-                    'post_type' => $template_post_type,
-                    'posts_per_page' => -1,
-                    'meta_query' => [
-                        'relation' => 'AND',
-                        [
-                            'key' => 'lock_page',
-                            'value' => '1',
-                            'compare' => '=',
-                        ],
-                        [
-                            'key' => '_city',
-                            'value' => isset( $record->city ) ? $record->city : '',
-                            'compare' => '=',
-                        ],
-                        [
-                            'key' => '_state',
-                            'value' => isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : '' ),
-                            'compare' => '=',
-                        ],
-                        [
-                            'key' => '_county',
-                            'value' => isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : '' ),
-                            'compare' => '=',
-                        ],
-                        [
-                            'key' => '_country',
-                            'value' => isset( $record->country ) ? $record->country : '',
-                            'compare' => '=',
-                        ],
-                    ]
-                ];
-
-                $locked_query = new \WP_Query( $locked_query_args );
-
-                if ( $locked_query->post_count > 0 ) {
-                    continue;
-                }
-
-                $region_abbr     = '';
-                $region_abbr_key = 'region-abbr';
-
-                if ( isset( $record->$region_abbr_key ) ) {
-                    $region_abbr = str_replace( '-', '', $record->$region_abbr_key );
-                }
-
-                $shortcode_bindings = [
-                    '[city]'       => isset( $record->city ) ? $record->city : '',
-                    '[county]'     => isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : '' ),
-                    '[state]'      => isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : '' ),
-                    '[zips]'       => isset( $record->zips ) ? $record->zips : '',
-                    '[zip_codes]'  => isset( $record->zips ) ? $record->zips : '',
-                    '[region]'     => isset( $record->region ) ? $record->region : '',
-                    '[country]'    => isset( $record->country ) ? $record->country : '',
-                    '[state_abbr]' => isset( $record->state ) ? Shortcode_State_Abbreviation::lookup( $record->state ) : $region_abbr,
-                    '[population]' => isset($record->city_meta->population) ? $record->city_meta->population : '',
-                    '[lat]' => isset($record->city_meta->lat) ? $record->city_meta->lat : '',
-                    '[lng]' => isset($record->city_meta->lng) ? $record->city_meta->lng : '',
-                    '[density]' => isset($record->city_meta->density) ? $record->city_meta->density : '',
-                    '[ranking]' => isset($record->city_meta->ranking) ? $record->city_meta->ranking : '',
-                    '[suburb]' => isset($record->suburb->suburb) ? $record->suburb->suburb : ''
-
-                ];
-                $shortcode_bindings_slug = $shortcode_bindings;
-                $is_united_states = isset( $record->country ) ? $record->country === 'United States' : true;
-
-                $shortcode_pattern = '/\[citymeta name="([^"]+)"\]/';
-
-                $title = apply_filters( 'location_domination_shortcodes', ( $sub_template_spinning ? $base_template_settings[ 'post_name' ] : $base_template[ 'post_title' ] ), $shortcode_bindings );
-                $uuid  = get_post_meta( $template_id, '_uuid', true );
-
-                if ( ! $sub_template_spinning && $page_title ) {
-                    $title = apply_filters( 'location_domination_shortcodes', $page_title, $shortcode_bindings );
-                }
-              if ($record->city_meta !== null) {
-                    $dynamicValues = json_decode(json_encode($record->city_meta), true);
-                } else {
-                    // Handle the case where $record->city_meta->citymeta is null
-                    $dynamicValues = array(); // Or any other default value or handling you prefer
-                }
-                if (isset($page_title_sc['citymeta']['name'])) {
-                    // $dynamicValues = json_decode(json_encode($record->city_meta), true);;
-                    $title = preg_replace_callback($shortcode_pattern, function($matches) use ($dynamicValues) {
-                        $attrName = $matches[1];
-                        if (array_key_exists($attrName, $dynamicValues)) {
-                            return $dynamicValues[$attrName];
-                        }
-                        return $matches[0];
-                    }, $title);
-
-                }
-                if (isset($page_slug_sc['citymeta']['name'])) {
-                    // $dynamicValues = json_decode(json_encode($record->city_meta), true);;
-                    $page_slug = preg_replace_callback($shortcode_pattern, function($matches) use ($dynamicValues) {
-                        $attrName = $matches[1];
-                        if (array_key_exists($attrName, $dynamicValues)) {
-                            return $dynamicValues[$attrName];
-                        }
-                        return $matches[0];
-                    }, $page_slug);
-                }
-                // print_r($page_slug);
-
-                $title_content_spin = Location_Domination_Spinner::spin_title_content($title, $fields, $base_template, $shortcode_bindings);
-                $arguments = [
-                    'post_type'    => $template_post_type,
-                    'post_title'   => $title_content_spin['post_title'],
-                    'post_content' => $title_content_spin['post_content'],
-                    'post_status'  => 'publish',
-                ];
-
-				if ( $dripfed ) {
-					$datetime = new DateTime();
-
-					if ( $option->batches->dripfed_index >= $dripfed_per_day ) {
-						$option->batches->dripfed_index = 0;
-						$option->batches->dripfed_day_count++;
-					}
-
-					if ( $option->batches->dripfed_day_count > 0 ) {
-						$datetime->modify( '+' . $option->batches->dripfed_day_count . ' day' );
-
-						$formatted_datetime = $datetime->format( 'Y-m-d H:i:s' );
-						$formatted_gmt_datetime = get_gmt_from_date( $formatted_datetime );
-
-						$arguments[ 'post_status' ] = 'future';
-						$arguments[ 'post_date' ] = $formatted_datetime;
-						$arguments[ 'post_date_gmt' ] = $formatted_gmt_datetime;
-					}
-
-					$option->batches->dripfed_index++;
-				}
-
-                if ( ! $sub_template_spinning && $page_title ) {
-                    $arguments[ 'post_name' ] = apply_filters( 'location_domination_shortcodes', $page_slug, $shortcode_bindings );
-                }
-
-//                $meta_title       = $this->get_parameter_with_shortcodes( $request, 'meta_title', $shortcode_bindings );
-//                $meta_description = $this->get_parameter_with_shortcodes( $request, 'meta_description', $shortcode_bindings );
-//                $job_title        = $this->get_parameter_with_shortcodes( $request, 'job_title', $shortcode_bindings );
-//                $job_description  = $this->get_parameter_with_shortcodes( $request, 'job_description', $shortcode_bindings );
-//                $schema           = $this->get_parameter_with_shortcodes( $request, 'schema', $shortcode_bindings );
-
-
-                $new_post_id = wp_insert_post( $arguments );
-
-				// GMB Vault integration
-	            if ( isset( $meta[ '_gmbvault_business_listing' ] ) && isset( $meta[ '_gmbvault_business_listing' ][0] ) ) {
-		            $meta[ '_gmbvault_business_listing' ][0] = (int) $meta[ '_gmbvault_business_listing' ][0];
-	            }
-
-                if ( isset( $meta[ '_yoast_wpseo_title' ] ) && isset( $meta[ '_yoast_wpseo_title' ][0] ) ) {
-                    $meta[ '_aioseo_title' ][0] = $meta[ '_yoast_wpseo_title' ][0];
-                    $meta[ '_aioseo_og_title' ][0] = $meta[ '_yoast_wpseo_title' ][0];
-                    $meta[ '_aioseo_twitter_title' ][0] = $meta[ '_yoast_wpseo_title' ][0];
-                }
-
-                if ( isset( $meta[ '_yoast_wpseo_metadesc' ] ) && isset( $meta[ '_yoast_wpseo_metadesc' ][0] ) ) {
-                    $meta[ '_aioseo_description' ][0] = $meta[ '_yoast_wpseo_metadesc' ][0];
-                    $meta[ '_aioseo_og_description' ][0] = $meta[ '_yoast_wpseo_metadesc' ][0];
-                    $meta[ '_aioseo_twitter_description' ][0] = $meta[ '_yoast_wpseo_metadesc' ][0];
-                }
-
-                Endpoint_Create_Posts::meta_spinner( $meta, $new_post_id, $shortcode_bindings );
-
-                add_post_meta( $new_post_id, '_city', isset( $record->city ) ? $record->city : '' );
-                add_post_meta( $new_post_id, '_state', isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : null ) );
-                add_post_meta( $new_post_id, '_county', isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : null ) );
-                add_post_meta( $new_post_id, '_zips', isset( $record->zips ) ? $record->zips : '' );
-                add_post_meta( $new_post_id, '_region', isset( $record->region ) ? $record->region : '' );
-                add_post_meta( $new_post_id, '_country', isset( $record->country ) ? $record->country : '' );
-                add_post_meta( $new_post_id, '_population', isset($record->city_meta->population) ? $record->city_meta->population : '' );
-                add_post_meta( $new_post_id, '_lat', isset($record->city_meta->lat) ? $record->city_meta->lat : '' );
-                add_post_meta( $new_post_id, '_lng', isset($record->city_meta->lng) ? $record->city_meta->lng : '' );
-                add_post_meta( $new_post_id, '_density', isset($record->city_meta->density) ? $record->city_meta->density : '' );
-                add_post_meta( $new_post_id, '_ranking', isset($record->city_meta->ranking) ? $record->city_meta->ranking : '' );
-
-                add_post_meta( $new_post_id, '_city_meta', isset($record->city_meta) ? json_encode($record->city_meta) : '' );
-                if ( $region_abbr ) {
-                    add_post_meta( $new_post_id, '_region_abbr', $region_abbr );
-                }
-
-                update_post_meta( $new_post_id, '_uuid', $uuid );
-
-                if ( get_field( 'create_neighborhood_pages', $base_template_id ) ) {
-                    if ( isset ( $record->neighborhoods ) ) {
-                        foreach ( $record->neighborhoods as $neighborhood ) {
-                            $neighborhood_shortcode_bindings             = $shortcode_bindings;
-                            $neighborhood_shortcode_bindings[ '[city]' ] = $neighborhood->neighborhood;
-
-                            $title = apply_filters( 'location_domination_shortcodes', ( $sub_template_spinning ? $base_template_settings[ 'post_name' ] : $base_template[ 'post_title' ] ), $neighborhood_shortcode_bindings );
-
-                            if ( ! $sub_template_spinning && $page_title ) {
-                                $title = apply_filters( 'location_domination_shortcodes', $page_title, $neighborhood_shortcode_bindings );
-                            }
-                            $title_content_spin = Location_Domination_Spinner::spin_title_content($title, $fields, $base_template, $shortcode_bindings);        
-                            $arguments = [
-                                'post_type'    => get_post_meta( $template_id, '_uuid', true ),
-                                'post_title'   => $title_content_spin['post_title'],
-                                'post_content' => $title_content_spin['post_content'],
-                                'post_status'  => 'publish',
-                                'post_parent'  => $new_post_id,
-                            ];
-
-                            if ( ! $sub_template_spinning && $page_title ) {
-                                $arguments[ 'post_name' ] = apply_filters( 'location_domination_shortcodes', $page_slug, $neighborhood_shortcode_bindings );
-                            }
-
-                            $neighborhood_post_id = wp_insert_post( $arguments );
-
-	                        // GMB Vault integration
-	                        if ( isset( $meta[ '_gmbvault_business_listing' ] ) && isset( $meta[ '_gmbvault_business_listing' ][0] ) ) {
-		                        $meta[ '_gmbvault_business_listing' ][0] = (int) $meta[ '_gmbvault_business_listing' ][0];
-	                        }
-
-                            Endpoint_Create_Posts::meta_spinner( $meta, $neighborhood_post_id, $neighborhood_shortcode_bindings );
-
-                            add_post_meta( $neighborhood_post_id, '_neighborhood', $neighborhood );
-                            add_post_meta( $neighborhood_post_id, '_city', isset( $record->city ) ? $record->city : '' );
-                            add_post_meta( $neighborhood_post_id, '_state', isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : null ) );
-                            add_post_meta( $neighborhood_post_id, '_county', isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : null ) );
-                            add_post_meta( $neighborhood_post_id, '_zips', isset( $record->zips ) ? $record->zips : '' );
-                            add_post_meta( $neighborhood_post_id, '_country', isset( $record->country ) ? $record->country : '' );
-                            add_post_meta( $neighborhood_post_id, '_population', isset($record->city_meta->population) ? $record->city_meta->population : '' );
-                            update_post_meta( $neighborhood_post_id, '_uuid', $uuid );
+        try {
+            if ( ! is_wp_error( $response ) ) {
+                $json_response = json_decode( $response[ 'body' ] );
+                $option->job_in_progress     = true;
+                $option->last_job_started_at = time();
+    
+                set_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id, $option, 0 );
+    
+                $page_title = isset( $fields[ 'page_title' ] ) ? $fields[ 'page_title' ] : null;
+                $page_slug  = isset( $fields[ 'page_slug' ] ) ? $fields[ 'page_slug' ] : null;
+                $page_title_sc = $this->extract_short_code_attr($page_title);
+                $page_slug_sc = $this->extract_short_code_attr($page_slug);
+                $template_post_type = get_post_meta( $template_id, '_uuid', true );
+    
+                $dripfed = isset( $option->batches->dripfed ) ? $option->batches->dripfed : false;
+                $dripfed_day_count = isset( $option->batches->dripfed_day_count ) ? $option->batches->dripfed_day_count : 0;
+                $dripfed_per_day = isset( $option->batches->dripfed_per_day ) ? $option->batches->dripfed_per_day : 0;
+                $dripfed_index = isset( $option->batches->dripfed_index ) ? $option->batches->dripfed_index : 0;
+    
+                foreach ( $json_response->cities as $record ) {
+                    if (isset($fields['create_base_on_population']) && $fields['create_base_on_population'] == 1) {
+                        if (!isset($fields['population_range']) || ( $record->city_meta->population < $fields['population_range']) || $record->city_meta == null) {
+                            continue(1);
                         }
                     }
-                } else {
-                    if ( isset( $record->neighborhoods ) && ! empty( $record->neighborhoods ) ) {
-                        $neighborhoods = array_map( function( $object ) {
-                            return $object->neighborhood;
-                        }, $record->neighborhoods );
-
-                        add_post_meta( $new_post_id, "_neighborhoods", $neighborhoods );
+                    $random_template_key    = $sub_template_spinning ? array_rand( $enabled_templates_ids ) : false;
+                    $base_template_id       = $sub_template_spinning && $random_template_key ? $enabled_templates_ids[ $random_template_key ] : $template_id;
+                    $base_template          = get_post( $base_template_id, 'ARRAY_A' );
+                    $base_template_settings = $sub_template_spinning ? $enabled_templates[ $random_template_key ] : false;
+                    $meta = get_post_custom( $base_template_id );
+    
+                    $locked_query_args = [
+                        'post_status' => 'publish',
+                        'post_type' => $template_post_type,
+                        'posts_per_page' => -1,
+                        'meta_query' => [
+                            'relation' => 'AND',
+                            [
+                                'key' => 'lock_page',
+                                'value' => '1',
+                                'compare' => '=',
+                            ],
+                            [
+                                'key' => '_city',
+                                'value' => isset( $record->city ) ? $record->city : '',
+                                'compare' => '=',
+                            ],
+                            [
+                                'key' => '_state',
+                                'value' => isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : '' ),
+                                'compare' => '=',
+                            ],
+                            [
+                                'key' => '_county',
+                                'value' => isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : '' ),
+                                'compare' => '=',
+                            ],
+                            [
+                                'key' => '_country',
+                                'value' => isset( $record->country ) ? $record->country : '',
+                                'compare' => '=',
+                            ],
+                        ]
+                    ];
+    
+                    $locked_query = new \WP_Query( $locked_query_args );
+    
+                    if ( $locked_query->post_count > 0 ) {
+                        continue;
                     }
-                }
-                // print_r($record);exit;
-                if ( get_field( 'create_suburb_pages', $base_template_id ) || $json_response->suburb_only == true) {
-                    if ( isset ( $record->suburbs ) ) {
-                        foreach ( $record->suburbs as $suburb ) {
-                            $suburb_shortcode_bindings             = $shortcode_bindings;
-
-                            if (strpos($page_title,'[suburb]') !== false) {
-                                $suburb_shortcode_bindings[ '[city]' ] = $record->city;
-                            } else {
-                                $suburb_shortcode_bindings[ '[city]' ] = $suburb->suburb;
+    
+                    $region_abbr     = '';
+                    $region_abbr_key = 'region-abbr';
+    
+                    if ( isset( $record->$region_abbr_key ) ) {
+                        $region_abbr = str_replace( '-', '', $record->$region_abbr_key );
+                    }
+    
+                    $shortcode_bindings = [
+                        '[city]'       => isset( $record->city ) ? $record->city : '',
+                        '[county]'     => isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : '' ),
+                        '[state]'      => isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : '' ),
+                        '[zips]'       => isset( $record->zips ) ? $record->zips : '',
+                        '[zip_codes]'  => isset( $record->zips ) ? $record->zips : '',
+                        '[region]'     => isset( $record->region ) ? $record->region : '',
+                        '[country]'    => isset( $record->country ) ? $record->country : '',
+                        '[state_abbr]' => isset( $record->state ) ? Shortcode_State_Abbreviation::lookup( $record->state ) : $region_abbr,
+                        '[population]' => isset($record->city_meta->population) ? $record->city_meta->population : '',
+                        '[lat]' => isset($record->city_meta->lat) ? $record->city_meta->lat : '',
+                        '[lng]' => isset($record->city_meta->lng) ? $record->city_meta->lng : '',
+                        '[density]' => isset($record->city_meta->density) ? $record->city_meta->density : '',
+                        '[ranking]' => isset($record->city_meta->ranking) ? $record->city_meta->ranking : '',
+                        '[suburb]' => isset($record->suburb->suburb) ? $record->suburb->suburb : ''
+    
+                    ];
+                    $shortcode_bindings_slug = $shortcode_bindings;
+                    $is_united_states = isset( $record->country ) ? $record->country === 'United States' : true;
+    
+                    $shortcode_pattern = '/\[citymeta name="([^"]+)"\]/';
+    
+                    $title = apply_filters( 'location_domination_shortcodes', ( $sub_template_spinning ? $base_template_settings[ 'post_name' ] : $base_template[ 'post_title' ] ), $shortcode_bindings );
+                    $uuid  = get_post_meta( $template_id, '_uuid', true );
+    
+                    if ( ! $sub_template_spinning && $page_title ) {
+                        $title = apply_filters( 'location_domination_shortcodes', $page_title, $shortcode_bindings );
+                    }
+                  if ($record->city_meta !== null) {
+                        $dynamicValues = json_decode(json_encode($record->city_meta), true);
+                    } else {
+                        // Handle the case where $record->city_meta->citymeta is null
+                        $dynamicValues = array(); // Or any other default value or handling you prefer
+                    }
+                    if (isset($page_title_sc['citymeta']['name'])) {
+                        // $dynamicValues = json_decode(json_encode($record->city_meta), true);;
+                        $title = preg_replace_callback($shortcode_pattern, function($matches) use ($dynamicValues) {
+                            $attrName = $matches[1];
+                            if (array_key_exists($attrName, $dynamicValues)) {
+                                return $dynamicValues[$attrName];
                             }
-                            
-                            $suburb_shortcode_bindings[ '[suburb]' ] = $suburb->suburb;
-
-                            $title = apply_filters( 'location_domination_shortcodes', ( $sub_template_spinning ? $base_template_settings[ 'post_name' ] : $base_template[ 'post_title' ] ), $suburb_shortcode_bindings );
-                            
-                            if ( ! $sub_template_spinning && $page_title ) {
-                                $title = apply_filters( 'location_domination_shortcodes', $page_title, $suburb_shortcode_bindings );
+                            return $matches[0];
+                        }, $title);
+    
+                    }
+                    if (isset($page_slug_sc['citymeta']['name'])) {
+                        // $dynamicValues = json_decode(json_encode($record->city_meta), true);;
+                        $page_slug = preg_replace_callback($shortcode_pattern, function($matches) use ($dynamicValues) {
+                            $attrName = $matches[1];
+                            if (array_key_exists($attrName, $dynamicValues)) {
+                                return $dynamicValues[$attrName];
                             }
-
-                            $title_content_spin = Location_Domination_Spinner::spin_title_content($title, $fields, $base_template, $shortcode_bindings);
-                            $arguments = [
-                                'post_type'    => get_post_meta( $template_id, '_uuid', true ),
-                                'post_title'   => $title_content_spin['post_title'],
-                                'post_content' => $title_content_spin['post_content'],
-                                'post_status'  => 'publish',
-                                'post_parent'  => $new_post_id,
-                            ];
-
-                            if ( ! $sub_template_spinning && $page_title ) {
-                                $arguments[ 'post_name' ] = apply_filters( 'location_domination_shortcodes', $page_slug, $suburb_shortcode_bindings );
+                            return $matches[0];
+                        }, $page_slug);
+                    }
+                    // print_r($page_slug);
+    
+                    $title_content_spin = Location_Domination_Spinner::spin_title_content($title, $fields, $base_template, $shortcode_bindings);
+                    $arguments = [
+                        'post_type'    => $template_post_type,
+                        'post_title'   => $title_content_spin['post_title'],
+                        'post_content' => $title_content_spin['post_content'],
+                        'post_status'  => 'publish',
+                    ];
+    
+                    if ( $dripfed ) {
+                        $datetime = new DateTime();
+    
+                        if ( $option->batches->dripfed_index >= $dripfed_per_day ) {
+                            $option->batches->dripfed_index = 0;
+                            $option->batches->dripfed_day_count++;
+                        }
+    
+                        if ( $option->batches->dripfed_day_count > 0 ) {
+                            $datetime->modify( '+' . $option->batches->dripfed_day_count . ' day' );
+    
+                            $formatted_datetime = $datetime->format( 'Y-m-d H:i:s' );
+                            $formatted_gmt_datetime = get_gmt_from_date( $formatted_datetime );
+    
+                            $arguments[ 'post_status' ] = 'future';
+                            $arguments[ 'post_date' ] = $formatted_datetime;
+                            $arguments[ 'post_date_gmt' ] = $formatted_gmt_datetime;
+                        }
+    
+                        $option->batches->dripfed_index++;
+                    }
+    
+                    if ( ! $sub_template_spinning && $page_title ) {
+                        $arguments[ 'post_name' ] = apply_filters( 'location_domination_shortcodes', $page_slug, $shortcode_bindings );
+                    }
+    
+    //                $meta_title       = $this->get_parameter_with_shortcodes( $request, 'meta_title', $shortcode_bindings );
+    //                $meta_description = $this->get_parameter_with_shortcodes( $request, 'meta_description', $shortcode_bindings );
+    //                $job_title        = $this->get_parameter_with_shortcodes( $request, 'job_title', $shortcode_bindings );
+    //                $job_description  = $this->get_parameter_with_shortcodes( $request, 'job_description', $shortcode_bindings );
+    //                $schema           = $this->get_parameter_with_shortcodes( $request, 'schema', $shortcode_bindings );
+    
+    
+                    $new_post_id = wp_insert_post( $arguments );
+    
+                    // GMB Vault integration
+                    if ( isset( $meta[ '_gmbvault_business_listing' ] ) && isset( $meta[ '_gmbvault_business_listing' ][0] ) ) {
+                        $meta[ '_gmbvault_business_listing' ][0] = (int) $meta[ '_gmbvault_business_listing' ][0];
+                    }
+    
+                    if ( isset( $meta[ '_yoast_wpseo_title' ] ) && isset( $meta[ '_yoast_wpseo_title' ][0] ) ) {
+                        $meta[ '_aioseo_title' ][0] = $meta[ '_yoast_wpseo_title' ][0];
+                        $meta[ '_aioseo_og_title' ][0] = $meta[ '_yoast_wpseo_title' ][0];
+                        $meta[ '_aioseo_twitter_title' ][0] = $meta[ '_yoast_wpseo_title' ][0];
+                    }
+    
+                    if ( isset( $meta[ '_yoast_wpseo_metadesc' ] ) && isset( $meta[ '_yoast_wpseo_metadesc' ][0] ) ) {
+                        $meta[ '_aioseo_description' ][0] = $meta[ '_yoast_wpseo_metadesc' ][0];
+                        $meta[ '_aioseo_og_description' ][0] = $meta[ '_yoast_wpseo_metadesc' ][0];
+                        $meta[ '_aioseo_twitter_description' ][0] = $meta[ '_yoast_wpseo_metadesc' ][0];
+                    }
+    
+                    Endpoint_Create_Posts::meta_spinner( $meta, $new_post_id, $shortcode_bindings );
+    
+                    add_post_meta( $new_post_id, '_city', isset( $record->city ) ? $record->city : '' );
+                    add_post_meta( $new_post_id, '_state', isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : null ) );
+                    add_post_meta( $new_post_id, '_county', isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : null ) );
+                    add_post_meta( $new_post_id, '_zips', isset( $record->zips ) ? $record->zips : '' );
+                    add_post_meta( $new_post_id, '_region', isset( $record->region ) ? $record->region : '' );
+                    add_post_meta( $new_post_id, '_country', isset( $record->country ) ? $record->country : '' );
+                    add_post_meta( $new_post_id, '_population', isset($record->city_meta->population) ? $record->city_meta->population : '' );
+                    add_post_meta( $new_post_id, '_lat', isset($record->city_meta->lat) ? $record->city_meta->lat : '' );
+                    add_post_meta( $new_post_id, '_lng', isset($record->city_meta->lng) ? $record->city_meta->lng : '' );
+                    add_post_meta( $new_post_id, '_density', isset($record->city_meta->density) ? $record->city_meta->density : '' );
+                    add_post_meta( $new_post_id, '_ranking', isset($record->city_meta->ranking) ? $record->city_meta->ranking : '' );
+    
+                    add_post_meta( $new_post_id, '_city_meta', isset($record->city_meta) ? json_encode($record->city_meta) : '' );
+                    if ( $region_abbr ) {
+                        add_post_meta( $new_post_id, '_region_abbr', $region_abbr );
+                    }
+    
+                    update_post_meta( $new_post_id, '_uuid', $uuid );
+    
+                    if ( get_field( 'create_neighborhood_pages', $base_template_id ) ) {
+                        if ( isset ( $record->neighborhoods ) ) {
+                            foreach ( $record->neighborhoods as $neighborhood ) {
+                                $neighborhood_shortcode_bindings             = $shortcode_bindings;
+                                $neighborhood_shortcode_bindings[ '[city]' ] = $neighborhood->neighborhood;
+    
+                                $title = apply_filters( 'location_domination_shortcodes', ( $sub_template_spinning ? $base_template_settings[ 'post_name' ] : $base_template[ 'post_title' ] ), $neighborhood_shortcode_bindings );
+    
+                                if ( ! $sub_template_spinning && $page_title ) {
+                                    $title = apply_filters( 'location_domination_shortcodes', $page_title, $neighborhood_shortcode_bindings );
+                                }
+                                $title_content_spin = Location_Domination_Spinner::spin_title_content($title, $fields, $base_template, $shortcode_bindings);        
+                                $arguments = [
+                                    'post_type'    => get_post_meta( $template_id, '_uuid', true ),
+                                    'post_title'   => $title_content_spin['post_title'],
+                                    'post_content' => $title_content_spin['post_content'],
+                                    'post_status'  => 'publish',
+                                    'post_parent'  => $new_post_id,
+                                ];
+    
+                                if ( ! $sub_template_spinning && $page_title ) {
+                                    $arguments[ 'post_name' ] = apply_filters( 'location_domination_shortcodes', $page_slug, $neighborhood_shortcode_bindings );
+                                }
+    
+                                $neighborhood_post_id = wp_insert_post( $arguments );
+    
+                                // GMB Vault integration
+                                if ( isset( $meta[ '_gmbvault_business_listing' ] ) && isset( $meta[ '_gmbvault_business_listing' ][0] ) ) {
+                                    $meta[ '_gmbvault_business_listing' ][0] = (int) $meta[ '_gmbvault_business_listing' ][0];
+                                }
+    
+                                Endpoint_Create_Posts::meta_spinner( $meta, $neighborhood_post_id, $neighborhood_shortcode_bindings );
+    
+                                add_post_meta( $neighborhood_post_id, '_neighborhood', $neighborhood );
+                                add_post_meta( $neighborhood_post_id, '_city', isset( $record->city ) ? $record->city : '' );
+                                add_post_meta( $neighborhood_post_id, '_state', isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : null ) );
+                                add_post_meta( $neighborhood_post_id, '_county', isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : null ) );
+                                add_post_meta( $neighborhood_post_id, '_zips', isset( $record->zips ) ? $record->zips : '' );
+                                add_post_meta( $neighborhood_post_id, '_country', isset( $record->country ) ? $record->country : '' );
+                                add_post_meta( $neighborhood_post_id, '_population', isset($record->city_meta->population) ? $record->city_meta->population : '' );
+                                update_post_meta( $neighborhood_post_id, '_uuid', $uuid );
                             }
-
-                            $suburb_post_id = wp_insert_post( $arguments );
-
-                            // GMB Vault integration
-                            if ( isset( $meta[ '_gmbvault_business_listing' ] ) && isset( $meta[ '_gmbvault_business_listing' ][0] ) ) {
-                                $meta[ '_gmbvault_business_listing' ][0] = (int) $meta[ '_gmbvault_business_listing' ][0];
-                            }
-
-                            Endpoint_Create_Posts::meta_spinner( $meta, $suburb_post_id, $suburb_shortcode_bindings );
-
-                            add_post_meta( $suburb_post_id, '_suburb', $suburb );
-                            add_post_meta( $suburb_post_id, '_city', isset( $record->city ) ? $record->city : '' );
-                            add_post_meta( $suburb_post_id, '_state', isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : null ) );
-                            add_post_meta( $suburb_post_id, '_county', isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : null ) );
-                            add_post_meta( $suburb_post_id, '_zips', isset( $record->zips ) ? $record->zips : '' );
-                            add_post_meta( $suburb_post_id, '_country', isset( $record->country ) ? $record->country : '' );
-                            add_post_meta( $suburb_post_id, '_population', isset($record->city_meta->population) ? $record->city_meta->population : '' );
-                            update_post_meta( $suburb_post_id, '_uuid', $uuid );
+                        }
+                    } else {
+                        if ( isset( $record->neighborhoods ) && ! empty( $record->neighborhoods ) ) {
+                            $neighborhoods = array_map( function( $object ) {
+                                return $object->neighborhood;
+                            }, $record->neighborhoods );
+    
+                            add_post_meta( $new_post_id, "_neighborhoods", $neighborhoods );
                         }
                     }
-                } else {
-                    if ( isset( $record->suburbs ) && ! empty( $record->suburbs ) ) {
-                        $suburbs = array_map( function( $object ) {
-                            return $object->suburb;
-                        }, $record->suburbs );
-
-                        add_post_meta( $new_post_id, "_suburbs", $suburbs );
+                    // print_r($record);exit;
+                    if ( get_field( 'create_suburb_pages', $base_template_id ) || $json_response->suburb_only == true) {
+                        if ( isset ( $record->suburbs ) ) {
+                            foreach ( $record->suburbs as $suburb ) {
+                                $suburb_shortcode_bindings             = $shortcode_bindings;
+    
+                                if (strpos($page_title,'[suburb]') !== false) {
+                                    $suburb_shortcode_bindings[ '[city]' ] = $record->city;
+                                } else {
+                                    $suburb_shortcode_bindings[ '[city]' ] = $suburb->suburb;
+                                }
+                                
+                                $suburb_shortcode_bindings[ '[suburb]' ] = $suburb->suburb;
+    
+                                $title = apply_filters( 'location_domination_shortcodes', ( $sub_template_spinning ? $base_template_settings[ 'post_name' ] : $base_template[ 'post_title' ] ), $suburb_shortcode_bindings );
+                                
+                                if ( ! $sub_template_spinning && $page_title ) {
+                                    $title = apply_filters( 'location_domination_shortcodes', $page_title, $suburb_shortcode_bindings );
+                                }
+    
+                                $title_content_spin = Location_Domination_Spinner::spin_title_content($title, $fields, $base_template, $shortcode_bindings);
+                                $arguments = [
+                                    'post_type'    => get_post_meta( $template_id, '_uuid', true ),
+                                    'post_title'   => $title_content_spin['post_title'],
+                                    'post_content' => $title_content_spin['post_content'],
+                                    'post_status'  => 'publish',
+                                    'post_parent'  => $new_post_id,
+                                ];
+    
+                                if ( ! $sub_template_spinning && $page_title ) {
+                                    $arguments[ 'post_name' ] = apply_filters( 'location_domination_shortcodes', $page_slug, $suburb_shortcode_bindings );
+                                }
+    
+                                $suburb_post_id = wp_insert_post( $arguments );
+    
+                                // GMB Vault integration
+                                if ( isset( $meta[ '_gmbvault_business_listing' ] ) && isset( $meta[ '_gmbvault_business_listing' ][0] ) ) {
+                                    $meta[ '_gmbvault_business_listing' ][0] = (int) $meta[ '_gmbvault_business_listing' ][0];
+                                }
+    
+                                Endpoint_Create_Posts::meta_spinner( $meta, $suburb_post_id, $suburb_shortcode_bindings );
+    
+                                add_post_meta( $suburb_post_id, '_suburb', $suburb );
+                                add_post_meta( $suburb_post_id, '_city', isset( $record->city ) ? $record->city : '' );
+                                add_post_meta( $suburb_post_id, '_state', isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : null ) );
+                                add_post_meta( $suburb_post_id, '_county', isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : null ) );
+                                add_post_meta( $suburb_post_id, '_zips', isset( $record->zips ) ? $record->zips : '' );
+                                add_post_meta( $suburb_post_id, '_country', isset( $record->country ) ? $record->country : '' );
+                                add_post_meta( $suburb_post_id, '_population', isset($record->city_meta->population) ? $record->city_meta->population : '' );
+                                update_post_meta( $suburb_post_id, '_uuid', $uuid );
+                            }
+                        }
+                    } else {
+                        if ( isset( $record->suburbs ) && ! empty( $record->suburbs ) ) {
+                            $suburbs = array_map( function( $object ) {
+                                return $object->suburb;
+                            }, $record->suburbs );
+    
+                            add_post_meta( $new_post_id, "_suburbs", $suburbs );
+                        }
                     }
+                    $wpdb->insert( Location_Domination_Activator::getTableName(), [
+                        'post_type' => $uuid,
+                        'post_id'   => $new_post_id,
+                        'country'   => isset( $record->country ) ? $record->country : null,
+                        'state'     => isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : null ),
+                        'county'    => isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : null ),
+                        'region'    => isset( $record->region ) ? $record->region : ( isset( $record->county ) ? $record->county : null ),
+                        'city'      => isset( $record->city ) ? $record->city : null,
+                        'locked'    => 0,
+                    ] );
+    
+    //                if ( isset( $schema ) && $schema ) {
+    //                    add_post_meta( $arguments[ 'ID' ], '_ld_schema', $schema );
+    //                }
+    //
+    //                $wpdb->query( 'COMMIT;' );
                 }
-                $wpdb->insert( Location_Domination_Activator::getTableName(), [
-                    'post_type' => $uuid,
-                    'post_id'   => $new_post_id,
-                    'country'   => isset( $record->country ) ? $record->country : null,
-                    'state'     => isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : null ),
-                    'county'    => isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : null ),
-                    'region'    => isset( $record->region ) ? $record->region : ( isset( $record->county ) ? $record->county : null ),
-                    'city'      => isset( $record->city ) ? $record->city : null,
-                    'locked'    => 0,
+    
+                // Update transient to tell the next job it can continue
+                $option->job_in_progress     = false;
+                $option->last_job_started_at = false;
+                $option->batches->completed ++;
+                $option->progress = round( ( $option->batches->completed / $option->batches->needed ) * 100 );
+    
+                set_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id, $option, 0 );
+    
+                $execution_time           = microtime( true ) - $start;
+                $batches_remaining        = $option->batches->needed - $option->batches->completed;
+                $estimated_time_remaining = ( $batches_remaining + 10 ) * $execution_time;
+    
+                return wp_send_json( [
+                    'success'                  => true,
+                    'execution_time'           => ceil( $execution_time ),
+                    'progress'                 => $option->progress,
+                    'batches_left'             => $batches_remaining,
+                    'batches_remaining'        => $batches_remaining,
+                    'estimated_time_remaining' => ceil( $estimated_time_remaining ),
                 ] );
-
-//                if ( isset( $schema ) && $schema ) {
-//                    add_post_meta( $arguments[ 'ID' ], '_ld_schema', $schema );
-//                }
-//
-//                $wpdb->query( 'COMMIT;' );
             }
-
-            // Update transient to tell the next job it can continue
-            $option->job_in_progress     = false;
-            $option->last_job_started_at = false;
-            $option->batches->completed ++;
-            $option->progress = round( ( $option->batches->completed / $option->batches->needed ) * 100 );
-
-            set_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id, $option, 0 );
-
-            $execution_time           = microtime( true ) - $start;
-            $batches_remaining        = $option->batches->needed - $option->batches->completed;
-            $estimated_time_remaining = ( $batches_remaining + 10 ) * $execution_time;
-
-            return wp_send_json( [
-                'success'                  => true,
-                'execution_time'           => ceil( $execution_time ),
-                'progress'                 => $option->progress,
-                'batches_left'             => $batches_remaining,
-                'batches_remaining'        => $batches_remaining,
-                'estimated_time_remaining' => ceil( $estimated_time_remaining ),
+        } catch (Exception $e) {
+            // Handle the exception
+            return wp_send_json( [ 
+                'success' => false,
+                'message' => $e->getMessage() . " with code: " . $e->getCode()
             ] );
         }
 

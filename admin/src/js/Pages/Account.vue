@@ -7,6 +7,7 @@
 
         <form @submit.prevent="connect">
             <text-input class="mt-8" v-model="form.apiKey" label="API Key" />
+            <text-input class="mt-8" v-model="form.openAIApiKey" label="Open AI API Key" />
             <ld-button type="submit" class="mt-8">Connect my account</ld-button>
         </form>
     </div>
@@ -32,7 +33,8 @@
         data() {
             return {
                 form: {
-                    apiKey: ''
+                    apiKey: '',
+                    openAIApiKey: ''
                 }
             };
         },
@@ -52,7 +54,8 @@
                      .then( ( { data } ) => {
                          axios.post( `${this.$parent.ajaxUrl}?action=location_domination_update_settings`, stringify( {
                              _nonce: this.$parent.nonce,
-                             apiKey: this.form.apiKey
+                             apiKey: this.form.apiKey,
+                             openAIApiKey: this.form.openAIApiKey
                          } ) ).then( ( { data } ) => {
                              console.log( data );
                          } );

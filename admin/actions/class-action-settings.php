@@ -37,6 +37,7 @@ class Action_Settings implements Action_Interface {
         }
 
         update_option( LOCATION_DOMINATION_API_OPTION_KEY, sanitize_text_field( $_POST[ 'apiKey'] ) );
+        update_option( LOCATION_DOMINATION_OPEN_AI_API_OPTION_KEY, sanitize_text_field( $_POST[ 'openAIApiKey'] ) );
         update_option( LOCATION_DOMINATION_API_CONNECTED_OPTION_KEY, 'connected' );
 
         return wp_send_json([ 'success' => true ]);

@@ -41,8 +41,9 @@ class Action_Get_Settings implements Action_Interface {
 
         return wp_send_json( [
             'apiKey'       => get_option( LOCATION_DOMINATION_API_OPTION_KEY ),
+            'openAIApiKey' => get_option( LOCATION_DOMINATION_OPEN_AI_API_OPTION_KEY ),
             'locationType' => get_option( LOCATION_DOMINATION_LOCATION_TYPE_OPTION ),
-            'connected' => get_option( LOCATION_DOMINATION_API_CONNECTED_OPTION_KEY ) === 'connected',
+            'connected'    => get_option( LOCATION_DOMINATION_API_CONNECTED_OPTION_KEY ) === 'connected',
         ] );
     }
 
