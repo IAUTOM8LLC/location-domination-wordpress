@@ -15,7 +15,7 @@ const trimChar = (string, charToRemove) => {
 }
 
 const buildBaseUrl = () => {
-    const defaultUrl = "http://location-domination.test";
+    const defaultUrl = "https://dashboard.locationdomination.net";
 
     if ( ! window.hasOwnProperty( 'location_domination' ) ) {
         return defaultUrl;
