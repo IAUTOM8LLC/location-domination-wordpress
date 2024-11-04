@@ -15,7 +15,7 @@ const trimChar = (string, charToRemove) => {
 }
 
 const buildBaseUrl = () => {
-    const defaultUrl = "https://dashboard.locationdomination.net";
+    const defaultUrl = "http://location-domination.test";
 
     if ( ! window.hasOwnProperty( 'location_domination' ) ) {
         return defaultUrl;
@@ -135,6 +135,16 @@ export class ExternalRepository {
             headers: { 'content-type': 'application/x-www-form-urlencoded' },
             data: qs.stringify([]),
             url: `${url}?action=location_domination_end_queue&templateId=${templateId}`
+        };
+
+        return axios( options );
+    }
+
+    static pollAiSpinBatchProgressRequest(batchId, apiKey) {
+        const options = {
+            method: 'GET',
+            headers: { 'content-type': 'application/x-www-form-urlencoded' },
+            url: `${BASE_URL}/api/queue-ai-spin/${batchId}?api_key=${apiKey}`
         };
 
         return axios( options );

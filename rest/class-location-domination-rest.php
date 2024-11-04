@@ -68,7 +68,17 @@ class Location_Domination_Rest {
         'insert-posts' => [
             'methods' => WP_REST_Server::CREATABLE,
             'class'   => Endpoint_Create_Posts::class,
-        ]
+        ],
+
+        'ai-spin-insert-post' => [
+            'methods' => WP_REST_Server::CREATABLE,
+            'class'   => Endpoint_AI_Spin_Create_Post::class,
+        ],
+        
+        'ai-spin-end-batch' => [
+            'methods' => WP_REST_Server::CREATABLE,
+            'class'   => Endpoint_AI_Spin_End_Batch::class,
+        ],
     ];
 
     /**

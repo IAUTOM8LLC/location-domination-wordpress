@@ -173,9 +173,12 @@
     </div>
 
     <div v-else-if="request.started">
-        <p class="text-gray-600 text-center mt-5 mb-4">
+        <p class="font-bold text-center mt-5 mb-4 text-red-600">
             Please do not close this tab whilst we're working on adding your
-            pages. <strong>Estimated time: </strong> {{ readableTime }}
+            pages. 
+        </p>
+        <p class="text-gray-600 text-center mt-5 mb-4">
+            <strong>Estimated time: </strong> {{ readableTime }}
         </p>
         <div class="relative py-3">
             <div class="flex mb-2 items-center justify-between">
@@ -439,6 +442,8 @@ export default {
                 'For specific cities',
             ],
             targeting: 'all',
+            isAiSpin: null,
+            batchId: null,
             gridForm: {
                 counties: [],
                 states: [],
@@ -583,10 +588,17 @@ export default {
 
     methods: {
         pollWorker() {
-            return ExternalRepository.pollPostRequest(
-                this.ajaxUrl,
-                this.templateId
-            );
+            if (this.isAiSpin != true) {
+                return ExternalRepository.pollPostRequest(
+                    this.ajaxUrl,
+                    this.templateId
+                );
+            } else {
+                return ExternalRepository.pollAiSpinBatchProgressRequest(
+                    this.batchId,
+                    this.gridForm.apiKey
+                );
+            }
         },
 
         cancelPosts() {
@@ -679,6 +691,9 @@ export default {
                                             'error'
                                         );
                                     }
+                                    _this.isAiSpin = data.is_ai_spin;
+                                    _this.batchId = data.batch_id;
+
                                     _this.request.estimated_time_in_seconds = 60;
                                     _this.request.progress = parseFloat(
                                         data.progress
@@ -694,56 +709,67 @@ export default {
                                     }
                                 });
 
-                                if (parseInt(data.batches_needed) > 1) {
-                                    let progress = 0;
+                                const batches_needed = parseInt(
+                                    data.batches_needed
+                                );
+                                let progress = 0;
 
-                                    const POLLING_TIME_IN_SECONDS = 3;
-                                    const interval = setInterval(() => {
-                                        if (_this.request.request_in_progress) {
-                                            return;
+                                const POLLING_TIME_IN_SECONDS = 3;
+                                const interval = setInterval(() => {
+                                    if (this.isAiSpin === null) return;
+                                    if (
+                                        !(
+                                            batches_needed > 1 ||
+                                            (batches_needed > 0 &&
+                                                this.isAiSpin)
+                                        )
+                                    ) {
+                                        clearInterval(interval);
+                                    }
+                                    if (_this.request.request_in_progress) {
+                                        return;
+                                    }
+
+                                    _this.request.request_in_progress = true;
+
+                                    _this.pollWorker().then(({ data }) => {
+                                        if (!data.success) {
+                                            Swal.fire(
+                                                'Oops, something went wrong.',
+                                                data.message,
+                                                'error'
+                                            );
+                                        }
+                                        const _progress = parseFloat(
+                                            data.progress
+                                        );
+                                        const estimated_time_remaining =
+                                            parseFloat(
+                                                data.estimated_time_remaining
+                                            );
+                                        _this.request.request_in_progress = false;
+
+                                        if (_progress > progress) {
+                                            progress = _progress;
                                         }
 
-                                        _this.request.request_in_progress = true;
+                                        if (estimated_time_remaining) {
+                                            _this.request.estimated_time_in_seconds =
+                                                estimated_time_remaining;
+                                        }
 
-                                        _this.pollWorker().then(({ data }) => {
-                                            if (!data.success) {
-                                                Swal.fire(
-                                                    'Oops, something went wrong.',
-                                                    data.message,
-                                                    'error'
-                                                );
-                                            }
-                                            const _progress = parseFloat(
-                                                data.progress
+                                        _this.request.progress = progress;
+
+                                        if (_this.request.progress >= 100) {
+                                            _this.request.completed = true;
+                                            clearInterval(interval);
+                                            ExternalRepository.finishLocalQueuePostRequest(
+                                                url,
+                                                _this.templateId
                                             );
-                                            const estimated_time_remaining =
-                                                parseFloat(
-                                                    data.estimated_time_remaining
-                                                );
-                                            _this.request.request_in_progress = false;
-
-                                            if (_progress > progress) {
-                                                progress = _progress;
-                                            }
-
-                                            if (estimated_time_remaining) {
-                                                _this.request.estimated_time_in_seconds =
-                                                    estimated_time_remaining;
-                                            }
-
-                                            _this.request.progress = progress;
-
-                                            if (_this.request.progress >= 100) {
-                                                _this.request.completed = true;
-                                                clearInterval(interval);
-                                                ExternalRepository.finishLocalQueuePostRequest(
-                                                    url,
-                                                    _this.templateId
-                                                );
-                                            }
-                                        });
-                                    }, POLLING_TIME_IN_SECONDS * 1000);
-                                }
+                                        }
+                                    });
+                                }, POLLING_TIME_IN_SECONDS * 1000);
                             } else {
                                 Swal.fire(
                                     'Oops, something went wrong.',

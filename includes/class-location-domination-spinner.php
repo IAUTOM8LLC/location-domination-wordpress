@@ -60,6 +60,10 @@ class Location_Domination_Spinner {
         }
     }
 
+    static function is_ai_spin($fields){
+        return isset($fields['use_ai_spin']) && $fields['use_ai_spin'] == 1;
+    }
+
     static function run_chat_gpt($prompt){
         $apiUrl = 'https://api.openai.com/v1/chat/completions';
         $apiKey = trim( get_option( 'mpb_openai_api_key' ) );
@@ -165,10 +169,6 @@ class Location_Domination_Spinner {
         } else {
             throw new Exception("AI Spin Error:  Unknown Target.", 7);
         }
-    }
-
-    static function is_ai_spin($fields){
-        return isset($fields['use_ai_spin']) && $fields['use_ai_spin'] == 1;
     }
 
     static function spin_title_content($title, $fields, $base_template, $shortcode_bindings){
