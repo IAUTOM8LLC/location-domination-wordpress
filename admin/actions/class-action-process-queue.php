@@ -232,10 +232,10 @@ class Action_Process_Queue implements Action_Interface {
                         'filters' => [],
                     ];
                     if($is_ai_spin){
+                        $base_template['post_content'] = Location_Domination_Spinner::spin( $base_template[ 'post_content' ] );
                         $ai_spin_arguments['post'] = [
-                            'post_name'    => $page_slug,
                             'post_type'    => $template_post_type,
-                            'post_title'   => $title,
+                            'post_title'   => Location_Domination_Spinner::spin($title),
                             'post_content' => $base_template,
                             'post_status'  => 'publish',
                         ];
@@ -385,11 +385,11 @@ class Action_Process_Queue implements Action_Interface {
                                     $title = apply_filters( 'location_domination_shortcodes', $page_title, $neighborhood_shortcode_bindings );
                                 }
                                 if($is_ai_spin){
+                                    $base_template['post_content'] = Location_Domination_Spinner::spin( $base_template[ 'post_content' ] );
                                     $ai_spin_arguments['post'] = [
-                                        'post_name'    => $page_slug,
                                         'post_title'   => $template_post_type,
                                         'post_type'    => $template_post_type,
-                                        'post_content' => $base_template,
+                                        'post_title'   => Location_Domination_Spinner::spin($title),
                                         'post_status'  => 'publish',
                                     ];
                                 } else {
@@ -485,10 +485,10 @@ class Action_Process_Queue implements Action_Interface {
                                 }
     
                                 if($is_ai_spin){
+                                    $base_template['post_content'] = Location_Domination_Spinner::spin( $base_template[ 'post_content' ] );
                                     $ai_spin_arguments['post'] = [
-                                        'post_name'    => $page_slug,
                                         'post_type'    => get_post_meta( $template_id, '_uuid', true ),
-                                        'post_title'   => $title,
+                                        'post_title'   => Location_Domination_Spinner::spin($title),
                                         'post_content' => $base_template,
                                         'post_status'  => 'publish',
                                     ];
