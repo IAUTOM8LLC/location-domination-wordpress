@@ -56,20 +56,28 @@ class Endpoint_AI_Spin_End_Batch {
     public function handle( WP_REST_Request $request ) {
         $payload = $request->get_params();
         $template_id = $payload['template_id'];
-        $country = $payload['country'];
-        $uuid = $payload['uuid'];
+
+        $option = get_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id );
 
         // Build index pages
         $create_indexes = get_field( 'create_index_pages', $template_id );
 
         if ( $create_indexes ) {
             $indexer = new Action_Start_Indexing();
-            $indexer->setRequest( [
-                'country' => $country,
-                'uuid' => $uuid
-            ] );
+            $indexer->setRequest( $option->request );
             $indexer->handle();
         }
+
+        Location_Domination_Admin::clear_permalinks_queued();
+
+        if ( class_exists( 'Elementor\\Plugin' ) ) {
+            // If using Elementor, re-generate CSS
+            \Elementor\Plugin::$instance->files_manager->clear_cache();
+        }
+
+        // Delete queue transient
+        delete_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id );
+
         return rest_ensure_response( [ 'success' => true ] );
     }
 
