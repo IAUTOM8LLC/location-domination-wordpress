@@ -70,7 +70,7 @@ class Endpoint_AI_Spin_Create_Post {
         if (!$post) {
             return rest_ensure_response(['success' => false, 'message' => 'Could not find post']);
         }
-        add_post_meta($post_id, '_aifiller', $ld_post['generated_content']);
+        add_post_meta($post_id, 'aifiller', $ld_post['generated_content']);
 
         $post_data = array(
             'ID'            => $post_id,

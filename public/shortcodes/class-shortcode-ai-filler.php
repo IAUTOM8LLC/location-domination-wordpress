@@ -47,8 +47,8 @@ class Shortcode_AIFiller implements Shortcode_Interface {
         // Retrieve the current post ID
         $post_id = get_the_ID();
 
-        // Get the '_aifiller' meta value for the current post
-        $aifiller_meta = get_post_meta($post_id, '_aifiller', true);
+        // Get the 'aifiller' meta value for the current post
+        $aifiller_meta = get_post_meta($post_id, 'aifiller', true);
 
         // Use the meta value if it exists, otherwise fallback to the prompt attribute
         $shortcodes = !empty($aifiller_meta) ? $aifiller_meta : $atts['prompt'];
