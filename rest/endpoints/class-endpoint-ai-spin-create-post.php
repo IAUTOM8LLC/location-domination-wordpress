@@ -58,11 +58,10 @@ class Endpoint_AI_Spin_Create_Post {
     public function handle(WP_REST_Request $request)
     {
         $payload = $request->get_params();
-        $params = $payload['form_params'];
-        $arguments = $params['arguments'];
+        $arguments = $payload['arguments'];
         $ld_post = $arguments['post'];
-        $post_id = $params['post_id'];
-
+        $post_id = $payload['post_id'];
+ 
         // Get the post object
         $post = get_post($post_id);
 
