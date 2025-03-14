@@ -25,16 +25,18 @@ class Endpoint_AI_Spin_Create_Post {
      * @return boolean
      * @since 2.0.0
      */
-    public function authorize( WP_REST_Request $request ) {
-        return trim( get_option( LOCATION_DOMINATION_API_OPTION_KEY ) ) === trim( $request->get_param( 'api_key' ) );
+    public function authorize(WP_REST_Request $request)
+    {
+        return trim(get_option(LOCATION_DOMINATION_API_OPTION_KEY)) === trim($request->get_param('api_key'));
     }
 
-    function write_log( $log ) {
-        if ( true === WP_DEBUG ) {
-            if ( is_array( $log ) || is_object( $log ) ) {
-                error_log( print_r( $log, true ) );
+    function write_log($log)
+    {
+        if (true === WP_DEBUG) {
+            if (is_array($log) || is_object($log)) {
+                error_log(print_r($log, true));
             } else {
-                error_log( $log );
+                error_log($log);
             }
         }
     }
@@ -53,46 +55,35 @@ class Endpoint_AI_Spin_Create_Post {
      * @return mixed|\WP_Error|\WP_HTTP_Response|\WP_REST_Response
      * @since 2.0.0
      */
-    public function handle( WP_REST_Request $request ) {
-        global $wpdb;
+    public function handle(WP_REST_Request $request)
+    {
         $payload = $request->get_params();
-        $arguments = $payload['arguments'];
+        $params = $payload['form_params'];
+        $arguments = $params['arguments'];
+        $ld_post = $arguments['post'];
+        $post_id = $params['post_id'];
 
-        $post = $arguments['post'];
-        $meta = $arguments['meta'];
-        $filters = $arguments['filters'];
-        $ld_activator = $arguments['LD_activator'];
+        // Get the post object
+        $post = get_post($post_id);
 
-        $post_name_filter = $filters['post_name'];
-
-        apply_filters($post_name_filter['hook_name'], $post_name_filter['value'], $post_name_filter['args']);
-
-        $new_post_id = wp_insert_post( $post );
-
-        foreach($meta as $key => $value){
-            if($key === 'meta') continue;
-            if($key === 'meta_title'){
-                $spin_meta_title = $meta['meta_title'];
-                add_post_meta( $new_post_id, '_yoast_wpseo_title', $spin_meta_title );
-                add_post_meta( $new_post_id, '_aioseo_title', $spin_meta_title );
-                add_post_meta( $new_post_id, '_aioseo_og_title', $spin_meta_title );
-                add_post_meta( $new_post_id, '_aioseo_twitter_title', $spin_meta_title );
-                continue;
-            }
-            if($key === 'meta_description') {
-                $spin_meta_description = $meta['meta_description'];
-                add_post_meta( $new_post_id, '_yoast_wpseo_metadesc', $spin_meta_description );
-                add_post_meta( $new_post_id, '_aioseo_description', $spin_meta_description );
-                add_post_meta( $new_post_id, '_aioseo_og_description', $spin_meta_description );
-                add_post_meta( $new_post_id, '_aioseo_twitter_description', $spin_meta_description );
-                continue;
-            }
-            add_post_meta( $new_post_id, $key, $value);
+        // Check if post exists
+        if (!$post) {
+            return rest_ensure_response(['success' => false, 'message' => 'Could not find post']);
         }
+        add_post_meta($post_id, '_aifiller', $ld_post['generated_content']);
 
-        activate_location_domination();
-        $ld_activator['post_id'] = $new_post_id;
-        $wpdb->insert( Location_Domination_Activator::getTableName(), $ld_activator );
+        $post_data = array(
+            'ID'            => $post_id,
+            'post_title'    => $ld_post['post_title'],
+            'post_status'   => $post->post_status === 'draft' ? 'publish' : $post->post_status
+        );
+
+        // Update the post itself
+        $result = wp_update_post($post_data);
+
+        if (is_wp_error($result)) {
+            return rest_ensure_response(['success' => false, 'message' => 'WP Error']);
+        }
 
         return rest_ensure_response( [ 'success' => true ] );
     }

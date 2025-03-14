@@ -28,6 +28,52 @@ class Action_Process_Queue implements Action_Interface {
     }
 
     /**
+     * Pulls Ai Filler Prompts.
+     *
+     * @return string
+     * @since 2.0.0
+     */
+    function parse_shortcodes($content)
+    {
+        try {
+            $pattern = '/\[([a-zA-Z0-9_]+)(.*?)\]/';
+            preg_match_all($pattern, $content, $matches, PREG_SET_ORDER);
+            $shortcodes = [];
+
+            foreach ($matches as $match) {
+                if ($match[1] !== 'AIFiller') {
+                    continue; // Skip non-AiFiller shortcodes
+                }
+
+                $shortcode = [];
+                $shortcode['shortcode'] = $match[0];
+                $shortcode['name'] = $match[1];
+
+                $attributesString = trim($match[2]);
+                $attributes = [];
+
+                if (!empty($attributesString)) {
+                    // Adjust regex to capture attributes including values without quotes
+                    preg_match_all('/(\w+)=(\'[^\']*\'|"[^"]*"|[^\s]+)/', $attributesString, $attrMatches, PREG_SET_ORDER);
+                    foreach ($attrMatches as $attrMatch) {
+                        $key = $attrMatch[1];
+                        $value = trim($attrMatch[2], "'\""); // Trim quotes if present
+                        $attributes[$key] = $value;
+                    }
+                }
+
+                $shortcode['attributes'] = $attributes;
+                $shortcodes[] = $shortcode;
+            }
+
+            return $shortcodes;
+        } catch (\Exception $e) {
+            echo "Error in parse_shortcodes: " . $e->getMessage() . PHP_EOL;
+        }
+    }
+
+
+    /**
      * The contents to replace the shortcode with
      *
      * @return string
@@ -231,70 +277,52 @@ class Action_Process_Queue implements Action_Interface {
                         'meta' => [],
                         'filters' => [],
                     ];
+                    $post_content = Location_Domination_Spinner::spin( $base_template[ 'post_content' ] );
                     if($is_ai_spin){
-                        $base_template['post_content'] = Location_Domination_Spinner::spin( $base_template[ 'post_content' ] );
                         $ai_spin_arguments['post'] = [
-                            'post_type'    => $template_post_type,
                             'post_title'   => Location_Domination_Spinner::spin($title),
-                            'post_content' => $base_template,
-                            'post_status'  => 'publish',
-                        ];
-                    } else {
-                        $arguments = [
-                            'post_type'    => $template_post_type,
-                            'post_title'   => Location_Domination_Spinner::spin($title),
-                            'post_content' => Location_Domination_Spinner::spin( $base_template[ 'post_content' ] ),
-                            'post_status'  => 'publish',
                         ];
                     }
+                    $arguments = [
+                        'post_type'    => $template_post_type,
+                        'post_title'   => Location_Domination_Spinner::spin($title),
+                        'post_content' => $post_content,
+                        'post_status'  => $is_ai_spin ? 'draft' : 'publish',
+                    ];
 
-    
-                    if ( $dripfed ) {
+
+
+                    if ($dripfed) {
                         $datetime = new DateTime();
-    
-                        if ( $option->batches->dripfed_index >= $dripfed_per_day ) {
+
+                        if ($option->batches->dripfed_index >= $dripfed_per_day) {
                             $option->batches->dripfed_index = 0;
                             $option->batches->dripfed_day_count++;
                         }
-    
-                        if ( $option->batches->dripfed_day_count > 0 ) {
-                            $datetime->modify( '+' . $option->batches->dripfed_day_count . ' day' );
-    
-                            $formatted_datetime = $datetime->format( 'Y-m-d H:i:s' );
-                            $formatted_gmt_datetime = get_gmt_from_date( $formatted_datetime );
-                            if($is_ai_spin){
-                                $ai_spin_arguments[ 'post' ][ 'post_status' ] = 'future';
-                                $ai_spin_arguments[ 'post' ][ 'post_date' ] = $formatted_datetime;
-                                $ai_spin_arguments[ 'post' ][ 'post_date_gmt' ] = $formatted_gmt_datetime;
-                            } else {
-                                $arguments[ 'post_status' ] = 'future';
-                                $arguments[ 'post_date' ] = $formatted_datetime;
-                                $arguments[ 'post_date_gmt' ] = $formatted_gmt_datetime;
-                            }
+
+                        if ($option->batches->dripfed_day_count > 0) {
+                            $datetime->modify('+' . $option->batches->dripfed_day_count . ' day');
+
+                            $formatted_datetime = $datetime->format('Y-m-d H:i:s');
+                            $formatted_gmt_datetime = get_gmt_from_date($formatted_datetime);
+   
+                            $arguments['post_status'] = 'future';
+                            $arguments['post_date'] = $formatted_datetime;
+                            $arguments['post_date_gmt'] = $formatted_gmt_datetime;
                         }
-    
+
                         $option->batches->dripfed_index++;
                     }
-    
-                    if ( ! $sub_template_spinning && $page_title ) {
-                        if($is_ai_spin){
-                            $ai_spin_arguments['filters'][ 'post_name' ] = [
-                                'hook_name' => 'location_domination_shortcodes',
-                                'value' => $page_slug,
-                                'args' => $shortcode_bindings
-                            ];
-                        }
-                        $arguments[ 'post_name' ] = apply_filters( 'location_domination_shortcodes', $page_slug, $shortcode_bindings );
+
+                    if (! $sub_template_spinning && $page_title) {
+                        $arguments['post_name'] = apply_filters('location_domination_shortcodes', $page_slug, $shortcode_bindings);
                     }
-    
                     // $meta_title       = $this->get_parameter_with_shortcodes( $request, 'meta_title', $shortcode_bindings );
                     // $meta_description = $this->get_parameter_with_shortcodes( $request, 'meta_description', $shortcode_bindings );
                     // $job_title        = $this->get_parameter_with_shortcodes( $request, 'job_title', $shortcode_bindings );
                     // $job_description  = $this->get_parameter_with_shortcodes( $request, 'job_description', $shortcode_bindings );
                     // $schema           = $this->get_parameter_with_shortcodes( $request, 'schema', $shortcode_bindings );
-                    if(!$is_ai_spin){
-                        $new_post_id = wp_insert_post( $arguments );
-                    }
+                    $new_post_id = wp_insert_post($arguments);
 
                     // GMB Vault integration
                     if ( isset( $meta[ '_gmbvault_business_listing' ] ) && isset( $meta[ '_gmbvault_business_listing' ][0] ) ) {
@@ -312,309 +340,194 @@ class Action_Process_Queue implements Action_Interface {
                         $meta[ '_aioseo_og_description' ][0] = $meta[ '_yoast_wpseo_metadesc' ][0];
                         $meta[ '_aioseo_twitter_description' ][0] = $meta[ '_yoast_wpseo_metadesc' ][0];
                     }
-    
-                    if($is_ai_spin){
-                        $ai_spin_arguments['meta'] = [
-                            'meta' => $meta
-                        ];
-                    } else {
-                        Endpoint_Create_Posts::meta_spinner( $meta, $new_post_id, $shortcode_bindings );
-                    }
-    
-                    if ( $is_ai_spin ){
-                        $ai_spin_arguments['meta']['_city'] = isset( $record->city ) ? $record->city : '';
-                        $ai_spin_arguments['meta']['_state'] = isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : null );
-                        $ai_spin_arguments['meta']['_county'] = isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : null );
-                        $ai_spin_arguments['meta']['_zips'] = isset( $record->zips ) ? $record->zips : '';
-                        $ai_spin_arguments['meta']['_region'] = isset( $record->region ) ? $record->region : '';
-                        $ai_spin_arguments['meta']['_country'] = isset( $record->country ) ? $record->country : '';
-                        $ai_spin_arguments['meta']['_population'] = isset($record->city_meta->population) ? $record->city_meta->population : '';
-                        $ai_spin_arguments['meta']['_lat'] = isset($record->city_meta->lat) ? $record->city_meta->lat : '';
-                        $ai_spin_arguments['meta']['_lng'] = isset($record->city_meta->lng) ? $record->city_meta->lng : '';
-                        $ai_spin_arguments['meta']['_density'] = isset($record->city_meta->density) ? $record->city_meta->density : '';
-                        $ai_spin_arguments['meta']['_ranking'] = isset($record->city_meta->ranking) ? $record->city_meta->ranking : '';
-                        $ai_spin_arguments['meta']['_city_meta'] = isset($record->city_meta) ? json_encode($record->city_meta) : '';
-                        if ( $region_abbr ) {
-                            $ai_spin_arguments['meta']['_region_abbr'] = $region_abbr;
-                        }
-                        $ai_spin_arguments['meta']['_uuid'] = $uuid;
-                    } else {
-                        add_post_meta( $new_post_id, '_city', isset( $record->city ) ? $record->city : '' );
-                        add_post_meta( $new_post_id, '_state', isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : null ) );
-                        add_post_meta( $new_post_id, '_county', isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : null ) );
-                        add_post_meta( $new_post_id, '_zips', isset( $record->zips ) ? $record->zips : '' );
-                        add_post_meta( $new_post_id, '_region', isset( $record->region ) ? $record->region : '' );
-                        add_post_meta( $new_post_id, '_country', isset( $record->country ) ? $record->country : '' );
-                        add_post_meta( $new_post_id, '_population', isset($record->city_meta->population) ? $record->city_meta->population : '' );
-                        add_post_meta( $new_post_id, '_lat', isset($record->city_meta->lat) ? $record->city_meta->lat : '' );
-                        add_post_meta( $new_post_id, '_lng', isset($record->city_meta->lng) ? $record->city_meta->lng : '' );
-                        add_post_meta( $new_post_id, '_density', isset($record->city_meta->density) ? $record->city_meta->density : '' );
-                        add_post_meta( $new_post_id, '_ranking', isset($record->city_meta->ranking) ? $record->city_meta->ranking : '' );
-        
-                        add_post_meta( $new_post_id, '_city_meta', isset($record->city_meta) ? json_encode($record->city_meta) : '' );
-                        if ( $region_abbr ) {
-                            add_post_meta( $new_post_id, '_region_abbr', $region_abbr );
-                        }
-                        update_post_meta( $new_post_id, '_uuid', $uuid );
-                    }
 
-    
-                    if ( get_field( 'create_neighborhood_pages', $base_template_id ) ) {
-                        if ( isset ( $record->neighborhoods ) ) {
-                            foreach ( $record->neighborhoods as $neighborhood ) {
+                    Endpoint_Create_Posts::meta_spinner($meta, $new_post_id, $shortcode_bindings);
+
+                    add_post_meta($new_post_id, '_city', isset($record->city) ? $record->city : '');
+                    add_post_meta($new_post_id, '_state', isset($record->state) ? $record->state : (isset($record->region) ? $record->region : null));
+                    add_post_meta($new_post_id, '_county', isset($record->county) ? $record->county : (isset($record->region) ? $record->region : null));
+                    add_post_meta($new_post_id, '_zips', isset($record->zips) ? $record->zips : '');
+                    add_post_meta($new_post_id, '_region', isset($record->region) ? $record->region : '');
+                    add_post_meta($new_post_id, '_country', isset($record->country) ? $record->country : '');
+                    add_post_meta($new_post_id, '_population', isset($record->city_meta->population) ? $record->city_meta->population : '');
+                    add_post_meta($new_post_id, '_lat', isset($record->city_meta->lat) ? $record->city_meta->lat : '');
+                    add_post_meta($new_post_id, '_lng', isset($record->city_meta->lng) ? $record->city_meta->lng : '');
+                    add_post_meta($new_post_id, '_density', isset($record->city_meta->density) ? $record->city_meta->density : '');
+                    add_post_meta($new_post_id, '_ranking', isset($record->city_meta->ranking) ? $record->city_meta->ranking : '');
+
+                    add_post_meta($new_post_id, '_city_meta', isset($record->city_meta) ? json_encode($record->city_meta) : '');
+                    if ($region_abbr) {
+                        add_post_meta($new_post_id, '_region_abbr', $region_abbr);
+                    }
+                    update_post_meta($new_post_id, '_uuid', $uuid);
+
+
+                    if (get_field('create_neighborhood_pages', $base_template_id)) {
+                        if (isset($record->neighborhoods)) {
+                            foreach ($record->neighborhoods as $neighborhood) {
                                 $neighborhood_shortcode_bindings             = $shortcode_bindings;
-                                $neighborhood_shortcode_bindings[ '[city]' ] = $neighborhood->neighborhood;
-    
-                                if($is_ai_spin){
-                                    $ai_spin_arguments['filters'][ 'post_name' ] = [
-                                        'hook_name' => 'location_domination_shortcodes',
-                                        'value' => ( $sub_template_spinning ? $base_template_settings[ 'post_name' ] : $base_template[ 'post_title' ] ),
-                                        'args' => $neighborhood_shortcode_bindings
-                                    ];
-                                }
-                                $title = apply_filters( 'location_domination_shortcodes', ( $sub_template_spinning ? $base_template_settings[ 'post_name' ] : $base_template[ 'post_title' ] ), $neighborhood_shortcode_bindings );
+                                $neighborhood_shortcode_bindings['[city]'] = $neighborhood->neighborhood;
 
-                                if ( ! $sub_template_spinning && $page_title ) {
-                                    if($is_ai_spin){
-                                        $ai_spin_arguments['filters'][ 'post_name' ] = [
-                                            'hook_name' => 'location_domination_shortcodes',
-                                            'value' => $page_title,
-                                            'args' => $neighborhood_shortcode_bindings
-                                        ];
-                                    }
-                                    $title = apply_filters( 'location_domination_shortcodes', $page_title, $neighborhood_shortcode_bindings );
+                                $title = apply_filters('location_domination_shortcodes', ($sub_template_spinning ? $base_template_settings['post_name'] : $base_template['post_title']), $neighborhood_shortcode_bindings);
+
+                                if (! $sub_template_spinning && $page_title) {
+                                    $title = apply_filters('location_domination_shortcodes', $page_title, $neighborhood_shortcode_bindings);
                                 }
-                                if($is_ai_spin){
-                                    $base_template['post_content'] = Location_Domination_Spinner::spin( $base_template[ 'post_content' ] );
+                                if ($is_ai_spin) {
                                     $ai_spin_arguments['post'] = [
-                                        'post_title'   => $template_post_type,
-                                        'post_type'    => $template_post_type,
                                         'post_title'   => Location_Domination_Spinner::spin($title),
-                                        'post_status'  => 'publish',
-                                    ];
-                                } else {
-                                    $arguments = [
-                                        'post_type'    => $template_post_type,
-                                        'post_title'   => Location_Domination_Spinner::spin($title),
-                                        'post_content' => Location_Domination_Spinner::spin( $base_template[ 'post_content' ] ),
-                                        'post_status'  => 'publish',
                                     ];
                                 }
-    
-                                if ( ! $sub_template_spinning && $page_title ) {
-                                    if($is_ai_spin){
-                                        $ai_spin_arguments[ 'filters' ]['post_name'] = [
-                                            'hook_name' => 'location_domination_shortcodes',
-                                            'value' => $page_slug,
-                                            'args' => $neighborhood_shortcode_bindings
-                                        ];
-                                    }
-                                    $arguments[ 'post_name' ] = apply_filters( 'location_domination_shortcodes', $page_slug, $neighborhood_shortcode_bindings );
-                                }
-    
-                                if(!$is_ai_spin){
-                                    $neighborhood_post_id = wp_insert_post( $arguments );
-                                }
-    
-                                // GMB Vault integration
-                                if ( isset( $meta[ '_gmbvault_business_listing' ] ) && isset( $meta[ '_gmbvault_business_listing' ][0] ) ) {
-                                    $meta[ '_gmbvault_business_listing' ][0] = (int) $meta[ '_gmbvault_business_listing' ][0];
-                                }
-    
-                                if(!$is_ai_spin){
-                                    Endpoint_Create_Posts::meta_spinner( $meta, $neighborhood_post_id, $neighborhood_shortcode_bindings );
-                                } else {
-                                    $ai_spin_arguments['meta'] = [
-                                        'meta' => $meta
-                                    ];
+                                $arguments = [
+                                    'post_type'    => $template_post_type,
+                                    'post_title'   => Location_Domination_Spinner::spin($title),
+                                    'post_content' => Location_Domination_Spinner::spin($base_template['post_content']),
+                                    'post_status'  => $is_ai_spin ? 'draft' : 'publish',
+                                ];
+
+                                if (! $sub_template_spinning && $page_title) {
+                                    $arguments['post_name'] = apply_filters('location_domination_shortcodes', $page_slug, $neighborhood_shortcode_bindings);
                                 }
 
-                                if($is_ai_spin){
-                                    $ai_spin_arguments['meta']['_neighborhood'] = $neighborhood;
-                                    $ai_spin_arguments['meta']['_city'] = isset( $record->city ) ? $record->city : '';
-                                    $ai_spin_arguments['meta']['_state'] = isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : null );
-                                    $ai_spin_arguments['meta']['_county'] = isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : null );
-                                    $ai_spin_arguments['meta']['_zips'] = isset( $record->zips ) ? $record->zips : '';
-                                    $ai_spin_arguments['meta']['_country'] = isset( $record->country ) ? $record->country : '';
-                                    $ai_spin_arguments['meta']['_population'] = isset($record->city_meta->population) ? $record->city_meta->population : '';
-                                    $ai_spin_arguments['meta']['_uuid'] = $uuid;
-                                } else {
-                                    add_post_meta( $neighborhood_post_id, '_neighborhood', $neighborhood );
-                                    add_post_meta( $neighborhood_post_id, '_city', isset( $record->city ) ? $record->city : '' );
-                                    add_post_meta( $neighborhood_post_id, '_state', isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : null ) );
-                                    add_post_meta( $neighborhood_post_id, '_county', isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : null ) );
-                                    add_post_meta( $neighborhood_post_id, '_zips', isset( $record->zips ) ? $record->zips : '' );
-                                    add_post_meta( $neighborhood_post_id, '_country', isset( $record->country ) ? $record->country : '' );
-                                    add_post_meta( $neighborhood_post_id, '_population', isset($record->city_meta->population) ? $record->city_meta->population : '' );
-                                    update_post_meta( $neighborhood_post_id, '_uuid', $uuid );
+
+                                $neighborhood_post_id = wp_insert_post($arguments);
+
+                                // GMB Vault integration
+                                if (isset($meta['_gmbvault_business_listing']) && isset($meta['_gmbvault_business_listing'][0])) {
+                                    $meta['_gmbvault_business_listing'][0] = (int) $meta['_gmbvault_business_listing'][0];
                                 }
-                   
+
+                                Endpoint_Create_Posts::meta_spinner($meta, $neighborhood_post_id, $neighborhood_shortcode_bindings);
+
+                                add_post_meta($neighborhood_post_id, '_neighborhood', $neighborhood);
+                                add_post_meta($neighborhood_post_id, '_city', isset($record->city) ? $record->city : '');
+                                add_post_meta($neighborhood_post_id, '_state', isset($record->state) ? $record->state : (isset($record->region) ? $record->region : null));
+                                add_post_meta($neighborhood_post_id, '_county', isset($record->county) ? $record->county : (isset($record->region) ? $record->region : null));
+                                add_post_meta($neighborhood_post_id, '_zips', isset($record->zips) ? $record->zips : '');
+                                add_post_meta($neighborhood_post_id, '_country', isset($record->country) ? $record->country : '');
+                                add_post_meta($neighborhood_post_id, '_population', isset($record->city_meta->population) ? $record->city_meta->population : '');
+                                update_post_meta($neighborhood_post_id, '_uuid', $uuid);
                             }
                         }
                     } else {
-                        if ( isset( $record->neighborhoods ) && ! empty( $record->neighborhoods ) ) {
-                            $neighborhoods = array_map( function( $object ) {
+                        if (isset($record->neighborhoods) && ! empty($record->neighborhoods)) {
+                            $neighborhoods = array_map(function ($object) {
                                 return $object->neighborhood;
-                            }, $record->neighborhoods );
-    
-                            if( $is_ai_spin ){
-                                $ai_spin_arguments['meta']['_neighborhoods'] = $neighborhoods;
-                            } else {
-                                add_post_meta( $new_post_id, "_neighborhoods", $neighborhoods );
-                            }
+                            }, $record->neighborhoods);
+
+                            add_post_meta($new_post_id, "_neighborhoods", $neighborhoods);
                         }
                     }
                     // print_r($record);exit;
-                    if ( get_field( 'create_suburb_pages', $base_template_id ) || $json_response->suburb_only == true) {
-                        if ( isset ( $record->suburbs ) ) {
-                            foreach ( $record->suburbs as $suburb ) {
+                    if (get_field('create_suburb_pages', $base_template_id) || $json_response->suburb_only == true) {
+                        if (isset($record->suburbs)) {
+                            foreach ($record->suburbs as $suburb) {
                                 $suburb_shortcode_bindings             = $shortcode_bindings;
-    
-                                if (strpos($page_title,'[suburb]') !== false) {
-                                    $suburb_shortcode_bindings[ '[city]' ] = $record->city;
+
+                                if (strpos($page_title, '[suburb]') !== false) {
+                                    $suburb_shortcode_bindings['[city]'] = $record->city;
                                 } else {
-                                    $suburb_shortcode_bindings[ '[city]' ] = $suburb->suburb;
+                                    $suburb_shortcode_bindings['[city]'] = $suburb->suburb;
                                 }
-                                
-                                $suburb_shortcode_bindings[ '[suburb]' ] = $suburb->suburb;
-    
-                                $title = apply_filters( 'location_domination_shortcodes', ( $sub_template_spinning ? $base_template_settings[ 'post_name' ] : $base_template[ 'post_title' ] ), $suburb_shortcode_bindings );
-                                
-                                if ( ! $sub_template_spinning && $page_title ) {
-                                    $title = apply_filters( 'location_domination_shortcodes', $page_title, $suburb_shortcode_bindings );
+
+                                $suburb_shortcode_bindings['[suburb]'] = $suburb->suburb;
+
+                                $title = apply_filters('location_domination_shortcodes', ($sub_template_spinning ? $base_template_settings['post_name'] : $base_template['post_title']), $suburb_shortcode_bindings);
+
+                                if (! $sub_template_spinning && $page_title) {
+                                    $title = apply_filters('location_domination_shortcodes', $page_title, $suburb_shortcode_bindings);
                                 }
-    
-                                if($is_ai_spin){
-                                    $base_template['post_content'] = Location_Domination_Spinner::spin( $base_template[ 'post_content' ] );
+
+                                if ($is_ai_spin) {
                                     $ai_spin_arguments['post'] = [
-                                        'post_type'    => get_post_meta( $template_id, '_uuid', true ),
                                         'post_title'   => Location_Domination_Spinner::spin($title),
-                                        'post_content' => $base_template,
-                                        'post_status'  => 'publish',
-                                    ];
-                                } else {
-                                    $arguments = [
-                                        'post_type'    => get_post_meta( $template_id, '_uuid', true ),
-                                        'post_title'   => Location_Domination_Spinner::spin($title),
-                                        'post_content' => Location_Domination_Spinner::spin( $base_template[ 'post_content' ] ),
-                                        'post_status'  => 'publish',
                                     ];
                                 }
-    
-                                if ( ! $sub_template_spinning && $page_title && !$is_ai_spin ) {
-                                    if($is_ai_spin){
-                                        $ai_spin_arguments['filters']['post_name'] = [
-                                            'hook_name' => 'location_domination_shortcodes',
-                                            'value' => $page_slug,
-                                            'args' => $suburb_shortcode_bindings
-                                        ];
-                                    }
-                                    $arguments[ 'post_name' ] = apply_filters( 'location_domination_shortcodes', $page_slug, $suburb_shortcode_bindings );
+                                $arguments = [
+                                    'post_type'    => get_post_meta($template_id, '_uuid', true),
+                                    'post_title'   => Location_Domination_Spinner::spin($title),
+                                    'post_content' => Location_Domination_Spinner::spin($base_template['post_content']),
+                                    'post_status'  => $is_ai_spin ? 'draft' : 'publish',
+                                ];
+
+
+                                if (! $sub_template_spinning && $page_title) {
+                                    $arguments['post_name'] = apply_filters('location_domination_shortcodes', $page_slug, $suburb_shortcode_bindings);
                                 }
-    
-                                if( !$is_ai_spin ){
-                                    $suburb_post_id = wp_insert_post( $arguments );
-                                }
-    
+
+                                $suburb_post_id = wp_insert_post($arguments);
+
                                 // GMB Vault integration
-                                if ( isset( $meta[ '_gmbvault_business_listing' ] ) && isset( $meta[ '_gmbvault_business_listing' ][0] ) ) {
-                                    $meta[ '_gmbvault_business_listing' ][0] = (int) $meta[ '_gmbvault_business_listing' ][0];
+                                if (isset($meta['_gmbvault_business_listing']) && isset($meta['_gmbvault_business_listing'][0])) {
+                                    $meta['_gmbvault_business_listing'][0] = (int) $meta['_gmbvault_business_listing'][0];
                                 }
-    
-                                if(!$is_ai_spin){
-                                    $ai_spin_arguments['meta'] = [
-                                        'meta' => $meta
-                                    ];
-                                } else {
-                                    Endpoint_Create_Posts::meta_spinner( $meta, $suburb_post_id, $suburb_shortcode_bindings );
-                                }
-    
-                                if($is_ai_spin){
-                                    $ai_spin_arguments['meta']['_suburb'] = $suburb;
-                                    $ai_spin_arguments['meta']['_city'] = isset( $record->city ) ? $record->city : '';
-                                    $ai_spin_arguments['meta']['_state'] = isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : null );
-                                    $ai_spin_arguments['meta']['_county'] = isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : null );
-                                    $ai_spin_arguments['meta']['_zips'] = isset( $record->zips ) ? $record->zips : '';
-                                    $ai_spin_arguments['meta']['_country'] = isset( $record->country ) ? $record->country : '';
-                                    $ai_spin_arguments['meta']['_population'] = isset($record->city_meta->population) ? $record->city_meta->population : '';
-                                    $ai_spin_arguments['meta']['_uuid'] = $uuid;
-                                } else {
-                                    add_post_meta( $suburb_post_id, '_suburb', $suburb );
-                                    add_post_meta( $suburb_post_id, '_city', isset( $record->city ) ? $record->city : '' );
-                                    add_post_meta( $suburb_post_id, '_state', isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : null ) );
-                                    add_post_meta( $suburb_post_id, '_county', isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : null ) );
-                                    add_post_meta( $suburb_post_id, '_zips', isset( $record->zips ) ? $record->zips : '' );
-                                    add_post_meta( $suburb_post_id, '_country', isset( $record->country ) ? $record->country : '' );
-                                    add_post_meta( $suburb_post_id, '_population', isset($record->city_meta->population) ? $record->city_meta->population : '' );
-                                    update_post_meta( $suburb_post_id, '_uuid', $uuid );
-                                }
+
+                                Endpoint_Create_Posts::meta_spinner($meta, $suburb_post_id, $suburb_shortcode_bindings);
+
+                                add_post_meta($suburb_post_id, '_suburb', $suburb);
+                                add_post_meta($suburb_post_id, '_city', isset($record->city) ? $record->city : '');
+                                add_post_meta($suburb_post_id, '_state', isset($record->state) ? $record->state : (isset($record->region) ? $record->region : null));
+                                add_post_meta($suburb_post_id, '_county', isset($record->county) ? $record->county : (isset($record->region) ? $record->region : null));
+                                add_post_meta($suburb_post_id, '_zips', isset($record->zips) ? $record->zips : '');
+                                add_post_meta($suburb_post_id, '_country', isset($record->country) ? $record->country : '');
+                                add_post_meta($suburb_post_id, '_population', isset($record->city_meta->population) ? $record->city_meta->population : '');
+                                update_post_meta($suburb_post_id, '_uuid', $uuid);
                             }
                         }
                     } else {
-                        if ( isset( $record->suburbs ) && ! empty( $record->suburbs ) ) {
-                            $suburbs = array_map( function( $object ) {
+                        if (isset($record->suburbs) && ! empty($record->suburbs)) {
+                            $suburbs = array_map(function ($object) {
                                 return $object->suburb;
-                            }, $record->suburbs );
-    
-                            if ( $is_ai_spin ) {
-                                $ai_spin_arguments['meta']['_suburbs'] = $suburbs;
-                            } else {
-                                add_post_meta( $new_post_id, "_suburbs", $suburbs );
-                            }
+                            }, $record->suburbs);
+
+                            add_post_meta($new_post_id, "_suburbs", $suburbs);
                         }
                     }
 
-                    if( $is_ai_spin ){
-                        $ai_spin_arguments['LD_activator']['post_type'] = $uuid;
-                        $ai_spin_arguments['LD_activator']['country'] = isset( $record->country ) ? $record->country : null;
-                        $ai_spin_arguments['LD_activator']['state'] = isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : null );
-                        $ai_spin_arguments['LD_activator']['county'] = isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : null );
-                        $ai_spin_arguments['LD_activator']['region'] = isset( $record->region ) ? $record->region : ( isset( $record->county ) ? $record->county : null );
-                        $ai_spin_arguments['LD_activator']['city'] = isset( $record->city ) ? $record->city : null;
-                        $ai_spin_arguments['LD_activator']['locked'] = 0;
-
+                    $wpdb->insert(Location_Domination_Activator::getTableName(), [
+                        'post_type' => $uuid,
+                        'post_id'   => $new_post_id,
+                        'country'   => isset($record->country) ? $record->country : null,
+                        'state'     => isset($record->state) ? $record->state : (isset($record->region) ? $record->region : null),
+                        'county'    => isset($record->county) ? $record->county : (isset($record->region) ? $record->region : null),
+                        'region'    => isset($record->region) ? $record->region : (isset($record->county) ? $record->county : null),
+                        'city'      => isset($record->city) ? $record->city : null,
+                        'locked'    => 0,
+                    ]);
+                    if ($is_ai_spin) {
                         $ai_spin_batch[] = [
                             'template_id' => $template_id,
                             'site_url' => get_site_url(),
                             'arguments' => $ai_spin_arguments,
-                            'LD_api_key' => trim( get_option( 'mpb_api_key' ) ),
-                            'open_ai_api_key' => trim( get_option( 'mpb_openai_api_key' ) ),
-                            'context' => $shortcode_bindings
+                            'LD_api_key' => trim(get_option('mpb_api_key')),
+                            'open_ai_api_key' => trim(get_option('mpb_openai_api_key')),
+                            'context' => $shortcode_bindings,
+                            'shortcodes' => $this->parse_shortcodes($base_template['post_content']),
+                            'post_id' => $new_post_id
                         ];
-                    } else {
-                        $wpdb->insert( Location_Domination_Activator::getTableName(), [
-                            'post_type' => $uuid,
-                            'post_id'   => $new_post_id,
-                            'country'   => isset( $record->country ) ? $record->country : null,
-                            'state'     => isset( $record->state ) ? $record->state : ( isset( $record->region ) ? $record->region : null ),
-                            'county'    => isset( $record->county ) ? $record->county : ( isset( $record->region ) ? $record->region : null ),
-                            'region'    => isset( $record->region ) ? $record->region : ( isset( $record->county ) ? $record->county : null ),
-                            'city'      => isset( $record->city ) ? $record->city : null,
-                            'locked'    => 0,
-                        ] );
                     }
-    
-    //                if ( isset( $schema ) && $schema ) {
-    //                    add_post_meta( $arguments[ 'ID' ], '_ld_schema', $schema );
-    //                }
-    //
-    //                $wpdb->query( 'COMMIT;' );
+
+                    //                if ( isset( $schema ) && $schema ) {
+                    //                    add_post_meta( $arguments[ 'ID' ], '_ld_schema', $schema );
+                    //                }
+                    //
+                    //                $wpdb->query( 'COMMIT;' );
                 }
-    
+
                 // Update transient to tell the next job it can continue
-                $execution_time           = microtime( true ) - $start;
-                if($is_ai_spin) {
-                    $res = wp_remote_post( trim( MAIN_URL, '/' ) . '/api/queue-ai-spin', [
+                $execution_time           = microtime(true) - $start;
+                if ($is_ai_spin) {
+                    $res = wp_remote_post(trim(MAIN_URL, '/') . '/api/v2/queue-ai-spin', [
                         'body' => [
-                            'LD_api_key' => trim( get_option( 'mpb_api_key' ) ),
+                            'LD_api_key' => trim(get_option('mpb_api_key')),
                             'site_url' => get_site_url(),
-                            'template_id' =>$template_id,
+                            'template_id' => $template_id,
                             'uuid' => $template_post_type,
                             'batch' => $ai_spin_batch,
                             'country' => (int) unserialize($ai_spin_batch[0]['arguments']['meta']['meta']['location_domination_post_request'][0])['country']
                         ],
                         'timeout' => 30000
-                    ] );
+                    ]);
                     $body = wp_remote_retrieve_body($res);
                     $batch_data = json_decode($body, true);
 
@@ -625,38 +538,39 @@ class Action_Process_Queue implements Action_Interface {
                 } else {
                     $option->job_in_progress     = false;
                     $option->last_job_started_at = false;
-                    $option->batches->completed ++;
-                    $option->progress = round( ( $option->batches->completed / $option->batches->needed ) * 100 );
-        
-                    set_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id, $option, 0 );
-        
+                    $option->batches->completed++;
+                    $option->progress = round(($option->batches->completed / $option->batches->needed) * 100);
+
+                    set_transient(Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id, $option, 0);
+
                     $batches_remaining        = $option->batches->needed - $option->batches->completed;
-                    $estimated_time_remaining = ( $batches_remaining + 10 ) * $execution_time;
+                    $estimated_time_remaining = ($batches_remaining + 10) * $execution_time;
                 }
 
-                return wp_send_json( [
+                return wp_send_json([
                     'success'                  => true,
-                    'execution_time'           => ceil( $execution_time ),
+                    'execution_time'           => ceil($execution_time),
                     'progress'                 => $option->progress,
                     'batches_left'             => $batches_remaining,
                     'batches_remaining'        => $batches_remaining,
-                    'estimated_time_remaining' => ceil( $estimated_time_remaining ),
+                    'estimated_time_remaining' => ceil($estimated_time_remaining),
                     'is_ai_spin'               => $is_ai_spin,
                     'batch_id'                 => isset($batch_id) ? $batch_id : null
-                ] );
+                ]);
             }
         } catch (Exception $e) {
             // Handle the exception
-            return wp_send_json( [ 
+            return wp_send_json([
                 'success' => false,
                 'message' => $e->getMessage() . " with code: " . $e->getCode()
-            ] );
+            ]);
         }
 
-        return wp_send_json( [ 'success' => false ] );
+        return wp_send_json(['success' => false]);
     }
 
-    public function extract_short_code_attr($string) {
+    public function extract_short_code_attr($string)
+    {
         // $string = 'Manish [city]-[population]-[lat]-[density][citymeta name="lat"]';
 
         // Define the resulting array
@@ -691,7 +605,5 @@ class Action_Process_Queue implements Action_Interface {
 
         // Print the resulting array
         return $result_array;
-
     }
-
 }
