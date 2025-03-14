@@ -66,3 +66,13 @@ class Shortcode_AIFiller implements Shortcode_Interface {
     }
 
 }
+
+// For some reason, some themes lowercase the shortcode name, so this deals with both lowercase or uppercase
+function register_aifiller_shortcode() {
+    if (class_exists('Shortcode_AIFiller')) {
+        $shortcode = new Shortcode_AIFiller();
+        add_shortcode($shortcode->get_key(), [$shortcode, 'handle']);   // Uppercase
+        add_shortcode(strtolower($shortcode->get_key()), [$shortcode, 'handle']); // Lowercase
+    }
+}
+add_action('init', 'register_aifiller_shortcode');
