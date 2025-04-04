@@ -13,7 +13,8 @@
  * @subpackage Location_Domination/admin
  * @author     iAutoM8 LLC <support@i-autom8.com>
  */
-class Shortcode_AIFiller implements Shortcode_Interface {
+class Shortcode_AIFiller implements Shortcode_Interface
+{
 
     /**
      * The shortcode name.
@@ -21,7 +22,8 @@ class Shortcode_AIFiller implements Shortcode_Interface {
      * @return string
      * @since 1.0.0
      */
-    public function get_key() {
+    public function get_key()
+    {
         return 'AIFiller';
     }
 
@@ -32,7 +34,8 @@ class Shortcode_AIFiller implements Shortcode_Interface {
      * @return string
      * @since 1.0.0
      */
-    public function handle( $attributes = null ) {
+    public function handle($attributes = null)
+    {
         // Set default attributes and merge with provided attributes
         $atts = shortcode_atts(
             array(
@@ -53,22 +56,43 @@ class Shortcode_AIFiller implements Shortcode_Interface {
         // Use the meta value if it exists, otherwise fallback to the prompt attribute
         $shortcodes = !empty($aifiller_meta) ? $aifiller_meta : $atts['prompt'];
 
+        if (!is_array($shortcodes)) return '<div class="ai-filler">' . esc_html($prompt) . '</div>';
+
         // Output the prompt in a formatted way
         foreach ($shortcodes as $shortcode) {
             if (
-                isset($shortcode['attributes']['prompt']) && 
+                isset($shortcode['attributes']['prompt']) &&
                 $shortcode['attributes']['prompt'] === $prompt
             ) {
-                return '<div class="ai-filler">' . $shortcode['generated_text'] . '</div>';
+                $text = $shortcode['generated_text'];
+
+                $text = str_replace(
+                    ['“', '”', '‘', '’', '„', '‟', '‹', '›'],
+                    ['"', '"', "'", "'", '"', '"', "'", "'"],
+                    $text
+                );
+
+                $text = preg_replace([
+                    '/```[a-z]*\n?/', // remove opening code block
+                    '/```/',          // remove closing code block
+                    '/`/',            // remove inline code ticks
+                    '/\*\*(.*?)\*\*/',// remove bold markdown
+                    '/\*(.*?)\*/',    // remove italic markdown
+                    '/_(.*?)_/',      // remove underscores italic markdown
+                ], '$1', $text);
+
+                $text = preg_replace('/\s+/', ' ', $text);
+                $text = trim($text);
+                return '<div class="ai-filler">' . $text . '</div>';
             }
         }
         return '<div class="ai-filler">' . esc_html($prompt) . '</div>';
     }
-
 }
 
 // For some reason, some themes lowercase the shortcode name, so this deals with both lowercase or uppercase
-function register_aifiller_shortcode() {
+function register_aifiller_shortcode()
+{
     if (class_exists('Shortcode_AIFiller')) {
         $shortcode = new Shortcode_AIFiller();
         add_shortcode($shortcode->get_key(), [$shortcode, 'handle']);   // Uppercase
