@@ -16,7 +16,7 @@
  * Plugin Name:       Location Domination
  * Plugin URI:        https://locationdomination.net
  * Description:       An iAutoM8 plugin designed to make mass page generating easy!
- * Version:           2.4.4
+ * Version:           2.4.5
  * Author:            iAutoM8 LLC
  * Author URI:        https://i-autom8.com
  * License:           GPL-2.0+
@@ -48,7 +48,7 @@ if ( ! defined( 'LOCATION_DOMINATION_ENV' ) || strtolower( LOCATION_DOMINATION_E
 } else if ( strtolower( LOCATION_DOMINATION_ENV ) === "staging" ) {
     define( 'MAIN_URL', 'https://staging.locationdomination.net/' );
 } else {
-	define( 'MAIN_URL', 'http://location-domination.test/' );
+	define( 'MAIN_URL', 'http://127.0.0.1:8083/' );
 }
 
 /**
