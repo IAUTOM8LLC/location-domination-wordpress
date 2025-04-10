@@ -77,7 +77,8 @@ class Endpoint_AI_Spin_End_Batch {
 
         // Delete queue transient
         delete_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id );
-
+        delete_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id . '_AI_BATCH_ID' );
+        
         return rest_ensure_response( [ 'success' => true ] );
     }
 
