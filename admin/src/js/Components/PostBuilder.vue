@@ -588,17 +588,10 @@ export default {
 
     methods: {
         pollWorker() {
-            if (this.isAiSpin != true) {
-                return ExternalRepository.pollPostRequest(
-                    this.ajaxUrl,
-                    this.templateId
-                );
-            } else {
-                return ExternalRepository.pollAiSpinBatchProgressRequest(
-                    this.batchId,
-                    this.gridForm.apiKey
-                );
-            }
+            return ExternalRepository.pollPostRequest(
+                this.ajaxUrl,
+                this.templateId
+            );
         },
 
         cancelPosts() {
@@ -716,7 +709,7 @@ export default {
 
                                 const POLLING_TIME_IN_SECONDS = 3;
                                 const interval = setInterval(() => {
-                                    if (this.isAiSpin === null) return;
+                                    // if (this.isAiSpin === null) return;
                                     if (
                                         !(
                                             batches_needed > 1 ||

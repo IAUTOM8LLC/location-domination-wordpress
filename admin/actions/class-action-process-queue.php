@@ -87,8 +87,12 @@ class Action_Process_Queue implements Action_Interface {
             ini_set( 'pcre.jit', false );
         }
 
-        $option = get_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id );
+        $fields = get_fields( $template_id );
+        $is_ai_spin = Location_Domination_Spinner::is_ai_spin($fields);
 
+        $option = get_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id );
+        $option_batch_id = get_transient(Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id . '_AI_BATCH_ID');
+        
         if ( ! $option ) {
             return wp_send_json( [ 'success' => false, 'message' => 'You have no active jobs running.' ] );
         }
@@ -108,10 +112,6 @@ class Action_Process_Queue implements Action_Interface {
         global $wpdb;
 
         require_once( __DIR__ . '/../../includes/class-location-domination-activator.php' );
-
-        $fields = get_fields( $template_id );
-
-        $is_ai_spin = Location_Domination_Spinner::is_ai_spin($fields);
 
         if($is_ai_spin){
             $apiKey = trim( get_option( 'mpb_openai_api_key' ) );
@@ -277,15 +277,18 @@ class Action_Process_Queue implements Action_Interface {
                         'meta' => [],
                         'filters' => [],
                     ];
-                    $post_content = Location_Domination_Spinner::spin( $base_template[ 'post_content' ] );
+
+                    $post_title   = Location_Domination_Spinner::spin($title);
+                    $post_content = Location_Domination_Spinner::spin($base_template['post_content']);
+
                     if($is_ai_spin){
                         $ai_spin_arguments['post'] = [
-                            'post_title'   => Location_Domination_Spinner::spin($title),
+                            'post_title'   => $post_title,
                         ];
                     }
                     $arguments = [
                         'post_type'    => $template_post_type,
-                        'post_title'   => Location_Domination_Spinner::spin($title),
+                        'post_title'   => $post_title,
                         'post_content' => $post_content,
                         'post_status'  => $is_ai_spin ? 'draft' : 'publish',
                     ];
@@ -373,15 +376,19 @@ class Action_Process_Queue implements Action_Interface {
                                 if (! $sub_template_spinning && $page_title) {
                                     $title = apply_filters('location_domination_shortcodes', $page_title, $neighborhood_shortcode_bindings);
                                 }
+
+                                $post_title   = Location_Domination_Spinner::spin($title);
+                                $post_content = Location_Domination_Spinner::spin($base_template['post_content']);
+
                                 if ($is_ai_spin) {
                                     $ai_spin_arguments['post'] = [
-                                        'post_title'   => Location_Domination_Spinner::spin($title),
+                                        'post_title'   => $post_title,
                                     ];
                                 }
                                 $arguments = [
                                     'post_type'    => $template_post_type,
-                                    'post_title'   => Location_Domination_Spinner::spin($title),
-                                    'post_content' => Location_Domination_Spinner::spin($base_template['post_content']),
+                                    'post_title'   => $post_title,
+                                    'post_content' => $post_content,
                                     'post_status'  => $is_ai_spin ? 'draft' : 'publish',
                                 ];
 
@@ -407,6 +414,17 @@ class Action_Process_Queue implements Action_Interface {
                                 add_post_meta($neighborhood_post_id, '_country', isset($record->country) ? $record->country : '');
                                 add_post_meta($neighborhood_post_id, '_population', isset($record->city_meta->population) ? $record->city_meta->population : '');
                                 update_post_meta($neighborhood_post_id, '_uuid', $uuid);
+
+                                $ai_spin_batch[] = [
+                                    'template_id' => $template_id,
+                                    'site_url' => get_site_url(),
+                                    'arguments' => $ai_spin_arguments,
+                                    'LD_api_key' => trim(get_option('mpb_api_key')),
+                                    'open_ai_api_key' => trim(get_option('mpb_openai_api_key')),
+                                    'context' => $shortcode_bindings,
+                                    'shortcodes' => $this->parse_shortcodes($base_template['post_content']),
+                                    'post_id' => $neighborhood_post_id
+                                ];
                             }
                         }
                     } else {
@@ -438,15 +456,17 @@ class Action_Process_Queue implements Action_Interface {
                                     $title = apply_filters('location_domination_shortcodes', $page_title, $suburb_shortcode_bindings);
                                 }
 
+                                $post_title   = Location_Domination_Spinner::spin($title);
+                                $post_content = Location_Domination_Spinner::spin($base_template['post_content']);
                                 if ($is_ai_spin) {
                                     $ai_spin_arguments['post'] = [
-                                        'post_title'   => Location_Domination_Spinner::spin($title),
+                                        'post_title'   => $post_title,
                                     ];
                                 }
                                 $arguments = [
                                     'post_type'    => get_post_meta($template_id, '_uuid', true),
-                                    'post_title'   => Location_Domination_Spinner::spin($title),
-                                    'post_content' => Location_Domination_Spinner::spin($base_template['post_content']),
+                                    'post_title'   => $post_title,
+                                    'post_content' => $post_content,
                                     'post_status'  => $is_ai_spin ? 'draft' : 'publish',
                                 ];
 
@@ -472,6 +492,17 @@ class Action_Process_Queue implements Action_Interface {
                                 add_post_meta($suburb_post_id, '_country', isset($record->country) ? $record->country : '');
                                 add_post_meta($suburb_post_id, '_population', isset($record->city_meta->population) ? $record->city_meta->population : '');
                                 update_post_meta($suburb_post_id, '_uuid', $uuid);
+
+                                $ai_spin_batch[] = [
+                                    'template_id' => $template_id,
+                                    'site_url' => get_site_url(),
+                                    'arguments' => $ai_spin_arguments,
+                                    'LD_api_key' => trim(get_option('mpb_api_key')),
+                                    'open_ai_api_key' => trim(get_option('mpb_openai_api_key')),
+                                    'context' => $shortcode_bindings,
+                                    'shortcodes' => $this->parse_shortcodes($base_template['post_content']),
+                                    'post_id' => $suburb_post_id
+                                ];
                             }
                         }
                     } else {
@@ -528,24 +559,28 @@ class Action_Process_Queue implements Action_Interface {
                         ],
                         'timeout' => 30000
                     ]);
+
                     $body = wp_remote_retrieve_body($res);
                     $batch_data = json_decode($body, true);
 
                     $batch_id = $batch_data['batch_id'];
-                    $option->progress = 0;
-                    $batches_remaining = count($ai_spin_arguments);
-                    $estimated_time_remaining = $batches_remaining * 20;
-                } else {
-                    $option->job_in_progress     = false;
-                    $option->last_job_started_at = false;
-                    $option->batches->completed++;
-                    $option->progress = round(($option->batches->completed / $option->batches->needed) * 100);
 
-                    set_transient(Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id, $option, 0);
+                    set_transient(Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id . '_AI_BATCH_ID', $batch_id, 0);
 
-                    $batches_remaining        = $option->batches->needed - $option->batches->completed;
-                    $estimated_time_remaining = ($batches_remaining + 10) * $execution_time;
+                    // $option->progress = 0;
+                    // $batches_remaining = count($ai_spin_arguments);
+                    // $estimated_time_remaining = $batches_remaining * 20;
                 }
+                
+                $option->job_in_progress     = false;
+                $option->last_job_started_at = false;
+                $option->batches->completed++;
+                $option->progress = round(($option->batches->completed / $option->batches->needed) * 100);
+
+                $batches_remaining        = $option->batches->needed - $option->batches->completed;
+                $estimated_time_remaining = ($batches_remaining + 10) * $execution_time;
+
+                set_transient(Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id, $option, 0);
 
                 return wp_send_json([
                     'success'                  => true,
