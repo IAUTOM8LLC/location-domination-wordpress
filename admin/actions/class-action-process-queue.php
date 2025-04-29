@@ -415,16 +415,18 @@ class Action_Process_Queue implements Action_Interface {
                                 add_post_meta($neighborhood_post_id, '_population', isset($record->city_meta->population) ? $record->city_meta->population : '');
                                 update_post_meta($neighborhood_post_id, '_uuid', $uuid);
 
-                                $ai_spin_batch[] = [
-                                    'template_id' => $template_id,
-                                    'site_url' => get_site_url(),
-                                    'arguments' => $ai_spin_arguments,
-                                    'LD_api_key' => trim(get_option('mpb_api_key')),
-                                    'open_ai_api_key' => trim(get_option('mpb_openai_api_key')),
-                                    'context' => $shortcode_bindings,
-                                    'shortcodes' => $this->parse_shortcodes($base_template['post_content']),
-                                    'post_id' => $neighborhood_post_id
-                                ];
+                                if ($is_ai_spin) {
+                                    $ai_spin_batch[] = [
+                                        'template_id' => $template_id,
+                                        'site_url' => get_site_url(),
+                                        'arguments' => $ai_spin_arguments,
+                                        'LD_api_key' => trim(get_option('mpb_api_key')),
+                                        'open_ai_api_key' => trim(get_option('mpb_openai_api_key')),
+                                        'context' => $shortcode_bindings,
+                                        'shortcodes' => $this->parse_shortcodes($base_template['post_content']),
+                                        'post_id' => $neighborhood_post_id
+                                    ];
+                                }
                             }
                         }
                     } else {
@@ -493,16 +495,18 @@ class Action_Process_Queue implements Action_Interface {
                                 add_post_meta($suburb_post_id, '_population', isset($record->city_meta->population) ? $record->city_meta->population : '');
                                 update_post_meta($suburb_post_id, '_uuid', $uuid);
 
-                                $ai_spin_batch[] = [
-                                    'template_id' => $template_id,
-                                    'site_url' => get_site_url(),
-                                    'arguments' => $ai_spin_arguments,
-                                    'LD_api_key' => trim(get_option('mpb_api_key')),
-                                    'open_ai_api_key' => trim(get_option('mpb_openai_api_key')),
-                                    'context' => $shortcode_bindings,
-                                    'shortcodes' => $this->parse_shortcodes($base_template['post_content']),
-                                    'post_id' => $suburb_post_id
-                                ];
+                                if ($is_ai_spin) {
+                                    $ai_spin_batch[] = [
+                                        'template_id' => $template_id,
+                                        'site_url' => get_site_url(),
+                                        'arguments' => $ai_spin_arguments,
+                                        'LD_api_key' => trim(get_option('mpb_api_key')),
+                                        'open_ai_api_key' => trim(get_option('mpb_openai_api_key')),
+                                        'context' => $shortcode_bindings,
+                                        'shortcodes' => $this->parse_shortcodes($base_template['post_content']),
+                                        'post_id' => $suburb_post_id
+                                    ];
+                                }
                             }
                         }
                     } else {
