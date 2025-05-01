@@ -39,7 +39,7 @@ class Action_Cancel_Queue implements Action_Interface {
         $templateId = (int) $_REQUEST[ 'templateId' ];
 
         delete_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $templateId );
-        delete_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $templateId . '_AI_BATCH_ID' );
+        // delete_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $templateId . '_AI_BATCH_ID' );
 
         return wp_send_json( [
             'success'        => true,

@@ -53,7 +53,7 @@ class Action_End_Queue implements Action_Interface {
 
         // Delete queue transient
         delete_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id );
-        delete_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id . '_AI_BATCH_ID' );
+        // delete_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id . '_AI_BATCH_ID' );
         
         return wp_send_json([ 'success' => true ] );
     }

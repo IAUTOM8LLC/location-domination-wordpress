@@ -91,7 +91,7 @@ class Action_Process_Queue implements Action_Interface {
         $is_ai_spin = Location_Domination_Spinner::is_ai_spin($fields);
 
         $option = get_transient( Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id );
-        $option_batch_id = get_transient(Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id . '_AI_BATCH_ID');
+        // $option_batch_id = get_transient(Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id . '_AI_BATCH_ID');
         
         if ( ! $option ) {
             return wp_send_json( [ 'success' => false, 'message' => 'You have no active jobs running.' ] );
@@ -569,7 +569,7 @@ class Action_Process_Queue implements Action_Interface {
 
                     $batch_id = $batch_data['batch_id'];
 
-                    set_transient(Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id . '_AI_BATCH_ID', $batch_id, 0);
+                    // set_transient(Action_Process_Queue::$LOCATION_DOMINATION_PROGRESS_KEY . '_' . $template_id . '_AI_BATCH_ID', $batch_id, 0);
 
                     // $option->progress = 0;
                     // $batches_remaining = count($ai_spin_arguments);
@@ -594,7 +594,10 @@ class Action_Process_Queue implements Action_Interface {
                     'batches_remaining'        => $batches_remaining,
                     'estimated_time_remaining' => ceil($estimated_time_remaining),
                     'is_ai_spin'               => $is_ai_spin,
-                    'batch_id'                 => isset($batch_id) ? $batch_id : null
+                    'spin_batch_length' => count($ai_spin_batch),
+                    'batch_id'                 => isset($batch_id) ? $batch_id : null,
+                    'batch'                 => $ai_spin_batch,
+                    'batch_data' => $batch_data,
                 ]);
             }
         } catch (Exception $e) {
